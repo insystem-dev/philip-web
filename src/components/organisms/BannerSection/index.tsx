@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import * as S from "./bannerSection.style";
 
 interface BannerSectionProp {
-  adsData?: [];
+  adsData?: any[];
 }
 
 export const BannerSection = ({ adsData }: BannerSectionProp) => {

@@ -12,7 +12,7 @@ import * as S from "./adminUserBox.style";
 
 interface AdminUserBoxProps {
   /** 검색어 설정 핸들러 */
-  setUserSearchKeyword: (keyword: string) => void;
+  setUserSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
   /** 회원 목록 데이터 */
   dataSource: any[];
   /** 로딩 상태 */

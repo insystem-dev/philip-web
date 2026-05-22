@@ -20,7 +20,7 @@ interface MainPageProp {
   /** 도시 선택 핸들러 */
   getCityOption: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   /** 선택된 도시 */
-  city: string;
+  city: string | null;
   /** 카테고리 옵션 */
   categoryOptions: any[];
   /** 카테고리 선택 핸들러 */

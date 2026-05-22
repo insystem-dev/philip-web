@@ -2,7 +2,7 @@ import { PostItem } from "@/components/atoms/PostItem";
 import * as S from "./promotionListBox.style";
 
 interface PromotionListBoxProp {
-  postItem: [];
+  postItem: any[];
 }
 export const PromotionListBox = ({ postItem }: PromotionListBoxProp) => {
   return (
