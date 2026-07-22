@@ -40,12 +40,15 @@ export const UserModal = ({ onClose, user }: any) => {
         </S.ModalItemBox>
         <S.ModalItemBox>
           <S.ItemTitBox>회원등급</S.ItemTitBox>
+          {/* option value가 undefined가 되지 않도록 oid 추가 (전달값은 기존과 동일) */}
           <InputSelect
             options={[
               {
+                oid: "COMMON",
                 name: "COMMON",
               },
               {
+                oid: "VIP",
                 name: "VIP",
               },
             ]}
@@ -66,8 +69,9 @@ export const UserModal = ({ onClose, user }: any) => {
             label="닫기"
             onClick={onClose}
           />
+          {/* form submit으로 인한 페이지 리로드 방지 */}
           <Button
-            type="submit"
+            type="button"
             layout="solid"
             width="60px"
             height={36}

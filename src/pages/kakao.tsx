@@ -15,7 +15,6 @@ const Kakao = () => {
 
   const mutation = useMutation("kakaoLoginAPI", kakaoLoginAPI, {
     onSuccess: (data) => {
-      console.log("카카오 로그인 성공:", data);
       localStorage.setItem("kakaoSignKey", data.accessToken);
       setUserToken(data);
       document.location.href = "/main";
@@ -29,17 +28,11 @@ const Kakao = () => {
   });
 
   useEffect(() => {
-    // 디버깅 로그
-    console.log("[Kakao] router.isReady:", router.isReady);
-    console.log("[Kakao] authCode:", authCode);
-    console.log("[Kakao] router.query:", router.query);
-
     // router.isReady가 true일 때만 query 파라미터가 준비됨
     if (!router.isReady) return;
 
     // authCode가 있고, 아직 호출하지 않았을 때만 실행
     if (authCode && typeof authCode === "string" && !isCalledRef.current) {
-      console.log("[Kakao] API 호출 시작, authCode:", authCode);
       isCalledRef.current = true;
       mutation.mutate(authCode);
     } else if (kakaoServerError) {

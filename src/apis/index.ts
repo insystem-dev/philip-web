@@ -11,9 +11,15 @@ const AxiosInstance = axios.create({
 
 AxiosInstance.interceptors.request.use(
   async (config) => {
-    const accessToken = await readAdminAccessToken();
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken.accessToken}`;
+    try {
+      // admin 토큰이 있을 때만 Authorization 헤더 설정 (없거나 파싱 실패 시 기존 헤더 유지)
+      const accessToken = await readAdminAccessToken();
+      if (accessToken?.accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken.accessToken}`;
+      }
+    } catch (err) {
+      // localStorage "admin" 값 파싱 실패 시 헤더를 덮어쓰지 않고 요청 계속 진행
+      console.error(err);
     }
     return config;
   },

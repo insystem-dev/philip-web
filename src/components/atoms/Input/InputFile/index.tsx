@@ -31,57 +31,54 @@ export const InputFile = ({
         ) : (
           <span className="empty-txt">등록된 이미지가 없습니다.</span>
         )}
+        {/* key는 최상위 요소에 부여, alt는 문자열로 전달 */}
         {imgPreview?.map((v: any, i: number) => (
-          <>
-            <S.ImgPreviewItem
-              key={v?.filename}
-              style={{ display: "inline-block" }}
+          <S.ImgPreviewItem
+            key={v?.filename}
+            style={{ display: "inline-block" }}
+          >
+            <S.ImgPriviewImg>
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_URL}/${v?.filename}`}
+                alt={v?.filename || "미리보기 이미지"}
+                width={200}
+                height={120}
+              />
+            </S.ImgPriviewImg>
+            <Button
+              type="button"
+              color="white"
+              layout="icon"
+              width="18px"
+              height={18}
+              onClick={(e: any) => onRemoveImage(v, e)}
             >
-              <S.ImgPriviewImg>
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/${v?.filename}`}
-                  alt={v}
-                  width={200}
-                  height={120}
-                />
-              </S.ImgPriviewImg>
-              <Button
-                type="button"
-                color="white"
-                layout="icon"
-                width="18px"
-                height={18}
-                onClick={(e: any) => onRemoveImage(v, e)}
-              >
-                <IconCancel viewBox="0 0 24 24" />
-              </Button>
-            </S.ImgPreviewItem>
-          </>
+              <IconCancel viewBox="0 0 24 24" />
+            </Button>
+          </S.ImgPreviewItem>
         ))}
         {imageFromDB
           ? imageFromDB.map((img: any, id: number) => (
-              <>
-                <S.ImgPreviewItem key={id} style={{ display: "inline-block" }}>
-                  <S.ImgPriviewImg>
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_API_URL}/${img?.filename}`}
-                      alt={img}
-                      width={200}
-                      height={120}
-                    />
-                  </S.ImgPriviewImg>
-                  <Button
-                    type="button"
-                    color="white"
-                    layout="icon"
-                    width="20px"
-                    height={20}
-                    onClick={(e: any) => onRemoveServerImage(img, e)}
-                  >
-                    <IconCancel width={16} height={16} viewBox="0 0 24 24" />
-                  </Button>
-                </S.ImgPreviewItem>
-              </>
+              <S.ImgPreviewItem key={id} style={{ display: "inline-block" }}>
+                <S.ImgPriviewImg>
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/${img?.filename}`}
+                    alt={img?.filename || "업체 이미지"}
+                    width={200}
+                    height={120}
+                  />
+                </S.ImgPriviewImg>
+                <Button
+                  type="button"
+                  color="white"
+                  layout="icon"
+                  width="20px"
+                  height={20}
+                  onClick={(e: any) => onRemoveServerImage(img, e)}
+                >
+                  <IconCancel width={16} height={16} viewBox="0 0 24 24" />
+                </Button>
+              </S.ImgPreviewItem>
             ))
           : ""}
       </S.ImgPreviewList>

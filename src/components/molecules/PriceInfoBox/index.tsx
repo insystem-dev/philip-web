@@ -12,7 +12,8 @@ export const PriceInfoBox = ({ post, title, openHandler, open }: any) => {
           <Image
             src={
               post
-                ? `${process.env.NEXT_PUBLIC_API_URL}/${post?.menu[0]?.filename}`
+                ? // 메뉴 배열이 없을 수도 있어 옵셔널 체이닝으로 접근
+                  `${process.env.NEXT_PUBLIC_API_URL}/${post?.menu?.[0]?.filename}`
                 : ""
             }
             alt="선택된 업체 이미지"
@@ -21,8 +22,9 @@ export const PriceInfoBox = ({ post, title, openHandler, open }: any) => {
           />
         </S.PriceImg>
         <S.PriceInfo>
-          {post?.contents.includes(`\n`) ? (
-            post?.contents.split("\n").map((line: any, idx: any) => {
+          {/* contents가 null/undefined여도 크래시 없도록 존재 가드 후 줄바꿈 분리 */}
+          {post?.contents && post.contents.includes(`\n`) ? (
+            post.contents.split("\n").map((line: any, idx: any) => {
               //this.props.data.content: 내용
               return (
                 <S.InfoLine key={idx}>

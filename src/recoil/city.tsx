@@ -1,9 +1,8 @@
 import { atom } from "recoil";
-import { v1 } from "uuid";
 
-// recoil을 사용할 때 발생하는 고질적 문제 v1 해결
+// 고정 key 사용 (uuid 기반 key는 리렌더/HMR 시 atom 중복 등록 문제 발생)
 export const cityState = atom({
-  key: `cityState/${v1()}`,
+  key: "cityState",
   default:
     typeof window !== "undefined" ? window.localStorage.getItem("city") : null,
 });

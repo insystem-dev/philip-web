@@ -35,8 +35,9 @@ export const StoreSearch = ({
       <S.AdminSearchBox>
         <S.AdminsearchItemBox>
           <S.AdminSearchTit>카테고리</S.AdminSearchTit>
+          {/* 스타일 분기에 존재하는 값("column")으로 오타 수정 */}
           <InputSelect
-            layout="columns"
+            layout="column"
             size="sm"
             width="110px"
             themeType="admin"

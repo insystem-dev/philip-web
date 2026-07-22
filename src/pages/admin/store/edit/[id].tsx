@@ -25,7 +25,9 @@ const AdminPost = () => {
   const queryFn = () => getOnePostInfoApi(router.query.id);
   const { data: detailItem, isError } = useQuery(
     ["detailItem", router.query.id],
-    queryFn
+    queryFn,
+    // 라우터 준비 후에만 조회 (/posts/undefined 요청 방지)
+    { enabled: router.isReady }
   );
 
   const [cityOptions, setCityOptions] = useState<[]>();
@@ -48,8 +50,8 @@ const AdminPost = () => {
     onSuccess() {
       reset();
       setImagePaths([]);
-      // 스토어 목록 갱신
-      queryClient.invalidateQueries(["getStoreListApi"]);
+      // 스토어 목록 갱신 (실제 목록 쿼리키와 일치시킴)
+      queryClient.invalidateQueries(["getAdminStorePosts"]);
       router.replace("/admin/store");
     },
   });
@@ -57,8 +59,8 @@ const AdminPost = () => {
   /** 업체 삭제 api */
   const deleteMutation = useMutation("deletePostAPI", deletePostAPI, {
     onSuccess: () => {
-      // 스토어 목록 갱신
-      queryClient.invalidateQueries(["getStoreListApi"]);
+      // 스토어 목록 갱신 (실제 목록 쿼리키와 일치시킴)
+      queryClient.invalidateQueries(["getAdminStorePosts"]);
       // 삭제 완료 후 navigation (기존: mutation 전 navigation 실행되어 버그 발생)
       router.back();
     },
@@ -125,6 +127,10 @@ const AdminPost = () => {
         setNewMenuImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
       }
+    }).catch((err) => {
+      // 이미지 업로드 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 
@@ -135,6 +141,10 @@ const AdminPost = () => {
       setThumbImages((imges) => {
         return imges.filter((img: any) => img.oid !== v.oid);
       });
+    }).catch((err) => {
+      // 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   }, []);
 
@@ -145,6 +155,10 @@ const AdminPost = () => {
       setDetailImages((imges) => {
         return imges.filter((img: any) => img.oid !== v.oid);
       });
+    }).catch((err) => {
+      // 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   }, []);
 
@@ -155,6 +169,10 @@ const AdminPost = () => {
       setMenuImages((imges) => {
         return imges.filter((img: any) => img.oid !== v.oid);
       });
+    }).catch((err) => {
+      // 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   }, []);
 
@@ -175,17 +193,23 @@ const AdminPost = () => {
           return imges.filter((img: any) => img.filename !== v.filename);
         });
       }
+    }).catch((err) => {
+      // preview 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   }, []);
 
   useEffect(() => {
     setCategoryOptions(categoryItem);
     setCityOptions(cityItem);
-    reset(detailItem);
-
-    setThumbImages(detailItem?.thumb);
-    setDetailImages(detailItem?.detail);
-    setMenuImages(detailItem?.menu);
+    // 상세 데이터가 로드된 경우에만 폼 초기화 (undefined로 reset 방지)
+    if (detailItem) {
+      reset(detailItem);
+      setThumbImages(detailItem.thumb);
+      setDetailImages(detailItem.detail);
+      setMenuImages(detailItem.menu);
+    }
   }, [categoryItem, cityItem, detailItem]);
 
   return (

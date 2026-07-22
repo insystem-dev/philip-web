@@ -1,6 +1,4 @@
 import { Banner } from "@/components/atoms/Banner";
-import { useEffect } from "react";
-import { useQuery } from "react-query";
 import * as S from "./bannerSection.style";
 
 interface BannerSectionProp {

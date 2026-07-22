@@ -4,7 +4,6 @@ import { InputText } from "@/components/atoms/Input/InputText";
 import { InputDate } from "@/components/atoms/Input/InputDate";
 import useWindowWidth from "@/lib/hooks/useWindowWidth";
 import { AdminSignupPageProps } from "@/components/templates/AdminSignupPage";
-import { error } from "console";
 
 export const AdminSignupBox = ({
   handleSubmit,

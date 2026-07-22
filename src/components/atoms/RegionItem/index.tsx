@@ -11,13 +11,14 @@ export const RegionItem = ({ data }: any) => {
   const [city, setCityState] = useRecoilState(cityState);
 
   const goMain = (e: any) => {
+    // 비활성 지역 클릭 시 상태 변경 없이 종료 (disabled 체크를 상태 변경 앞으로 이동)
+    if (e.disabled !== false) return;
+
     setCityState(e.oid);
     localStorage.setItem("city", e.oid);
-    if (e.disabled === false) {
-      isWindowWidth < 769
-        ? router.push("/select/category")
-        : router.push("/main");
-    }
+    isWindowWidth < 769
+      ? router.push("/select/category")
+      : router.push("/main");
   };
 
   return (

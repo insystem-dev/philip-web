@@ -16,8 +16,15 @@ export const Post = () => {
     queryFn,
     {
       retry: 1,
+      // 라우터 준비 후에만 조회 (/posts/undefined 요청 방지)
+      enabled: router.isReady,
       onError(err: any) {
-        if (err.response.status === 401) {
+        // 응답이 없는 네트워크 에러 방어
+        if (!err.response) {
+          alert("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          return;
+        }
+        if (err.response?.status === 401) {
           localStorage.removeItem("kakaoSignKey");
           router.replace("/main");
           alert("로그인 회원만 사용 가능합니다.");

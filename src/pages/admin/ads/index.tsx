@@ -51,6 +51,10 @@ const AdminAds = () => {
       // taeget.id 따라 label 구분해서 서버로 전송
       result.map((data: any) => (data.label = e.target.id));
       setImgPreview((prev: any) => prev.concat(result));
+    }).catch((err) => {
+      // 이미지 업로드 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 
@@ -97,6 +101,10 @@ const AdminAds = () => {
       setImgPreview((prev: any[]) =>
         prev.filter((item: any) => item.filename !== isAds.filename)
       );
+    }).catch((err) => {
+      // 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 

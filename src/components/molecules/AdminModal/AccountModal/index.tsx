@@ -38,15 +38,19 @@ export const AccountModal = ({ onClose, account }: any) => {
         </S.ModalItemBox>
         <S.ModalItemBox>
           <S.ItemTitBox>권한등급</S.ItemTitBox>
+          {/* option value가 undefined가 되지 않도록 oid 추가 (전달값은 기존과 동일) */}
           <InputSelect
             options={[
               {
+                oid: "SUPER",
                 name: "SUPER",
               },
               {
+                oid: "ADMIN",
                 name: "ADMIN",
               },
               {
+                oid: "SUB",
                 name: "SUB",
               },
             ]}
@@ -68,8 +72,9 @@ export const AccountModal = ({ onClose, account }: any) => {
             label="닫기"
             onClick={onClose}
           />
+          {/* form submit으로 인한 페이지 리로드 방지 */}
           <Button
-            type="submit"
+            type="button"
             layout="solid"
             width="60px"
             height={36}

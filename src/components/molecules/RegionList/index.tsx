@@ -1,6 +1,5 @@
 import { getCityListApi } from "@/apis/categoryApi";
 import RegionItem from "@/components/atoms/RegionItem";
-import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import * as S from "./regionList.style";
 

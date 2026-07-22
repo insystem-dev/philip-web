@@ -115,9 +115,10 @@ export const StoreGrid = ({
             width={60}
             alignment="center"
             cellRender={(data) => (
+              // 스타일 분기에 존재하는 값("column")으로 오타 수정
               <InputSelect
                 options={orderOptions}
-                layout="colums"
+                layout="column"
                 size="sm"
                 width="50px"
                 themeType="admin"

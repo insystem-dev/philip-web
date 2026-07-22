@@ -1,7 +1,6 @@
 import { Button } from "@/components/atoms/Button";
 import * as S from "./adminHeader.style";
 import IconUser from "public/assets/svg/icon-user.svg";
-import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { AdminUserPopup } from "@/components/molecules/AdminUserPopup";
 

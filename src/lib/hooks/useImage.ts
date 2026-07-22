@@ -10,6 +10,10 @@ const useImage = (initValue: any) => {
       setValue((imges: any) => {
         return imges.filter((img: any) => img.filename !== v.filename);
       });
+    }).catch((err: any) => {
+      // preview 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   }, []);
 

@@ -36,7 +36,6 @@ export function changeAdminRoleAPI(data: Object) {
 }
 
 export function checkDuplicateId(data: Object) {
-  console.log(data);
   return axiosInstance
     .post("/admin/check", data)
     .then((response) => response.data);

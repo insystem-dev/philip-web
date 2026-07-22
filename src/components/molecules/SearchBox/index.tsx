@@ -3,7 +3,6 @@ import { InputText } from "@/components/atoms/Input/InputText";
 import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
-import Data from "@/data/dummy";
 import * as S from "./searchBox.style";
 import React, { useEffect, useState } from "react";
 
@@ -30,7 +29,8 @@ export const SearchBox = ({
 
   return (
     <S.SearchBox>
-      <S.SearchForm id="searchForm">
+      {/* 검색은 onChange로 동작하므로 submit 시 페이지 리로드만 방지 */}
+      <S.SearchForm id="searchForm" onSubmit={(e: any) => e.preventDefault()}>
         {isWindowWidth < 769 && (
           <S.SearchMobileInput>
             <InputSelect
@@ -70,7 +70,7 @@ export const SearchBox = ({
       </S.SearchForm>
       {isWindowWidth >= 769 && (
         <Button
-          type="submit"
+          type="button"
           form="searchForm"
           width="100%"
           height={40}

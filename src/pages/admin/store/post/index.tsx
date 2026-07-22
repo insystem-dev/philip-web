@@ -98,6 +98,10 @@ const AdminPost = () => {
         setNewMenuImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
       }
+    }).catch((err) => {
+      // 이미지 업로드 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 
@@ -122,9 +126,10 @@ const AdminPost = () => {
     });
   }, []);
 
+  // 옵션 데이터가 로드된 경우에만 설정 (undefined 세팅 방지)
   useEffect(() => {
-    setCategoryOptions(categoryItem);
-    setCityOptions(cityItem);
+    if (categoryItem) setCategoryOptions(categoryItem);
+    if (cityItem) setCityOptions(cityItem);
   }, [categoryItem, cityItem]);
 
   return (
