@@ -8,6 +8,7 @@
  * - 로컬 상태: options, count, postList 등
  */
 import MainPage from "@/components/templates/MainPage";
+import Head from "next/head";
 import { userTokenState } from "@/recoil/userToken";
 import { useEffect, useState, useCallback } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -138,27 +139,41 @@ const Main = () => {
   // Render
   // ─────────────────────────────────────────────────────────────
   return (
-    <MainPage
-      // 프로모션 데이터
-      postItem={postItem ?? []}
-      // 전체 게시글 데이터 (PostListBox용)
-      postListData={postListData ?? []}
-      isPostLoading={isPostLoading}
-      // 광고 데이터
-      adsData={adsData || []}
-      // 방문자 수
-      count={count}
-      // 도시 관련
-      cityOptions={cityOptions}
-      getCityOption={getCityOption}
-      city={city}
-      // 카테고리 관련
-      categoryOptions={categoryOptions}
-      getCategoryOption={getCategoryOption}
-      category={category}
-      // 검색 관련
-      getValue={getValue}
-    />
+    <>
+      <Head>
+        <title>필립69 PHILIP69 | 필리핀 업체 검색</title>
+        <meta
+          name="description"
+          content="필립, 필립69, PHILIP, PHILIP69에서 필리핀 지역과 카테고리별 업체를 검색해 보세요."
+        />
+        <meta
+          name="keywords"
+          content="필립, 필립69, philip, philip69"
+        />
+        <link rel="canonical" href="https://philip69.com/main" />
+      </Head>
+      <MainPage
+        // 프로모션 데이터
+        postItem={postItem ?? []}
+        // 전체 게시글 데이터 (PostListBox용)
+        postListData={postListData ?? []}
+        isPostLoading={isPostLoading}
+        // 광고 데이터
+        adsData={adsData || []}
+        // 방문자 수
+        count={count}
+        // 도시 관련
+        cityOptions={cityOptions}
+        getCityOption={getCityOption}
+        city={city}
+        // 카테고리 관련
+        categoryOptions={categoryOptions}
+        getCategoryOption={getCategoryOption}
+        category={category}
+        // 검색 관련
+        getValue={getValue}
+      />
+    </>
   );
 };
 
