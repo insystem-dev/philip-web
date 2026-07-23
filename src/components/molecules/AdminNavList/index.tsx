@@ -20,6 +20,11 @@ export const AdminNavList = () => {
     },
     {
       id: 4,
+      name: "방문자 수 관리",
+      path: "/admin/visit",
+    },
+    {
+      id: 5,
       name: "관리자 설정",
       path: "/admin/account",
     },
