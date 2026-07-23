@@ -29,34 +29,6 @@ export function todayVisitAPI() {
   return axiosInstance.get("/admin/visit").then((response) => response.data);
 }
 
-export type VisitDisplayMode = "actual" | "manual";
-
-export interface VisitDisplaySetting {
-  visitDate: string;
-  actualCount: number;
-  displayMode: VisitDisplayMode;
-  manualCount: number | null;
-  displayCount: number;
-  updatedAt: string | null;
-}
-
-/** 오늘 방문자 수의 실제 집계값과 노출 설정 조회 */
-export function getVisitDisplaySetting() {
-  return axiosInstance
-    .get<VisitDisplaySetting>("/admin/visit-setting")
-    .then((response) => response.data);
-}
-
-/** 오늘 방문자 수 노출 설정 저장 */
-export function updateVisitDisplaySetting(data: {
-  mode: VisitDisplayMode;
-  count?: number;
-}) {
-  return axiosInstance
-    .put<VisitDisplaySetting>("/admin/visit-setting", data)
-    .then((response) => response.data);
-}
-
 export function changeAdminRoleAPI(data: Object) {
   return axiosInstance
     .put("/admin/role", data)
