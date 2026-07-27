@@ -42,6 +42,28 @@ export const PostItem = styled.li`
   }
 `;
 
+// 썸네일이 없을 때 보여주는 디폴트 이미지 (다크 배경 + 필립 로고)
+export const PostItemNoImage = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: ${(props) => props.theme.colors.dark};
+
+  &::after {
+    position: absolute;
+    content: "";
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: url("/assets/images/img-logo-01.png") no-repeat center / 40%
+      auto;
+    opacity: 0.35;
+  }
+`;
+
 export const PostItemSpan = styled.span`
   position: absolute;
   display: flex;

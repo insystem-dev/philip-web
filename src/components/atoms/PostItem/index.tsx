@@ -34,12 +34,16 @@ export const PostItem = ({ item }: any) => {
         goDetail(item), countViews();
       }}
     >
-      <Image
-        src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
-        layout="fill"
-        sizes="(max-width: 768px) 33vw, 220px"
-        alt="업체 이미지"
-      />
+      {item.thumb ? (
+        <Image
+          src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
+          layout="fill"
+          sizes="(max-width: 768px) 33vw, 220px"
+          alt="업체 이미지"
+        />
+      ) : (
+        <S.PostItemNoImage aria-label="등록된 이미지 없음" />
+      )}
       <S.PostItemSpan>
         <span>{item.category}</span>
         {item.store_name}
