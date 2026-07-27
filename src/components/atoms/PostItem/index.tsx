@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import * as S from "./postItem.style";
 import { useMutation } from "react-query";
 import { fetchCountViews } from "@/apis/postsApi";
@@ -52,17 +53,21 @@ export const PostItem = ({ item }: any) => {
         <span>{item.category}</span>
         {item.store_name}
       </S.PostItemSpan>
-      {showLoginModal && (
-        // 모달 클릭이 li의 onClick(goDetail)으로 버블링되지 않도록 차단
-        <div onClick={(e) => e.stopPropagation()}>
-          <AlertModal
-            title="로그인이 필요합니다"
-            message={"로그인이 필요한 서비스 입니다.\n카카오 로그인 후 이용해주세요."}
-            confirmLabel="카카오 로그인하기"
-            onConfirm={() => router.push("/auth/login")}
-          />
-        </div>
-      )}
+      {/* li(position: relative + z-index)의 쌓임 맥락에 갇히면 다른 카드 뒤로
+          모달이 숨으므로 portal로 body에 직접 렌더링해 최상위에 띄운다 */}
+      {showLoginModal &&
+        createPortal(
+          // portal이어도 React 이벤트는 li의 onClick으로 버블링되므로 차단 유지
+          <div onClick={(e) => e.stopPropagation()}>
+            <AlertModal
+              title="로그인이 필요합니다"
+              message={"로그인이 필요한 서비스 입니다.\n카카오 로그인 후 이용해주세요."}
+              confirmLabel="카카오 로그인하기"
+              onConfirm={() => router.push("/auth/login")}
+            />
+          </div>,
+          document.body
+        )}
     </S.PostItem>
   );
 };
