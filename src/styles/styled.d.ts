@@ -21,6 +21,9 @@ declare module "styled-components" {
       kakaoBgHover: string;
       vipBg: string;
       vipBgHover: string;
+      callBg: string;
+      callBgHover: string;
+      callTxt: string;
 
       disabledBtn: string;
 

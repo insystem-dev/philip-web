@@ -1,17 +1,4 @@
 import styled, { css } from "styled-components";
-import ImgWeb01 from "public/assets/images/image-region-web-01.png";
-import ImgWeb02 from "public/assets/images/image-region-web-02.png";
-import ImgWeb03 from "public/assets/images/image-region-web-03.png";
-import ImgWeb01Disabled from "public/assets/images/image-region-web-disabled01.png";
-import ImgWeb02Disabled from "public/assets/images/image-region-web-disabled02.png";
-import ImgWeb03Disabled from "public/assets/images/image-region-web-disabled03.png";
-import ImgMob01 from "public/assets/images/image-region-mob-01.png";
-import ImgMob02 from "public/assets/images/image-region-mob-02.png";
-import ImgMob03 from "public/assets/images/image-region-mob-03.png";
-import ImgMob01Disabled from "public/assets/images/image-region-mob-disabled01.png";
-import ImgMob02Disabled from "public/assets/images/image-region-mob-disabled02.png";
-import ImgMob03Disabled from "public/assets/images/image-region-mob-disabled03.png";
-
 interface ItemProps {
   item: string;
   disabled: boolean;
@@ -32,32 +19,32 @@ export const RegionItem = styled.li<ItemProps>`
 
   ${(props) =>
     props.disabled === false &&
-    (props.item === "8d0fe970-c153-11ed-8fb3-59762efda8c3"
+    (props.item === "CITY-MNL"
       ? css`
-          background: url(${ImgWeb01?.src});
+          background-image: url("/assets/images/image-region-web-01.png");
         `
-      : props.item === "8733aaf0-c153-11ed-8fb3-59762efda8c3"
+      : props.item === "CITY-ANGELES"
       ? css`
-          background: url(${ImgWeb02?.src});
+          background-image: url("/assets/images/image-region-web-02.png");
         `
-      : props.item === "8f487450-c153-11ed-8fb3-59762efda8c3" &&
+      : props.item === "CITY-CEBU" &&
         css`
-          background: url(${ImgWeb03?.src});
+          background-image: url("/assets/images/image-region-web-03.png");
         `)}
 
   ${(props) =>
     props.disabled === true &&
-    (props.item === "8d0fe970-c153-11ed-8fb3-59762efda8c3"
+    (props.item === "CITY-MNL"
       ? css`
-          background: url(${ImgWeb01Disabled?.src});
+          background-image: url("/assets/images/image-region-web-disabled01.png");
         `
-      : props.item === "8733aaf0-c153-11ed-8fb3-59762efda8c3"
+      : props.item === "CITY-ANGELES"
       ? css`
-          background: url(${ImgWeb02Disabled?.src});
+          background-image: url("/assets/images/image-region-web-disabled02.png");
         `
-      : props.item === "8f487450-c153-11ed-8fb3-59762efda8c3" &&
+      : props.item === "CITY-CEBU" &&
         css`
-          background: url(${ImgWeb03Disabled?.src});
+          background-image: url("/assets/images/image-region-web-disabled03.png");
         `)}
 
   ${(props) =>
@@ -79,9 +66,9 @@ export const RegionItem = styled.li<ItemProps>`
     z-index: 1;
 
     ${(props) =>
-      props.disabled === true
+        props.disabled === true
         ? css`
-            background: ${(props) => props.theme.colors.black}b2;
+            background: ${(props) => props.theme.colors.black}66;
           `
         : css`
             background: ${(props) => props.theme.gradient.dark};
@@ -115,39 +102,39 @@ export const RegionItem = styled.li<ItemProps>`
 
     ${(props) =>
       props.disabled === false &&
-      (props.item === "8d0fe970-c153-11ed-8fb3-59762efda8c3"
+      (props.item === "CITY-MNL"
         ? css`
-            background: url(${ImgMob01?.src});
+            background-image: url("/assets/images/image-region-mob-01.png");
           `
-        : props.item === "8733aaf0-c153-11ed-8fb3-59762efda8c3"
+        : props.item === "CITY-ANGELES"
         ? css`
-            background: url(${ImgMob02?.src});
+            background-image: url("/assets/images/image-region-mob-02.png");
           `
-        : props.item === "8f487450-c153-11ed-8fb3-59762efda8c3" &&
+        : props.item === "CITY-CEBU" &&
           css`
-            background: url(${ImgMob03?.src});
+            background-image: url("/assets/images/image-region-mob-03.png");
           `)}
 
     ${(props) =>
       props.disabled === true &&
-      (props.item === "8d0fe970-c153-11ed-8fb3-59762efda8c3"
+      (props.item === "CITY-MNL"
         ? css`
-            background: url(${ImgMob01Disabled?.src});
+            background-image: url("/assets/images/image-region-mob-disabled01.png");
           `
-        : props.item === "8733aaf0-c153-11ed-8fb3-59762efda8c3"
+        : props.item === "CITY-ANGELES"
         ? css`
-            background: url(${ImgMob02Disabled?.src});
+            background-image: url("/assets/images/image-region-mob-disabled02.png");
           `
-        : props.item === "8f487450-c153-11ed-8fb3-59762efda8c3" &&
+        : props.item === "CITY-CEBU" &&
           css`
-            background: url(${ImgMob03Disabled?.src});
+            background-image: url("/assets/images/image-region-mob-disabled03.png");
           `)}
 
     &::before {
       ${(props) =>
         props.disabled === true
           ? css`
-              background: ${(props) => props.theme.colors.black}b2;
+              background: ${(props) => props.theme.colors.black}66;
             `
           : css`
               background: ${(props) => props.theme.colors.black}66;

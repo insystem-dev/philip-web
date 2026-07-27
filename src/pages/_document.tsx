@@ -40,10 +40,7 @@ export default class MyDocument extends Document {
             name="description"
             content="필리핀 익사이팅의 모든 것, PHILIP"
           />
-          <meta
-            name="veiwport"
-            content="width=device-width, initial-scale=1.0"
-          />
+          {/* viewport 메타는 _app.tsx <Head>에서 관리 (오타 veiwport 메타 제거) */}
           <link rel="shortcut icon" href="/favicon.ico" />
           <link
             rel="apple-touch-icon"

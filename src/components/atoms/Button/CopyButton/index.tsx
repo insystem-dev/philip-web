@@ -16,11 +16,11 @@ export const CopyButton: React.FC<CopyProps> = ({ label, text }) => {
         navigator.clipboard
           .writeText(e)
           .then(() => {
-            setCopyMessage("Copyed!!");
-            const tick = setTimeout(() => {
+            setCopyMessage("Copied!!");
+            // 1.5초 후 버튼 문구를 원래대로 복원
+            setTimeout(() => {
               setCopyMessage(label);
             }, 1500);
-            return () => clearTimeout(tick);
           })
           .catch(() => {
             alert("복사를 다시 시도해주세요.");
@@ -39,16 +39,18 @@ export const CopyButton: React.FC<CopyProps> = ({ label, text }) => {
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
+        // 선택된 텍스트를 실제로 클립보드에 복사
+        document.execCommand("copy");
         document.body.removeChild(textarea);
 
-        setCopyMessage("Copyed!!");
-        const tick = setTimeout(() => {
+        setCopyMessage("Copied!!");
+        // 1.5초 후 버튼 문구를 원래대로 복원
+        setTimeout(() => {
           setCopyMessage(label);
         }, 1500);
-        return () => clearTimeout(tick);
       }
     },
-    [text]
+    [label]
   );
 
   return (

@@ -1,7 +1,11 @@
 import { AdminNavItem } from "@/components/atoms/AdminNavItem";
+import { useRecoilValue } from "recoil";
+import { adminState } from "@/recoil/adminToken";
 import * as S from "./adminNavList.style";
 
 export const AdminNavList = () => {
+  const admin = useRecoilValue(adminState) as { role?: string } | null;
+
   const menus = [
     {
       id: 1,
@@ -12,6 +16,11 @@ export const AdminNavList = () => {
       id: 2,
       name: "광고관리",
       path: "/admin/ads",
+    },
+    {
+      id: 6,
+      name: "공통코드 관리",
+      path: "/admin/code",
     },
     {
       id: 3,
@@ -29,6 +38,15 @@ export const AdminNavList = () => {
       path: "/admin/account",
     },
   ];
+
+  // SUPER 관리자 전용 메뉴
+  if (admin?.role === "SUPER") {
+    menus.push({
+      id: 7,
+      name: "환경설정",
+      path: "/admin/settings",
+    });
+  }
 
   return (
     <S.AdminNavList>

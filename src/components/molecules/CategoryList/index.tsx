@@ -1,4 +1,3 @@
-import Data from "@/data/dummy";
 import { CategoryItem } from "@/components/atoms/CategoryItem";
 import * as S from "./categoryList.style";
 import { useQuery } from "react-query";

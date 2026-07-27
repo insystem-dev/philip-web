@@ -97,8 +97,9 @@ export const AmdinAdsBox = ({
             label="저장"
             onClick={(e: Event) => onSubmit(e)}
           />
+          {/* 전체삭제는 form submit이 아니므로 button 타입으로 리로드 방지 */}
           <Button
-            type="submit"
+            type="button"
             color="func"
             layout="solid"
             width="90px"

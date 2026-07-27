@@ -4,7 +4,7 @@ export const PostFormBox = styled.form`
   overflow: auto;
   display: grid;
   height: 100%;
-  grid-template-rows: 1fr 40px;
+  grid-template-rows: 1fr auto;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 `;
@@ -27,7 +27,13 @@ export const PostFormInfoBox = styled.div`
 `;
 
 export const PostFormBtnBox = styled.div`
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   grid-column: 1/3;
+  padding: 14px 0;
+  background: ${(props) => props.theme.colors.white};
+  border-top: 1px solid ${(props) => props.theme.colors.adminInputBorder};
 `;
 
 export const PostFormBoxTit = styled.div`

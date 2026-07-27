@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useMutation } from "react-query";
 import { useRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
+import { KakaoLoginPage } from "@/components/templates/KakaoLoginPage";
 
 const Kakao = () => {
   const router = useRouter();
@@ -15,9 +16,9 @@ const Kakao = () => {
 
   const mutation = useMutation("kakaoLoginAPI", kakaoLoginAPI, {
     onSuccess: (data) => {
-      console.log("카카오 로그인 성공:", data);
       localStorage.setItem("kakaoSignKey", data.accessToken);
-      setUserToken(data);
+      // recoil 상태도 localStorage와 동일하게 토큰 문자열로 저장 (새로고침 시 HeadersTokenProvider가 세팅하는 값과 타입 일치)
+      setUserToken(data.accessToken);
       document.location.href = "/main";
     },
     onError: (error: any) => {
@@ -29,17 +30,11 @@ const Kakao = () => {
   });
 
   useEffect(() => {
-    // 디버깅 로그
-    console.log("[Kakao] router.isReady:", router.isReady);
-    console.log("[Kakao] authCode:", authCode);
-    console.log("[Kakao] router.query:", router.query);
-
     // router.isReady가 true일 때만 query 파라미터가 준비됨
     if (!router.isReady) return;
 
     // authCode가 있고, 아직 호출하지 않았을 때만 실행
     if (authCode && typeof authCode === "string" && !isCalledRef.current) {
-      console.log("[Kakao] API 호출 시작, authCode:", authCode);
       isCalledRef.current = true;
       mutation.mutate(authCode);
     } else if (kakaoServerError) {
@@ -49,7 +44,7 @@ const Kakao = () => {
     }
   }, [router.isReady, authCode, kakaoServerError]);
 
-  return <h2>로그인 중입니다..</h2>;
+  return <KakaoLoginPage />;
 };
 
 export default Kakao;

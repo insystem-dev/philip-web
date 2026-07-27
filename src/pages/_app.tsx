@@ -1,7 +1,9 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
-import Script from "next/dist/client/script";
+// 내부 경로가 아닌 공식 진입점에서 Script import
+import Script from "next/script";
+import { useState } from "react";
 import { RecoilRoot, useRecoilState } from "recoil";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ThemeProvider } from "styled-components";
@@ -29,17 +31,21 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isWindowWidth = useWindowWidth();
 
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        refetchOnMount: true,
-        refetchOnWindowFocus: true,
-        staleTime: 1000 * 10,
-        cacheTime: Infinity,
-      },
-    },
-  });
+  // QueryClient를 최초 렌더 시 1회만 생성 (매 렌더마다 캐시가 초기화되는 문제 방지)
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            refetchOnMount: true,
+            refetchOnWindowFocus: true,
+            staleTime: 1000 * 10,
+            cacheTime: Infinity,
+          },
+        },
+      })
+  );
 
   function kakaoInit() {
     // 페이지가 로드되면 실행
@@ -50,16 +56,19 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <title>PHILIP</title>
+        {/* 모바일 대응 viewport 설정 (Next.js 권장 위치) */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <GlobalStyle />
       <RecoilRoot>
-        <HeadersTokenProvider>
-          <QueryClientProvider client={queryClient}>
-            <Script
-              src="https://developers.kakao.com/sdk/js/kakao.js"
-              onLoad={kakaoInit}
-            />
-            <ThemeProvider theme={theme}>
+        <QueryClientProvider client={queryClient}>
+          <Script
+            src="https://developers.kakao.com/sdk/js/kakao.js"
+            onLoad={kakaoInit}
+          />
+          {/* HeadersTokenProvider가 만료 시 렌더하는 AlertModal도 테마를 쓸 수 있도록 ThemeProvider 안쪽에 위치 */}
+          <ThemeProvider theme={theme}>
+            <HeadersTokenProvider>
               {router.pathname.includes("main") ||
               router.pathname.includes("auth") ? (
                 <>
@@ -79,10 +88,10 @@ export default function App({ Component, pageProps }: AppProps) {
                   <Component {...pageProps} />
                 </>
               )}
-            </ThemeProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </QueryClientProvider>
-        </HeadersTokenProvider>
+            </HeadersTokenProvider>
+          </ThemeProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
       </RecoilRoot>
     </>
   );

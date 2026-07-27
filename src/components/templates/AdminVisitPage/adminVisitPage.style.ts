@@ -157,6 +157,17 @@ export const CountInput = styled.div`
   }
 `;
 
+export const PreviewText = styled.p`
+  margin-top: 8px;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.2rem;
+
+  strong {
+    color: ${(props) => props.theme.colors.primary};
+    font-weight: 700;
+  }
+`;
+
 export const ValidationMessage = styled.p`
   margin-top: 8px;
   color: ${(props) => props.theme.colors.red};

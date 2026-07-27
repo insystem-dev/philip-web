@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
 import * as S from "./postItem.style";
-import Images from "@/data/dummy";
 import { useMutation } from "react-query";
 import { fetchCountViews } from "@/apis/postsApi";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -24,9 +23,9 @@ export const PostItem = ({ item }: any) => {
     // router.push(`/main/post/${item.oid}`);
   };
 
-  /** 게시물 클릭시 handler */
+  /** 게시물 클릭시 handler (로그인 상태일 때만 조회수 증가) */
   const countViews = () => {
-    mutation.mutate(item.oid);
+    if (userToken || admin) mutation.mutate(item.oid);
   };
 
   return (
@@ -38,6 +37,7 @@ export const PostItem = ({ item }: any) => {
       <Image
         src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
         layout="fill"
+        sizes="(max-width: 768px) 33vw, 220px"
         alt="업체 이미지"
       />
       <S.PostItemSpan>

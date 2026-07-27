@@ -14,7 +14,8 @@ export const StoreInfoBox = ({ post }: any) => {
           <S.StoreNameBox>
             {/* 스토어 네임 */}
             {post?.storeName}
-            <S.CategorySpan>{post?.category.name}</S.CategorySpan>
+            {/* 카테고리가 없을 수도 있어 옵셔널 체이닝으로 접근 */}
+            <S.CategorySpan>{post?.category?.subNm}</S.CategorySpan>
           </S.StoreNameBox>
           <S.StoreViewBox>
             <IconView width={16} height={16} viewBox="0 0 24 24" />

@@ -63,8 +63,10 @@ const AdminStore = () => {
         setError("");
       },
       onError(error: any) {
-        const { response } = error;
-        setError(response.data.message);
+        // 응답이 없는 에러(네트워크 등)에도 안전하게 메시지 처리
+        setError(
+          error?.response?.data?.message ?? "오류가 발생했습니다."
+        );
       },
     }
   );

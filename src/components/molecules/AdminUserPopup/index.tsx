@@ -1,5 +1,4 @@
 import { UserPopupItem } from "@/components/atoms/UserPopupItem";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 import * as S from "./adminUserBox.style";
 

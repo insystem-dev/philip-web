@@ -57,6 +57,24 @@ export function updateVisitDisplaySetting(data: {
     .then((response) => response.data);
 }
 
+export interface MaintenanceState {
+  enabled: boolean;
+}
+
+/** 점검 모드 상태 조회 (관리자 공통) */
+export function getMaintenanceApi() {
+  return axiosInstance
+    .get<MaintenanceState>("/admin/maintenance")
+    .then((response) => response.data);
+}
+
+/** 점검 모드 on/off (SUPER 전용) */
+export function updateMaintenanceApi(enabled: boolean) {
+  return axiosInstance
+    .put<MaintenanceState>("/admin/maintenance", { enabled })
+    .then((response) => response.data);
+}
+
 export function changeAdminRoleAPI(data: Object) {
   return axiosInstance
     .put("/admin/role", data)
@@ -64,7 +82,6 @@ export function changeAdminRoleAPI(data: Object) {
 }
 
 export function checkDuplicateId(data: Object) {
-  console.log(data);
   return axiosInstance
     .post("/admin/check", data)
     .then((response) => response.data);

@@ -5,14 +5,19 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { getCategoryNavApi, getCityListApi } from "@/apis/categoryApi";
+import {
+  Category,
+  CitySub,
+  getCategoryNavApi,
+  getCityListApi,
+} from "@/apis/categoryApi";
 
 import { useRouter } from "next/router";
 import useImage from "@/lib/hooks/useImage";
 
 const AdminPost = () => {
-  const [cityOptions, setCityOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
@@ -98,6 +103,10 @@ const AdminPost = () => {
         setNewMenuImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
       }
+    }).catch((err) => {
+      // 이미지 업로드 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 
@@ -122,9 +131,10 @@ const AdminPost = () => {
     });
   }, []);
 
+  // 옵션 데이터가 로드된 경우에만 설정 (undefined 세팅 방지)
   useEffect(() => {
-    setCategoryOptions(categoryItem);
-    setCityOptions(cityItem);
+    if (categoryItem) setCategoryOptions(categoryItem);
+    if (cityItem) setCityOptions(cityItem);
   }, [categoryItem, cityItem]);
 
   return (

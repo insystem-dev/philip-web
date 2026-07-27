@@ -10,7 +10,9 @@ export const IntroPage = () => {
   const isWindowWidth = useWindowWidth();
 
   useEffect(() => {
-    setTimeout(() => setFadeItem("fade-element delayed"), 2500);
+    const tick = setTimeout(() => setFadeItem("fade-element delayed"), 2500);
+    // 언마운트 시 타이머 정리
+    return () => clearTimeout(tick);
   }, []);
 
   return (

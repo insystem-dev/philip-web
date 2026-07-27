@@ -16,6 +16,8 @@ const AdminAds = () => {
   const { handleError } = useApiError();
   // 빈 배열로 초기화 (기존 { totem: "" } 객체가 저장 시 문제 발생)
   const [imgPreview, setImgPreview] = useState<any[]>([]);
+  // 업로드 진행 중인 배너 label 목록 (미리보기 로딩 인디케이터용)
+  const [uploadingLabels, setUploadingLabels] = useState<string[]>([]);
   // 쿼리키를 배열 형식으로 통일 (invalidateQueries와 일치)
   const { data: adsData } = useQuery(["getAdsData"], getAdsData, {
     retry: 1,
@@ -43,14 +45,22 @@ const AdminAds = () => {
   /** 이미지 id값에 따라 label 저장 */
   const onChangeImages = (e: any) => {
     e.preventDefault();
+    const label = e.target.id;
     const imageFormData = new FormData();
     [].forEach.call(e.target.files, (f: any) => {
       imageFormData.append("files", f);
     });
+    setUploadingLabels((prev) => prev.concat(label));
     uploadImagesAPI(imageFormData).then((result) => {
       // taeget.id 따라 label 구분해서 서버로 전송
-      result.map((data: any) => (data.label = e.target.id));
+      result.map((data: any) => (data.label = label));
       setImgPreview((prev: any) => prev.concat(result));
+    }).catch((err) => {
+      // 이미지 업로드 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
+    }).finally(() => {
+      setUploadingLabels((prev) => prev.filter((l) => l !== label));
     });
   };
 
@@ -97,6 +107,10 @@ const AdminAds = () => {
       setImgPreview((prev: any[]) =>
         prev.filter((item: any) => item.filename !== isAds.filename)
       );
+    }).catch((err) => {
+      // 이미지 삭제 실패 처리
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
     });
   };
 
@@ -104,6 +118,7 @@ const AdminAds = () => {
     <AdminAdsPage
       imgPreview={imgPreview}
       setImgPreview={setImgPreview}
+      uploadingLabels={uploadingLabels}
       adsData={adsData}
       onChangeImages={onChangeImages}
       onDeleteOne={onDeleteOne}

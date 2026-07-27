@@ -30,11 +30,7 @@ export const AdminVisitPage = () => {
   useEffect(() => {
     if (!data) return;
     setMode(data.displayMode);
-    setManualCount(
-      data.manualCount === null
-        ? String(data.actualCount)
-        : String(data.manualCount)
-    );
+    setManualCount(data.manualCount === null ? "0" : String(data.manualCount));
   }, [data]);
 
   const mutation = useMutation(updateVisitDisplaySetting, {
@@ -62,7 +58,7 @@ export const AdminVisitPage = () => {
         count > MAX_VISIT_COUNT
       ) {
         setValidationMessage(
-          `방문자 수는 0 이상 ${MAX_VISIT_COUNT.toLocaleString()} 이하의 정수로 입력해주세요.`
+          `추가할 방문자 수는 0 이상 ${MAX_VISIT_COUNT.toLocaleString()} 이하의 정수로 입력해주세요.`
         );
         return;
       }
@@ -79,8 +75,8 @@ export const AdminVisitPage = () => {
         <S.Card>
           <S.CardTitle>오늘의 방문자 수</S.CardTitle>
           <S.Description>
-            실제 집계값을 그대로 노출하거나, 오늘 표시할 방문자 수를 직접 지정할
-            수 있습니다.
+            실제 집계값을 그대로 노출하거나, 실제 집계값에 추가로 더할 방문자
+            수를 지정할 수 있습니다.
           </S.Description>
 
           {isLoading ? (
@@ -128,14 +124,15 @@ export const AdminVisitPage = () => {
                     onChange={() => setMode("manual")}
                   />
                   <span>
-                    <strong>직접 입력</strong>
-                    입력한 값으로 오늘의 방문자 수를 고정합니다.
+                    <strong>실제 집계 + 추가 입력</strong>
+                    실제 방문자 수에 입력한 값을 더해 노출합니다. 실제
+                    방문자가 늘어날수록 노출 수도 함께 늘어납니다.
                   </span>
                 </S.RadioLabel>
               </S.Fieldset>
 
               <S.InputGroup>
-                <label htmlFor="manualCount">노출할 방문자 수</label>
+                <label htmlFor="manualCount">추가할 방문자 수</label>
                 <S.CountInput>
                   <input
                     id="manualCount"
@@ -153,6 +150,21 @@ export const AdminVisitPage = () => {
                   />
                   <span>명</span>
                 </S.CountInput>
+                {mode === "manual" &&
+                  !validationMessage &&
+                  Number.isSafeInteger(Number(manualCount)) && (
+                    <S.PreviewText>
+                      실제 {data.actualCount.toLocaleString()}명 + 입력{" "}
+                      {Number(manualCount).toLocaleString()}명 ={" "}
+                      <strong>
+                        {(
+                          data.actualCount + Number(manualCount)
+                        ).toLocaleString()}
+                        명
+                      </strong>{" "}
+                      노출
+                    </S.PreviewText>
+                  )}
                 {validationMessage && (
                   <S.ValidationMessage>{validationMessage}</S.ValidationMessage>
                 )}

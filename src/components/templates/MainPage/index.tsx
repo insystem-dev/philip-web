@@ -14,7 +14,7 @@ interface MainPageProp {
   /** 광고 데이터 */
   adsData: any[];
   /** 방문자 수 */
-  count: number[];
+  count: number;
   /** 도시 옵션 */
   cityOptions: any[];
   /** 도시 선택 핸들러 */

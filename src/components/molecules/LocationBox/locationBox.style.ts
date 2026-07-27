@@ -44,6 +44,23 @@ export const LocationMap = styled.div`
   grid-area: MAP;
 `;
 
+export const LocationEmpty = styled.div`
+  display: flex;
+  grid-column: 1 / 3;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: ${(props) => props.theme.colors.categorySubTxt};
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+
+  //모바일 화면 설정
+  @media screen and (max-width: 768px) {
+    height: 160px;
+  }
+`;
+
 export const LocationInfo = styled.div`
   grid-area: IF;
   display: flex;

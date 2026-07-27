@@ -5,7 +5,7 @@ export const RegionPage = styled.section`
   display: flex;
   height: calc(100vh - 80px);
   background: url(${ImgSelectBG?.src}) no-repeat;
-  background-size: conver;
+  background-size: cover;
   background-position: bottom;
   flex-direction: column;
   align-items: center;

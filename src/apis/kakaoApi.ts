@@ -1,7 +1,6 @@
 import axiosInstance from "./index";
 
 export function kakaoLoginAPI(code: any) {
-  console.log("kakaoLoginAPI code", code);
   return axiosInstance
     .post("/user/kakao", { authCode: code })
     .then((response) => response.data);

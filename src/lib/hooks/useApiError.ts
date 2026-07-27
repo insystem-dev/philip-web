@@ -4,7 +4,8 @@ import { useCallback } from "react";
 const useApiError = () => {
   const handleError = useCallback((axiosError: AxiosError) => {
     const errorResponse = axiosError.response?.data as any;
-    const status = errorResponse?.statusCode;
+    // HTTP 응답 status 기준으로 판정 (body의 statusCode는 보조로만 사용)
+    const status = axiosError.response?.status ?? errorResponse?.statusCode;
 
     switch (status) {
       // 관리자 인증 에러

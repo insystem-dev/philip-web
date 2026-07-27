@@ -31,7 +31,7 @@ export const InputSelect: React.FC<SelectProps> = ({
 
   useEffect(() => {
     const value = localStorage.getItem("city");
-    setName(value);
+    setName(value ?? "");
   }, [value]);
 
   return (
@@ -43,7 +43,7 @@ export const InputSelect: React.FC<SelectProps> = ({
     >
       <label>
         {label && label}
-        <select {...register} onChange={onChange} value={value || name}>
+        <select {...register} onChange={onChange} value={value || name || ""}>
           {placeholder && <option>{placeholder}</option>}
           {options?.map((option: any, idx: number) => {
             return (

@@ -29,6 +29,9 @@ export const theme: DefaultTheme = {
     kakaoBgHover: "#EBDB00",
     vipBg: "#4637DE",
     vipBgHover: "#3728CB",
+    callBg: "#7CB342",
+    callBgHover: "#689F38",
+    callTxt: "#FFFFFF",
 
     disabledBtn: "#dddddd",
 
