@@ -5,7 +5,7 @@ export const CategoryPage = styled.section`
   display: flex;
   height: calc(100vh - 64px);
   background: url(${ImgSelectBG?.src}) no-repeat;
-  background-size: conver;
+  background-size: cover;
   background-position: bottom;
   flex-direction: column;
   align-items: center;
@@ -23,6 +23,12 @@ export const CategoryPage = styled.section`
 export const CategoryTxtBox = styled.div`
   color: white;
   font-size: 2rem;
+
+  @media screen and (min-width: 769px) {
+    font-size: 2.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {

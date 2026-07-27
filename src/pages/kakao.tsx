@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useMutation } from "react-query";
 import { useRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
+import { KakaoLoginPage } from "@/components/templates/KakaoLoginPage";
 
 const Kakao = () => {
   const router = useRouter();
@@ -16,7 +17,8 @@ const Kakao = () => {
   const mutation = useMutation("kakaoLoginAPI", kakaoLoginAPI, {
     onSuccess: (data) => {
       localStorage.setItem("kakaoSignKey", data.accessToken);
-      setUserToken(data);
+      // recoil 상태도 localStorage와 동일하게 토큰 문자열로 저장 (새로고침 시 HeadersTokenProvider가 세팅하는 값과 타입 일치)
+      setUserToken(data.accessToken);
       document.location.href = "/main";
     },
     onError: (error: any) => {
@@ -42,7 +44,7 @@ const Kakao = () => {
     }
   }, [router.isReady, authCode, kakaoServerError]);
 
-  return <h2>로그인 중입니다..</h2>;
+  return <KakaoLoginPage />;
 };
 
 export default Kakao;

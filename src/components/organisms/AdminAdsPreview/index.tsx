@@ -8,11 +8,13 @@ import * as S from "./adminAdsPreview.style";
 interface AdminAdsPreviewProps {
   imgPreview: any;
   adsData: [];
+  uploadingLabels?: string[];
 }
 
 export const AdminAdsPreview = ({
   imgPreview,
   adsData,
+  uploadingLabels = [],
 }: AdminAdsPreviewProps) => {
   const [todoAds, setAdsList] = useRecoilState(adsState);
 
@@ -41,10 +43,30 @@ export const AdminAdsPreview = ({
     <S.AdminAdsPreview>
       <S.AdminAdsPreviewTit>배너 미리보기</S.AdminAdsPreviewTit>
       <S.AdminAdsPreviewBox>
-        <Banner order="LG" ads={topAds || newTopAds} admin={true} />
-        <Banner order="SM1" ads={btm1 || newBtm1} admin={true} />
-        <Banner order="SM2" ads={btm2 || newBtm2} admin={true} />
-        <Banner order="SM3" ads={btm3 || newBtm3} admin={true} />
+        <Banner
+          order="LG"
+          ads={topAds || newTopAds}
+          admin={true}
+          loading={uploadingLabels.includes("topAds")}
+        />
+        <Banner
+          order="SM1"
+          ads={btm1 || newBtm1}
+          admin={true}
+          loading={uploadingLabels.includes("bottom1")}
+        />
+        <Banner
+          order="SM2"
+          ads={btm2 || newBtm2}
+          admin={true}
+          loading={uploadingLabels.includes("bottom2")}
+        />
+        <Banner
+          order="SM3"
+          ads={btm3 || newBtm3}
+          admin={true}
+          loading={uploadingLabels.includes("bottom3")}
+        />
       </S.AdminAdsPreviewBox>
     </S.AdminAdsPreview>
   );

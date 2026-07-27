@@ -5,14 +5,19 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { getCategoryNavApi, getCityListApi } from "@/apis/categoryApi";
+import {
+  Category,
+  CitySub,
+  getCategoryNavApi,
+  getCityListApi,
+} from "@/apis/categoryApi";
 
 import { useRouter } from "next/router";
 import useImage from "@/lib/hooks/useImage";
 
 const AdminPost = () => {
-  const [cityOptions, setCityOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [imagePaths, setImagePaths] = useState<string[]>([]);

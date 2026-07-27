@@ -35,6 +35,27 @@ export const ImageSelected = styled.div`
   }
 `;
 
+export const ImageEmpty = styled.div`
+  display: flex;
+  overflow: hidden;
+  grid-column: 1 / 3;
+  width: 100%;
+  height: 390px;
+  align-items: center;
+  justify-content: center;
+  color: ${(props) => props.theme.colors.categorySubTxt};
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+
+  //모바일 화면 설정
+  @media screen and (max-width: 768px) {
+    width: 100vw;
+    height: 280px;
+    border-radius: 0;
+  }
+`;
+
 export const ImageSlideList = styled.ul`
   display: flex;
   flex-direction: column;

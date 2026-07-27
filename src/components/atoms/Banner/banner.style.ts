@@ -38,6 +38,9 @@ export const Banner = styled.div<BannerProps>`
       height: ${props.order === "LG" ? "89px" : "58px"} !important;
     `}
 
+  //업로드 중 로딩 오버레이가 배너 영역을 덮도록 함
+  overflow: hidden;
+
   //모바일 화면 설정
   @media screen and (max-width: 768px) {
     ${(props) =>
@@ -52,5 +55,38 @@ export const Banner = styled.div<BannerProps>`
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
+  }
+`;
+
+export const BannerLoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2;
+`;
+
+export const BannerLoader = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border-top: 3px solid rgba(255, 255, 255, 0.5);
+  border-right: 3px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.5);
+  border-left: 3px solid rgba(255, 255, 255, 1);
+  animation: banner-loader 1s cubic-bezier(0.41, 0.25, 0.32, 0.83) infinite;
+
+  @keyframes banner-loader {
+    0% {
+      transform: rotate(0);
+    }
+    100% {
+      transform: rotate(1turn);
+    }
   }
 `;

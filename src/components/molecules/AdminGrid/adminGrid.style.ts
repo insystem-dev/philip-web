@@ -92,3 +92,23 @@ export const AdminCellBox = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+export const NameEngInput = styled.input`
+  width: 100%;
+  max-width: 120px;
+  height: 30px;
+  padding: 0 8px;
+  color: ${(props) => props.theme.colors.dark};
+  font-size: 1.4rem;
+  text-align: center;
+  background: ${(props) => props.theme.colors.white};
+  border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    border-color: ${(props) => props.theme.colors.primary};
+    outline: none;
+  }
+`;

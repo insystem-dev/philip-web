@@ -1,23 +1,28 @@
-import { useRouter } from "next/router";
+import { useQuery } from "react-query";
+import { getContactPhoneApi } from "@/apis/categoryApi";
 import * as S from "./kakaoLink.style";
-import IconKakao from "public/assets/svg/icon-kakao.svg";
+import IconPhone from "public/assets/svg/icon-phone.svg";
 import IconLinkArrow from "public/assets/svg/icon-link-arrow.svg";
 
 export const KakaoLink = () => {
-  const router = useRouter();
-  const goKakao = () => {
-    router.push("/main");
+  const { data: phone } = useQuery(["getContactPhoneApi"], getContactPhoneApi);
+
+  const goCall = () => {
+    if (!phone) return;
+    window.location.href = `tel:${phone}`;
   };
 
   return (
-    <S.KakaoLink onClick={goKakao}>
+    <S.KakaoLink onClick={goCall} aria-disabled={!phone}>
       <S.KakaoLinkTitBox>
-        <IconKakao />
-        <S.KakaoLinkTxtSpan>
-          카카오톡 <strong>1:1 광고문의</strong>
-        </S.KakaoLinkTxtSpan>
+        <S.IconCircle>
+          <IconPhone />
+        </S.IconCircle>
+        <S.KakaoLinkTxtSpan>1:1 문의하기</S.KakaoLinkTxtSpan>
       </S.KakaoLinkTitBox>
-      <IconLinkArrow />
+      <S.ArrowIcon>
+        <IconLinkArrow />
+      </S.ArrowIcon>
     </S.KakaoLink>
   );
 };

@@ -3,8 +3,15 @@ import { useQuery } from "react-query";
 import { getOnePostInfoApi } from "@/apis/postsApi";
 import { useRouter } from "next/router";
 import { getAdsData } from "@/apis/adsApi";
+import { useRecoilState } from "recoil";
+import { userTokenState } from "@/recoil/userToken";
+import { useState } from "react";
+import { AlertModal } from "@/components/molecules/AlertModal";
+
 export const Post = () => {
   const router = useRouter();
+  const [, setUserToken] = useRecoilState(userTokenState);
+  const [showSessionExpired, setShowSessionExpired] = useState(false);
   const queryFn = () => getOnePostInfoApi(router.query.id);
 
   /** 광고 배너 데이터  */
@@ -15,7 +22,7 @@ export const Post = () => {
     ["detailItem", router.query.id],
     queryFn,
     {
-      retry: 1,
+      retry: 0,
       // 라우터 준비 후에만 조회 (/posts/undefined 요청 방지)
       enabled: router.isReady,
       onError(err: any) {
@@ -25,15 +32,28 @@ export const Post = () => {
           return;
         }
         if (err.response?.status === 401) {
+          // localStorage + Recoil 상태 모두 초기화 (UI가 로그인 상태로 남는 버그 방지)
           localStorage.removeItem("kakaoSignKey");
-          router.replace("/main");
-          alert("로그인 회원만 사용 가능합니다.");
+          setUserToken(null);
+          setShowSessionExpired(true);
         }
       },
     }
   );
 
-  return <PostPage detailItem={detailItem} adsData={adsData} />;
+  return (
+    <>
+      <PostPage detailItem={detailItem} adsData={adsData} />
+      {showSessionExpired && (
+        <AlertModal
+          title="로그인이 필요합니다"
+          message={`세션이 만료되어 다시 로그인해야 합니다.`}
+          confirmLabel="로그인하기"
+          onConfirm={() => router.replace("/auth/login")}
+        />
+      )}
+    </>
+  );
 };
 
 export default Post;

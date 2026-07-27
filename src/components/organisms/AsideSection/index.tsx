@@ -1,7 +1,6 @@
 import { CounterBox } from "@/components/molecules/CounterBox";
 import { LinkBox } from "@/components/molecules/LinkBox";
 import { SearchBox } from "@/components/molecules/SearchBox";
-import useWindowWidth from "@/lib/hooks/useWindowWidth";
 import * as S from "./asideSection.style";
 
 interface AsideSectionProp {
@@ -24,7 +23,6 @@ export const AsideSection = ({
   category,
   getValue,
 }: AsideSectionProp) => {
-  const isWindowWidth = useWindowWidth();
   return (
     <S.AsideSection>
       <CounterBox count={count} />
@@ -37,7 +35,7 @@ export const AsideSection = ({
         category={category}
         getValue={getValue}
       />
-      {isWindowWidth >= 769 && <LinkBox />}
+      <LinkBox stacked />
     </S.AsideSection>
   );
 };

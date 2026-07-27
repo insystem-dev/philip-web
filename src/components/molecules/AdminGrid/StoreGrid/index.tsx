@@ -1,5 +1,5 @@
 import { CheckBox, DataGrid, LoadPanel } from "devextreme-react";
-import { Column, Paging, Scrolling } from "devextreme-react/data-grid";
+import { Column, Pager, Paging } from "devextreme-react/data-grid";
 import * as S from "../adminGrid.style";
 import { Button } from "@/components/atoms/Button";
 
@@ -46,8 +46,18 @@ export const StoreGrid = ({
             visible={isLoading}
             position={position}
           />
-          <Paging defaultPageSize={10} />
-          <Scrolling mode="virtual" useNative={false} />
+          {/* 로컬 배열(전체 데이터가 이미 메모리에 있음) + 소규모(수십~수백건) 데이터라
+              virtual scroll 대신 표준 페이징으로 전환 — 스크롤 시 다음 페이지가
+              로딩 스켈레톤에서 멈춰버리던 문제(virtual scroll이 로컬 배열과 맞물려
+              다음 페이지를 못 불러오는 현상)를 근본적으로 피한다 */}
+          <Paging defaultPageSize={20} />
+          <Pager
+            visible={true}
+            showPageSizeSelector={true}
+            allowedPageSizes={[10, 20, 50]}
+            showInfo={true}
+            showNavigationButtons={true}
+          />
           <Column
             caption="No."
             cellRender={(e) => e.row.loadIndex + 1}

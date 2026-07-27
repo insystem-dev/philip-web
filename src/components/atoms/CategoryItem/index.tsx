@@ -13,6 +13,11 @@ export const CategoryItem = ({ item }: any) => {
     setCategory(item.oid);
     setSearchInput("");
 
+    if (router.pathname === "/select/category") {
+      router.push("/main");
+      return;
+    }
+
     // 디테일/어드민 페이지에서 nav 클릭시 메인으로 이동 (항상 참이던 조건 수정)
     if (
       router.pathname === "/main/post/[id]" ||

@@ -37,6 +37,7 @@ export const PostItem = ({ item }: any) => {
       <Image
         src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
         layout="fill"
+        sizes="(max-width: 768px) 33vw, 220px"
         alt="업체 이미지"
       />
       <S.PostItemSpan>

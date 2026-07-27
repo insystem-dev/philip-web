@@ -1,45 +1,72 @@
-import { setToken } from "@/apis";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { Suspense, useEffect } from "react";
-import Loading from "../Loading";
+import { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { adminState } from "@/recoil/adminToken";
+import { userTokenState } from "@/recoil/userToken";
+import { AlertModal } from "@/components/molecules/AlertModal";
 
-// export interface adminType {
-//   accessToken: string;
-//   adminId: string;
-//   oid: string;
-//   role: string;
-// }
+/** JWT payload의 exp 필드로 만료 여부만 확인 (서명 검증 없음) */
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
 
 const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }: React.PropsWithChildren) => {
   const [admin, setAdmin] = useRecoilState(adminState);
+  const [, setUserToken] = useRecoilState(userTokenState);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const adminInfo: any = localStorage.getItem("admin");
-
-    // 손상된 localStorage 값이 있어도 크래시 없이 null 처리
-    let admin: any = null;
+    // ── 관리자 토큰 복원 ──
+    let adminData: any = null;
     try {
-      admin = JSON.parse(adminInfo);
+      adminData = JSON.parse(localStorage.getItem("admin")!);
     } catch {
-      admin = null;
+      adminData = null;
     }
+    setAdmin(adminData);
 
-    setToken();
-    setAdmin(admin);
-
-    if (router.pathname.includes("admin") && admin === null) {
+    if (router.pathname.includes("admin") && adminData === null) {
       router.replace("/admin/login");
     }
-    // CSR 라우팅으로 /admin 진입 시에도 가드가 동작하도록 pathname 의존성 추가
+
+    // ── 카카오 사용자 토큰 복원 및 만료 검증 (1개월 유지, 만료 시 자동 로그아웃) ──
+    const kakaoToken = localStorage.getItem("kakaoSignKey");
+    if (kakaoToken) {
+      if (isTokenExpired(kakaoToken)) {
+        // 토큰은 조용히 제거하되(= UI가 "로그인됨"으로 남는 버그 방지), 사용자에게는 모달로 안내
+        localStorage.removeItem("kakaoSignKey");
+        setUserToken(null);
+        setIsSessionExpired(true);
+      } else {
+        setUserToken(kakaoToken);
+      }
+    }
   }, [router.pathname]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {isSessionExpired && (
+        <AlertModal
+          title="로그인이 만료되었습니다"
+          message={`카카오 로그인은 1개월간 유지됩니다.\n다시 로그인해 주세요.`}
+          confirmLabel="로그인하기"
+          onConfirm={() => {
+            setIsSessionExpired(false);
+            router.push("/auth/login");
+          }}
+        />
+      )}
+    </>
+  );
 };
 
 export default HeadersTokenProvider;

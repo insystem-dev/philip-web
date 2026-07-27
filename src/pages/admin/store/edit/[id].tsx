@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { getCategoryNavApi, getCityListApi } from "@/apis/categoryApi";
+import {
+  Category,
+  CitySub,
+  getCategoryNavApi,
+  getCityListApi,
+} from "@/apis/categoryApi";
 import useWindowWidth from "@/lib/hooks/useWindowWidth";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -30,8 +35,8 @@ const AdminPost = () => {
     { enabled: router.isReady }
   );
 
-  const [cityOptions, setCityOptions] = useState<[]>();
-  const [categoryOptions, setCategoryOptions] = useState<[]>();
+  const [cityOptions, setCityOptions] = useState<CitySub[]>();
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>();
 
   const [imagePaths, setImagePaths] = useState<string[]>([]);
 

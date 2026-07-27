@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import useWindowWidth from "@/lib/hooks/useWindowWidth";
 import * as S from "./regionItem.style";
 import IconArrowWt from "public/assets/svg/icon-link-arrow-white.svg";
 import { useRecoilState } from "recoil";
@@ -7,7 +6,6 @@ import { cityState } from "@/recoil/city";
 
 export const RegionItem = ({ data }: any) => {
   const router = useRouter();
-  const isWindowWidth = useWindowWidth();
   const [city, setCityState] = useRecoilState(cityState);
 
   const goMain = (e: any) => {
@@ -16,9 +14,7 @@ export const RegionItem = ({ data }: any) => {
 
     setCityState(e.oid);
     localStorage.setItem("city", e.oid);
-    isWindowWidth < 769
-      ? router.push("/select/category")
-      : router.push("/main");
+    router.push("/select/category");
   };
 
   return (

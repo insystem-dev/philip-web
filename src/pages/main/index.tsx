@@ -8,7 +8,7 @@
  * - 로컬 상태: options, count, postList 등
  */
 import MainPage from "@/components/templates/MainPage";
-import { userTokenState } from "@/recoil/userToken";
+import Head from "next/head";
 import { useEffect, useState, useCallback } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { categoryState } from "@/recoil/category";
@@ -18,13 +18,17 @@ import { getPostsListApi, getPromtionListApi } from "@/apis/postsApi";
 import { getAdsData } from "@/apis/adsApi";
 import { checkTodayVisit, getVisitCount } from "@/apis/visitApi";
 import { searchState } from "@/recoil/search";
-import { getCategoryNavApi, getCityListApi } from "@/apis/categoryApi";
+import {
+  Category,
+  CitySub,
+  getCategoryNavApi,
+  getCityListApi,
+} from "@/apis/categoryApi";
 
 const Main = () => {
   // ─────────────────────────────────────────────────────────────
   // Recoil 전역 상태
   // ─────────────────────────────────────────────────────────────
-  const [userToken, setUserToken]: any = useRecoilState(userTokenState);
   const [category, setCategoryState] = useRecoilState(categoryState);
   const [city, setCityState] = useRecoilState(cityState);
   const [searchInput, setSearchInput] = useRecoilState(searchState);
@@ -32,9 +36,9 @@ const Main = () => {
   // ─────────────────────────────────────────────────────────────
   // 로컬 상태
   // ─────────────────────────────────────────────────────────────
-  const [cityOptions, setCityOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  const [count, setCount] = useState<number[]>([]);
+  const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
+  const [count, setCount] = useState<number>(0);
 
   // ─────────────────────────────────────────────────────────────
   // API 쿼리
@@ -121,44 +125,50 @@ const Main = () => {
   // 방문자 수 처리
   useEffect(() => {
     if (todayCount !== undefined) {
-      const str = String(todayCount);
-      const newArr = Array.from(str, (char) => Number(char));
-      setCount(newArr);
+      setCount(todayCount);
     }
   }, [todayCount]);
 
-  // 사용자 토큰 복원
-  useEffect(() => {
-    const userInfo = localStorage.getItem("kakaoSignKey");
-    if (userInfo) {
-      setUserToken(userInfo);
-    }
-  }, [setUserToken]);
+  // 토큰 복원은 HeadersTokenProvider에서 전담 (만료 검증 포함)
   // ─────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────
   return (
-    <MainPage
-      // 프로모션 데이터
-      postItem={postItem ?? []}
-      // 전체 게시글 데이터 (PostListBox용)
-      postListData={postListData ?? []}
-      isPostLoading={isPostLoading}
-      // 광고 데이터
-      adsData={adsData || []}
-      // 방문자 수
-      count={count}
-      // 도시 관련
-      cityOptions={cityOptions}
-      getCityOption={getCityOption}
-      city={city}
-      // 카테고리 관련
-      categoryOptions={categoryOptions}
-      getCategoryOption={getCategoryOption}
-      category={category}
-      // 검색 관련
-      getValue={getValue}
-    />
+    <>
+      <Head>
+        <title>필립69 PHILIP69 | 필리핀 업체 검색</title>
+        <meta
+          name="description"
+          content="필립, 필립69, PHILIP, PHILIP69에서 필리핀 지역과 카테고리별 업체를 검색해 보세요."
+        />
+        <meta
+          name="keywords"
+          content="필립, 필립69, philip, philip69"
+        />
+        <link rel="canonical" href="https://philip69.com/main" />
+      </Head>
+      <MainPage
+        // 프로모션 데이터
+        postItem={postItem ?? []}
+        // 전체 게시글 데이터 (PostListBox용)
+        postListData={postListData ?? []}
+        isPostLoading={isPostLoading}
+        // 광고 데이터
+        adsData={adsData || []}
+        // 방문자 수
+        count={count}
+        // 도시 관련
+        cityOptions={cityOptions}
+        getCityOption={getCityOption}
+        city={city}
+        // 카테고리 관련
+        categoryOptions={categoryOptions}
+        getCategoryOption={getCategoryOption}
+        category={category}
+        // 검색 관련
+        getValue={getValue}
+      />
+    </>
   );
 };
 

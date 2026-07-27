@@ -7,6 +7,7 @@ import * as S from "./adminAdsPage.style";
 interface AdminAdsPageProps {
   imgPreview: any;
   setImgPreview: React.Dispatch<React.SetStateAction<any>>;
+  uploadingLabels: string[];
   adsData: [];
   onChangeImages: (e: any) => void;
   onDeleteOne: (id: string) => void;
@@ -17,6 +18,7 @@ interface AdminAdsPageProps {
 export const AdminAdsPage = ({
   imgPreview,
   setImgPreview,
+  uploadingLabels,
   adsData,
   onDeleteOne,
   onSubmit,
@@ -27,7 +29,11 @@ export const AdminAdsPage = ({
   return (
     <AdminLayout title="광고관리">
       <S.AdminAdsPage>
-        <AdminAdsPreview imgPreview={imgPreview} adsData={adsData} />
+        <AdminAdsPreview
+          imgPreview={imgPreview}
+          adsData={adsData}
+          uploadingLabels={uploadingLabels}
+        />
         <AmdinAdsBox
           setImgPreview={setImgPreview}
           imgPreview={imgPreview}

@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/atoms/Button";
 import { StoreInfoBox } from "@/components/molecules/StoreInfoBox";
 import { PriceInfoBox } from "@/components/molecules/PriceInfoBox";
@@ -13,11 +12,6 @@ interface PostSectionProp {
 
 export const PostSection = ({ detailItem }: PostSectionProp) => {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const openHandler = useCallback(() => {
-    setIsOpen((prev) => !prev);
-  }, []);
 
   return (
     <S.PostSection>
@@ -35,12 +29,7 @@ export const PostSection = ({ detailItem }: PostSectionProp) => {
       </div>
 
       <StoreInfoBox post={detailItem} />
-      <PriceInfoBox
-        post={detailItem}
-        openHandler={openHandler}
-        open={isOpen}
-        title="요금 및 메뉴 안내"
-      />
+      <PriceInfoBox post={detailItem} title="요금 및 메뉴 안내" />
       <LocationBox post={detailItem} title="오시는 길" />
     </S.PostSection>
   );

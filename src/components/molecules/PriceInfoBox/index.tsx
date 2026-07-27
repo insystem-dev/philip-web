@@ -1,58 +1,38 @@
 import Image from "next/image";
-import { Button, ButtonGroup } from "@/components/atoms/Button";
 import * as S from "./priceInfoBox.style";
-import IconDown from "public/assets/svg/icon-arrow-down.svg";
 
-export const PriceInfoBox = ({ post, title, openHandler, open }: any) => {
+export const PriceInfoBox = ({ post, title }: any) => {
+  const filename = post?.menu?.[0]?.filename;
+  const hasImage = Boolean(filename);
+  const hasContents = Boolean(post?.contents?.trim());
+
   return (
-    <>
-      <S.PriceInfoBox isOpen={open}>
-        <S.PriceTit>{title}</S.PriceTit>
-        <S.PriceImg>
+    <S.PriceInfoBox>
+      <S.PriceTit>{title}</S.PriceTit>
+      <S.PriceImg $empty={!hasImage}>
+        {hasImage ? (
           <Image
-            src={
-              post
-                ? // 메뉴 배열이 없을 수도 있어 옵셔널 체이닝으로 접근
-                  `${process.env.NEXT_PUBLIC_API_URL}/${post?.menu?.[0]?.filename}`
-                : ""
-            }
+            src={`${process.env.NEXT_PUBLIC_API_URL}/${filename}`}
             alt="선택된 업체 이미지"
             width={800}
             height={100}
           />
-        </S.PriceImg>
-        <S.PriceInfo>
-          {/* contents가 null/undefined여도 크래시 없도록 존재 가드 후 줄바꿈 분리 */}
-          {post?.contents && post.contents.includes(`\n`) ? (
-            post.contents.split("\n").map((line: any, idx: any) => {
-              //this.props.data.content: 내용
-              return (
-                <S.InfoLine key={idx}>
-                  {line}
-                  <br />
-                </S.InfoLine>
-              );
-            })
-          ) : (
-            <S.InfoLine>
-              {post?.contents}
+        ) : (
+          <S.PriceImgEmpty>등록된 이미지가 없습니다.</S.PriceImgEmpty>
+        )}
+      </S.PriceImg>
+      <S.PriceInfo>
+        {hasContents ? (
+          post.contents.split("\n").map((line: string, idx: number) => (
+            <S.InfoLine key={idx}>
+              {line}
               <br />
             </S.InfoLine>
-          )}
-        </S.PriceInfo>
-        <ButtonGroup height={24}>
-          <Button
-            type="button"
-            size="sm"
-            color="clear"
-            layout="icon"
-            onClick={openHandler}
-            rotate={open}
-          >
-            <IconDown />
-          </Button>
-        </ButtonGroup>
-      </S.PriceInfoBox>
-    </>
+          ))
+        ) : (
+          <S.PriceEmpty>등록된 요금 및 메뉴 안내가 없습니다.</S.PriceEmpty>
+        )}
+      </S.PriceInfo>
+    </S.PriceInfoBox>
   );
 };

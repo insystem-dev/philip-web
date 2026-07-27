@@ -61,13 +61,14 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <GlobalStyle />
       <RecoilRoot>
-        <HeadersTokenProvider>
-          <QueryClientProvider client={queryClient}>
-            <Script
-              src="https://developers.kakao.com/sdk/js/kakao.js"
-              onLoad={kakaoInit}
-            />
-            <ThemeProvider theme={theme}>
+        <QueryClientProvider client={queryClient}>
+          <Script
+            src="https://developers.kakao.com/sdk/js/kakao.js"
+            onLoad={kakaoInit}
+          />
+          {/* HeadersTokenProvider가 만료 시 렌더하는 AlertModal도 테마를 쓸 수 있도록 ThemeProvider 안쪽에 위치 */}
+          <ThemeProvider theme={theme}>
+            <HeadersTokenProvider>
               {router.pathname.includes("main") ||
               router.pathname.includes("auth") ? (
                 <>
@@ -87,10 +88,10 @@ export default function App({ Component, pageProps }: AppProps) {
                   <Component {...pageProps} />
                 </>
               )}
-            </ThemeProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </QueryClientProvider>
-        </HeadersTokenProvider>
+            </HeadersTokenProvider>
+          </ThemeProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
       </RecoilRoot>
     </>
   );

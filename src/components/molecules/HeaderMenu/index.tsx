@@ -1,21 +1,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "react-query";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { getCityListApi } from "@/apis/categoryApi";
+import { useRecoilState } from "recoil";
+import { CitySub, getCityListApi } from "@/apis/categoryApi";
 import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { Button } from "@/components/atoms/Button";
 import { cityState } from "@/recoil/city";
 import { userTokenState } from "@/recoil/userToken";
 import * as S from "./headerMenu.style";
 import IconUser from "public/assets/svg/icon-user.svg";
-import { adminState } from "@/recoil/adminToken";
 
 export const HeaderMenu = () => {
   /** 유저 로그인 체크 */
   const [userToken, setUserToken] = useRecoilState(userTokenState);
-  const admin = useRecoilValue(adminState);
-  const [cityOptions, setCityOptions] = useState([]);
+  const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
   const [city, setCityState] = useRecoilState<any>(cityState);
 
   /** 시티 select 목록 불러오기 */
@@ -37,24 +35,11 @@ export const HeaderMenu = () => {
   };
 
   useEffect(() => {
-    setCityOptions(cityItem);
+    if (cityItem) setCityOptions(cityItem);
   }, [cityItem]);
 
   return (
     <S.HeaderMenu>
-      {/* 관리자 페이지 이동 버튼 */}
-      {admin && (
-        <Button
-          type="button"
-          color="clear"
-          layout="icon"
-          size="sm"
-          label="관리자 페이지"
-          onClick={() => {
-            router.replace("/admin/store");
-          }}
-        />
-      )}
       {userToken ? (
         <>
           <Button

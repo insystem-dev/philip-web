@@ -9,8 +9,8 @@ export const RegionList = () => {
 
   return (
     <S.RegionList>
-      {cityItem?.map((option: any, idx: number) => {
-        return <RegionItem data={option} key={idx} />;
+      {cityItem?.map((option: any) => {
+        return <RegionItem data={option} key={option.oid} />;
       })}
     </S.RegionList>
   );

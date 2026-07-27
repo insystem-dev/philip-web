@@ -7,6 +7,15 @@ import * as S from "./imageSlide.style";
 
 export const ImageSlide = ({ items }: any) => {
   const [selectedId, setSelectedId] = useState(0);
+  const hasImages = Boolean(items?.length);
+
+  if (!hasImages) {
+    return (
+      <S.ImageSlide>
+        <S.ImageEmpty>등록된 이미지가 없습니다.</S.ImageEmpty>
+      </S.ImageSlide>
+    );
+  }
 
   const onSelectImage = (e: any) => {
     setSelectedId(e);
@@ -33,6 +42,8 @@ export const ImageSlide = ({ items }: any) => {
           <Image
             src={`${process.env.NEXT_PUBLIC_API_URL}/${items[selectedId].filename}`}
             layout="fill"
+            sizes="(max-width: 768px) 100vw, 505px"
+            priority={selectedId === 0}
             alt="선택된 업체 이미지"
           />
         )}
@@ -70,6 +81,7 @@ export const ImageSlide = ({ items }: any) => {
                 src={`${process.env.NEXT_PUBLIC_API_URL}/${item?.filename}`}
                 width={85}
                 height={62}
+                sizes="85px"
                 alt="업체 이미지"
               />
             </S.ImageSlideItem>
