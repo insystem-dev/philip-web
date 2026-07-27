@@ -137,6 +137,16 @@ const AdminPost = () => {
     if (cityItem) setCityOptions(cityItem);
   }, [categoryItem, cityItem]);
 
+  // 지역선택 디폴트: 앙헬레스 (목록에 없으면 첫 번째 지역)
+  // option이 DOM에 렌더링된 뒤에 setValue 해야 select에 반영되므로 cityOptions 기준으로 실행
+  useEffect(() => {
+    if (cityOptions.length > 0 && !watch("cityOid")) {
+      const defaultCity =
+        cityOptions.find((city) => city.name === "앙헬레스") ?? cityOptions[0];
+      setValue("cityOid", defaultCity.oid);
+    }
+  }, [cityOptions]);
+
   return (
     <AdminPostPage
       handleSubmit={handleSubmit}
