@@ -33,7 +33,10 @@ export const Post = () => {
         }
         if (err.response?.status === 401) {
           // localStorage + Recoil 상태 모두 초기화 (UI가 로그인 상태로 남는 버그 방지)
+          // admin 항목도 함께 제거 — 죽은 admin 토큰이 남아 있으면 인터셉터가
+          // 카카오 토큰 대신 계속 그걸 실어 재로그인해도 401이 반복됨
           localStorage.removeItem("kakaoSignKey");
+          localStorage.removeItem("admin");
           setUserToken(null);
           setShowSessionExpired(true);
         }

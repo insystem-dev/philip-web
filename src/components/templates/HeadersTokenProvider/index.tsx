@@ -4,16 +4,7 @@ import { useRecoilState } from "recoil";
 import { adminState } from "@/recoil/adminToken";
 import { userTokenState } from "@/recoil/userToken";
 import { AlertModal } from "@/components/molecules/AlertModal";
-
-/** JWT payload의 exp 필드로 만료 여부만 확인 (서명 검증 없음) */
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
+import { isTokenExpired } from "@/lib/accesToken";
 
 const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
   children,
@@ -24,10 +15,14 @@ const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
   const router = useRouter();
 
   useEffect(() => {
-    // ── 관리자 토큰 복원 ──
+    // ── 관리자 토큰 복원 (만료·손상된 토큰은 복원하지 않고 제거) ──
     let adminData: any = null;
     try {
       adminData = JSON.parse(localStorage.getItem("admin")!);
+      if (!adminData?.accessToken || isTokenExpired(adminData.accessToken)) {
+        if (adminData) localStorage.removeItem("admin");
+        adminData = null;
+      }
     } catch {
       adminData = null;
     }
