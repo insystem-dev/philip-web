@@ -4,6 +4,7 @@ export const AdminLayout = styled.div`
   display: grid;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   background: ${(props) => props.theme.colors.adminBg};
   grid-template-areas:
     "AS HD"
@@ -12,4 +13,6 @@ export const AdminLayout = styled.div`
   grid-template-rows: 50px 1fr;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  min-height: 0;
 `;

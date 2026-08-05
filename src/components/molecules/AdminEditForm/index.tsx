@@ -2,6 +2,7 @@ import { InputText } from "@/components/atoms/Input/InputText";
 import * as S from "./adminPostForm.style";
 import { InputTextarea } from "@/components/atoms/Input/InputTextarea";
 import { AdminInputSelect } from "@/components/atoms/Input/AdminInputSelect";
+import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
 import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputFile } from "@/components/atoms/Input/InputFile";
 import { useRouter } from "next/router";
@@ -25,6 +26,16 @@ export const AdminEditForm = ({
   categoryOptions,
   register,
   postDelete,
+  viewsMode,
+  setViewsMode,
+  viewsManualCount,
+  setViewsManualCount,
+  viewsError,
+  saveViews,
+  isSavingViews,
+  actualViews,
+  categoryValue,
+  onCategoryChange,
 }: AdminPostEditPageProps) => {
   const router = useRouter();
 
@@ -90,13 +101,11 @@ export const AdminEditForm = ({
           options={cityOptions}
           register={register("cityOid")}
         />
-        <AdminInputSelect
+        <AdminCategoryDrilldown
           label="카테고리 선택"
-          layout="column"
-          themeType="admin"
-          size="md"
-          options={categoryOptions}
-          register={register("categoryOid")}
+          categories={categoryOptions ?? []}
+          value={categoryValue}
+          onChange={onCategoryChange}
         />
         <InputText
           label="상호명"
@@ -152,6 +161,75 @@ export const AdminEditForm = ({
           placeholder="입력..."
           register={register("remark")}
         />
+        <S.ViewsSection>
+          <S.ViewsTitle>조회수 관리</S.ViewsTitle>
+          <S.ViewsSummary>
+            <div>
+              <span>실제 조회수</span>
+              <strong>{actualViews.toLocaleString()}회</strong>
+            </div>
+            <div>
+              <span>현재 노출 조회수</span>
+              <strong>
+                {(actualViews +
+                  (viewsMode === "manual"
+                    ? Number(viewsManualCount || 0)
+                    : 0)).toLocaleString()}
+                회
+              </strong>
+            </div>
+          </S.ViewsSummary>
+          <S.ViewsOptions>
+            <label>
+              <input
+                type="radio"
+                name="viewsMode"
+                checked={viewsMode === "actual"}
+                onChange={() => setViewsMode("actual")}
+              />
+              <span>
+                <strong>실제 집계 사용</strong>
+                상세 조회에 따라 자동으로 증가한 실제 수를 노출합니다.
+              </span>
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="viewsMode"
+                checked={viewsMode === "manual"}
+                onChange={() => setViewsMode("manual")}
+              />
+              <span>
+                <strong>실제 집계 + 추가 입력</strong>
+                실제 조회수에 입력값을 더해 사용자 화면에 노출합니다.
+              </span>
+            </label>
+          </S.ViewsOptions>
+          <S.ViewsControl>
+            <label htmlFor="viewsManualCount">추가할 조회수</label>
+            <S.ViewsInput>
+              <input
+                id="viewsManualCount"
+                type="number"
+                min="0"
+                max="2147483647"
+                step="1"
+                value={viewsManualCount}
+                disabled={viewsMode !== "manual"}
+                onChange={(event) => setViewsManualCount(event.target.value)}
+              />
+              <span>회</span>
+            </S.ViewsInput>
+            <S.ViewsSaveButton
+              type="button"
+              disabled={isSavingViews}
+              onClick={saveViews}
+            >
+              {isSavingViews ? "저장 중..." : "조회수 설정 저장"}
+            </S.ViewsSaveButton>
+          </S.ViewsControl>
+          {viewsError && <S.ViewsError>{viewsError}</S.ViewsError>}
+        </S.ViewsSection>
       </S.PostFormInfoBox>
 
       <S.PostFormBtnBox>

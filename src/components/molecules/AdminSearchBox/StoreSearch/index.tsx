@@ -1,14 +1,11 @@
-import { Button } from "@/components/atoms/Button";
 import { InputText } from "@/components/atoms/Input/InputText";
-import { searchState } from "@/recoil/search";
+import { categoryState } from "@/recoil/category";
 import { useRecoilState } from "recoil";
 import * as S from "../adminSearchBox.style";
-import { InputSelect } from "@/components/atoms/Input/InputSelect";
-import { categoryState } from "@/recoil/category";
 import { useQuery } from "react-query";
-import { getCategoryNavApi } from "@/apis/categoryApi";
+import { getCategoryTreeApi } from "@/apis/categoryApi";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
-import { AdminStorePageProps } from "@/components/templates/AdminStorePage";
+import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
 
 interface StoreSearchProps {
   setStoreSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
@@ -20,56 +17,47 @@ export const StoreSearch = ({
   setPromotion,
 }: StoreSearchProps) => {
   const [categoryInput, setCategoryInput] = useRecoilState(categoryState);
-
-  const getCategoryOption = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCategoryInput(e.target.value);
-  };
-  /** 카테고리 select 목록 불러오기 */
-  const { data: categoryItem } = useQuery(
-    "getCategoryNavApi",
-    getCategoryNavApi
+  const { data: categories = [] } = useQuery(
+    "getCategoryTreeApi",
+    getCategoryTreeApi
   );
 
   return (
-    <>
-      <S.AdminSearchBox>
-        <S.AdminsearchItemBox>
-          <S.AdminSearchTit>카테고리</S.AdminSearchTit>
-          {/* 스타일 분기에 존재하는 값("column")으로 오타 수정 */}
-          <InputSelect
-            layout="column"
-            size="sm"
-            width="110px"
-            themeType="admin"
-            options={categoryItem}
-            onChange={getCategoryOption}
+    <S.AdminSearchBox>
+      <S.AdminsearchItemBox>
+        <S.AdminSearchTit>카테고리</S.AdminSearchTit>
+        <S.AdminCategoryFilter>
+          <AdminCategoryDrilldown
+            categories={categories}
             value={categoryInput}
+            onChange={setCategoryInput}
+            allowAll
           />
-        </S.AdminsearchItemBox>
+        </S.AdminCategoryFilter>
+      </S.AdminsearchItemBox>
 
-        <S.AdminsearchItemBox>
-          <S.AdminSearchTit>업체명</S.AdminSearchTit>
-          <InputText
-            layout="adminRow"
-            size="sm"
-            themeType="admin"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setStoreSearchKeyword(e.target.value)
-            }
-          />
-        </S.AdminsearchItemBox>
+      <S.AdminsearchItemBox>
+        <S.AdminSearchTit>업체명</S.AdminSearchTit>
+        <InputText
+          layout="adminRow"
+          size="sm"
+          themeType="admin"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setStoreSearchKeyword(e.target.value)
+          }
+        />
+      </S.AdminsearchItemBox>
 
-        <S.AdminsearchItemBox>
-          <InputCheckbox
-            layout="row"
-            themeType="admin"
-            displayValue="프로모션만 보기"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPromotion(e.target.checked)
-            }
-          />
-        </S.AdminsearchItemBox>
-      </S.AdminSearchBox>
-    </>
+      <S.AdminsearchItemBox>
+        <InputCheckbox
+          layout="row"
+          themeType="admin"
+          displayValue="프로모션만 보기"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPromotion(e.target.checked)
+          }
+        />
+      </S.AdminsearchItemBox>
+    </S.AdminSearchBox>
   );
 };

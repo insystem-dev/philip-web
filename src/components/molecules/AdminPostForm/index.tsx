@@ -3,6 +3,7 @@ import React from "react";
 import * as S from "./adminPostForm.style";
 import { InputTextarea } from "@/components/atoms/Input/InputTextarea";
 import { AdminInputSelect } from "@/components/atoms/Input/AdminInputSelect";
+import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
 import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputFile } from "@/components/atoms/Input/InputFile";
 import { useRouter } from "next/router";
@@ -20,6 +21,8 @@ export const AdminPostForm = ({
   categoryOptions,
   register,
   errors,
+  categoryValue,
+  onCategoryChange,
 }: AdminPostPageProps) => {
   const router = useRouter();
 
@@ -82,15 +85,12 @@ export const AdminPostForm = ({
           errors={errors}
           name="cityOid"
         />
-        <AdminInputSelect
+        <AdminCategoryDrilldown
           label="카테고리 선택"
-          layout="column"
-          themeType="admin"
-          size="md"
-          options={categoryOptions}
-          register={register("categoryOid")}
-          errors={errors}
-          name="categoryOid"
+          categories={categoryOptions ?? []}
+          value={categoryValue}
+          onChange={onCategoryChange}
+          error={errors.categoryOid?.message as string | undefined}
         />
         <InputText
           label="상호명"

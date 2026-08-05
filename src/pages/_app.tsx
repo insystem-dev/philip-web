@@ -4,7 +4,7 @@ import type { AppProps } from "next/app";
 // 내부 경로가 아닌 공식 진입점에서 Script import
 import Script from "next/script";
 import { useState } from "react";
-import { RecoilRoot, useRecoilState } from "recoil";
+import { RecoilEnv, RecoilRoot } from "recoil";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ThemeProvider } from "styled-components";
 import Header from "@/components/organisms/Header";
@@ -25,6 +25,12 @@ declare global {
   interface Window {
     Kakao: any;
   }
+}
+
+// Next.js Fast Refresh가 atom 모듈을 다시 평가할 때 발생하는 개발환경 중복키
+// 경고만 비활성화한다. production에서는 Recoil 검사를 그대로 유지한다.
+if (process.env.NODE_ENV !== "production") {
+  RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false;
 }
 
 export default function App({ Component, pageProps }: AppProps) {

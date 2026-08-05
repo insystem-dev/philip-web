@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { DataGrid, LoadPanel } from "devextreme-react";
-import { Column, Paging, Scrolling, Sorting } from "devextreme-react/data-grid";
+import { useMemo, useState } from "react";
+import TreeList, {
+  Column,
+  Scrolling,
+  Sorting,
+} from "devextreme-react/tree-list";
 import * as S from "../adminGrid.style";
 import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
-
-const position = { of: ".datagrid-wrap" };
 
 /** 영문명 인라인 편집 — blur 시점에만 저장 요청을 보내기 위해 로컬 state로 관리 */
 const NameEngCell = ({
@@ -40,7 +41,9 @@ interface CodeSubGridProps {
   isLoading: boolean;
   /** CITY 그룹일 때만 사용여부/영문명 컬럼을 추가로 보여준다 */
   showCityColumns?: boolean;
-  sortOptions: any[];
+  getSortOptions: (parentOid: string | null) => any[];
+  onAddChild: (data: any) => void;
+  onSelectEdit: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled?: (data: any) => void;
   onChangeNameEng?: (
@@ -55,40 +58,84 @@ export const CodeSubGrid = ({
   focusedRowKey,
   isLoading,
   showCityColumns,
-  sortOptions,
+  getSortOptions,
+  onAddChild,
+  onSelectEdit,
   onChangeSort,
   onToggleDisabled,
   onChangeNameEng,
   onDelete,
 }: CodeSubGridProps) => {
+  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const expandableRowKeys = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          dataSource
+            .map((item) => item.parentOid)
+            .filter((parentOid): parentOid is string => Boolean(parentOid))
+        )
+      ),
+    [dataSource]
+  );
+  const orderedDataSource = useMemo(
+    () =>
+      [...dataSource].sort(
+        (a, b) =>
+          Number(a.sort ?? 0) - Number(b.sort ?? 0) ||
+          String(a.subCd ?? "").localeCompare(String(b.subCd ?? ""))
+      ),
+    [dataSource]
+  );
+
+  if (isLoading) {
+    return <S.GridLoading>공통코드를 불러오는 중입니다.</S.GridLoading>;
+  }
+
   return (
     <S.AdminGrid>
-      <DataGrid
-        className={"datagrid-wrap"}
-        dataSource={dataSource}
-        showRowLines={true}
-        hoverStateEnabled={true}
-        keyExpr="oid"
-        focusedRowEnabled={!!focusedRowKey}
-        focusedRowKey={focusedRowKey ?? undefined}
-        autoNavigateToFocusedRow={true}
-      >
+      <S.TreeToolbar>
+        <S.TreeControlButton
+          type="button"
+          onClick={() => setExpandedRowKeys(expandableRowKeys)}
+        >
+          전체 펼치기
+        </S.TreeControlButton>
+        <S.TreeControlButton type="button" onClick={() => setExpandedRowKeys([])}>
+          전체 접기
+        </S.TreeControlButton>
+      </S.TreeToolbar>
+      <S.TreeListArea>
+        <TreeList
+          className={"datagrid-wrap"}
+          height="100%"
+          dataSource={orderedDataSource}
+          showRowLines={true}
+          hoverStateEnabled={true}
+          keyExpr="oid"
+          parentIdExpr="parentOid"
+          rootValue={null}
+          dataStructure="plain"
+          expandedRowKeys={expandedRowKeys}
+          onExpandedRowKeysChange={setExpandedRowKeys}
+          focusedRowEnabled={!!focusedRowKey}
+          focusedRowKey={focusedRowKey ?? undefined}
+          autoNavigateToFocusedRow={true}
+        >
         <Sorting mode="none" />
-        <LoadPanel
-          shadingColor="rgba(101, 101, 101, 0.4)"
-          visible={isLoading}
-          position={position}
-        />
-        <Paging defaultPageSize={20} />
-        {/* virtual 모드는 dataSource 교체 시 뒤에 추가된 행을 렌더링하지 않는 문제가 있어 standard 사용 */}
-        <Scrolling mode="standard" useNative={false} />
+        <Scrolling mode="standard" useNative={false} showScrollbar="always" />
         <Column
-          caption="No."
-          cellRender={(e) => e.row.loadIndex + 1}
-          width={50}
-          alignment="center"
+          caption="이름"
+          dataField="name"
+          minWidth={180}
+          cellRender={(data) => (
+            <button type="button" onClick={() => onSelectEdit(data)}
+              style={{ border: 0, background: "none", padding: 0, color: "#2554c7", cursor: "pointer", textDecoration: "underline" }}>
+              {data.data.name}
+            </button>
+          )}
         />
-        <Column caption="이름" dataField="name" minWidth={140} alignment="center" />
+        <Column caption="코드" dataField="oid" minWidth={180} width={240} />
         {showCityColumns && (
           <Column
             caption="영문명"
@@ -106,7 +153,7 @@ export const CodeSubGrid = ({
           alignment="center"
           cellRender={(data) => (
             <InputSelect
-              options={sortOptions}
+              options={getSortOptions(data.data.parentOid)}
               layout="column"
               size="sm"
               width="70px"
@@ -137,6 +184,22 @@ export const CodeSubGrid = ({
           />
         )}
         <Column
+          caption="하위 추가"
+          width={90}
+          alignment="center"
+          cellRender={(data) => (
+            <Button
+              type="button"
+              color="primary"
+              layout="solid"
+              width="76px"
+              height={24}
+              label="하위 추가"
+              onClick={() => onAddChild(data)}
+            />
+          )}
+        />
+        <Column
           caption="삭제"
           width={70}
           alignment="center"
@@ -152,7 +215,8 @@ export const CodeSubGrid = ({
             />
           )}
         />
-      </DataGrid>
+        </TreeList>
+      </S.TreeListArea>
     </S.AdminGrid>
   );
 };

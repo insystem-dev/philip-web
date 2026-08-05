@@ -17,3 +17,10 @@ export function changeUserRoleAPI(data: Object) {
     .put("/user/role", data)
     .then((response) => response.data);
 }
+
+export const checkUserIdAPI = (userId: string) =>
+  axiosInstance.post("/user/check-id", { userId }).then((res) => res.data);
+export const localSignupAPI = (data: Object) =>
+  axiosInstance.post("/user/signup", data).then((res) => res.data);
+export const localSigninAPI = (data: { userId: string; password: string }) =>
+  axiosInstance.post("/user/signin", data).then((res) => res.data);

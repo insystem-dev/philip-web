@@ -11,11 +11,13 @@ import {
   createCityApi,
   deleteCategoryApi,
   deleteCityApi,
-  getCategoryNavApi,
-  getCityListApi,
+  getCategoryTreeApi,
+  getCityTreeApi,
+  getContactKakaoApi,
   getContactPhoneApi,
   updateCategorySortApi,
   updateCitySubApi,
+  updateContactKakaoApi,
   updateContactPhoneApi,
 } from "@/apis/categoryApi";
 import useApiError from "@/lib/hooks/useApiError";
@@ -25,22 +27,25 @@ const AdminCode = () => {
   const { handleError } = useApiError();
   const [activeGroup, setActiveGroup] = useState<CodeGroup>("CATEGORY");
   const [newName, setNewName] = useState("");
+  const [selectedParent, setSelectedParent] = useState<any | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [error, setError] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [contactKakao, setContactKakao] = useState("philip69");
   // 방금 추가한 행의 key — 새 항목이 목록 맨 아래(스크롤 밖)에 추가되어
   // 화면에 안 보이던 문제를 그리드 자동 스크롤/포커스로 해결
   const [focusedRowKey, setFocusedRowKey] = useState<string | null>(null);
 
   const { data: categories, isLoading: isCategoryLoading } = useQuery<
     Category[]
-  >(["getCategoryNavApi"], getCategoryNavApi, {
+  >(["getCategoryTreeApi"], getCategoryTreeApi, {
     enabled: activeGroup === "CATEGORY",
     onError: (error: any) => handleError(error),
   });
 
   const { data: cities, isLoading: isCityLoading } = useQuery<CitySub[]>(
-    ["getCityListApi"],
-    getCityListApi,
+    ["getCityTreeApi"],
+    getCityTreeApi,
     {
       enabled: activeGroup === "CITY",
       onError: (error: any) => handleError(error),
@@ -56,9 +61,22 @@ const AdminCode = () => {
     }
   );
 
+  const { data: contactKakaoData } = useQuery(
+    ["getContactKakaoApi"],
+    getContactKakaoApi,
+    {
+      enabled: activeGroup === "CONTACT",
+      onError: (error: any) => handleError(error),
+    }
+  );
+
   useEffect(() => {
     if (contactPhoneData !== undefined) setContactPhone(contactPhoneData);
   }, [contactPhoneData]);
+
+  useEffect(() => {
+    if (contactKakaoData !== undefined) setContactKakao(contactKakaoData);
+  }, [contactKakaoData]);
 
   const createCategoryMutation = useMutation(createCategoryApi, {
     onSuccess: (created) => {
@@ -66,10 +84,11 @@ const AdminCode = () => {
       setError("");
       // 리패칭을 기다리지 않고 생성 응답을 목록에 즉시 반영
       queryClient.setQueryData<Category[]>(
-        ["getCategoryNavApi"],
+        ["getCategoryTreeApi"],
         (old) => [...(old ?? []), created]
       );
       setFocusedRowKey(created.oid);
+      queryClient.invalidateQueries(["getCategoryTreeApi"]);
       queryClient.invalidateQueries(["getCategoryNavApi"]);
     },
     onError: (error: any) =>
@@ -82,10 +101,11 @@ const AdminCode = () => {
       setError("");
       // 리패칭을 기다리지 않고 생성 응답을 목록에 즉시 반영
       queryClient.setQueryData<CitySub[]>(
-        ["getCityListApi"],
+        ["getCityTreeApi"],
         (old) => [...(old ?? []), created]
       );
       setFocusedRowKey(created.oid);
+      queryClient.invalidateQueries(["getCityTreeApi"]);
       queryClient.invalidateQueries(["getCityListApi"]);
     },
     onError: (error: any) =>
@@ -95,6 +115,7 @@ const AdminCode = () => {
   const updateCategoryMutation = useMutation(updateCategorySortApi, {
     onSuccess: () => {
       setError("");
+      queryClient.invalidateQueries(["getCategoryTreeApi"]);
       queryClient.invalidateQueries(["getCategoryNavApi"]);
     },
     onError: (error: any) =>
@@ -104,6 +125,7 @@ const AdminCode = () => {
   const updateCityMutation = useMutation(updateCitySubApi, {
     onSuccess: () => {
       setError("");
+      queryClient.invalidateQueries(["getCityTreeApi"]);
       queryClient.invalidateQueries(["getCityListApi"]);
     },
     onError: (error: any) =>
@@ -113,6 +135,7 @@ const AdminCode = () => {
   const deleteCategoryMutation = useMutation(deleteCategoryApi, {
     onSuccess: () => {
       setError("");
+      queryClient.invalidateQueries(["getCategoryTreeApi"]);
       queryClient.invalidateQueries(["getCategoryNavApi"]);
     },
     onError: (error: any) =>
@@ -122,6 +145,7 @@ const AdminCode = () => {
   const deleteCityMutation = useMutation(deleteCityApi, {
     onSuccess: () => {
       setError("");
+      queryClient.invalidateQueries(["getCityTreeApi"]);
       queryClient.invalidateQueries(["getCityListApi"]);
     },
     onError: (error: any) =>
@@ -140,12 +164,39 @@ const AdminCode = () => {
     },
   });
 
+  const updateContactKakaoMutation = useMutation(updateContactKakaoApi, {
+    onSuccess: (kakaoId) => {
+      setContactKakao(kakaoId);
+      queryClient.invalidateQueries(["getContactKakaoApi"]);
+      alert("카카오톡 문의 아이디가 저장되었습니다.");
+    },
+    onError: (error: any) => {
+      handleError(error);
+      alert(error?.response?.data?.message ?? "저장 중 오류가 발생했습니다.");
+    },
+  });
+
   const onSubmitCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
-    if (activeGroup === "CATEGORY") createCategoryMutation.mutate({ name });
-    if (activeGroup === "CITY") createCityMutation.mutate({ name });
+    if (editingItem) {
+      const onSuccess = () => {
+        setEditingItem(null);
+        setNewName("");
+      };
+      if (activeGroup === "CATEGORY") {
+        updateCategoryMutation.mutate({ oid: editingItem.oid, name }, { onSuccess });
+      } else {
+        updateCityMutation.mutate({ oid: editingItem.oid, name }, { onSuccess });
+      }
+      return;
+    }
+    const parentCode = selectedParent?.oid;
+    if (activeGroup === "CATEGORY")
+      createCategoryMutation.mutate({ name, parentCode });
+    if (activeGroup === "CITY")
+      createCityMutation.mutate({ name, parentCode });
   };
 
   const onChangeSort = (
@@ -193,13 +244,35 @@ const AdminCode = () => {
     updateContactPhoneMutation.mutate(phone);
   };
 
-  const items = activeGroup === "CITY" ? cities ?? [] : categories ?? [];
+  const onSubmitContactKakao = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const kakaoId = contactKakao.trim();
+    if (!kakaoId) return;
+    updateContactKakaoMutation.mutate(kakaoId);
+  };
+
+  const items: Array<Category | CitySub> =
+    activeGroup === "CITY" ? cities ?? [] : categories ?? [];
   const isLoading = activeGroup === "CITY" ? isCityLoading : isCategoryLoading;
-  const sortOptions = items.map((_, i) => ({ oid: i, name: i }));
+  const getSortOptions = (parentOid: string | null) =>
+    items
+      .filter((item) => item.parentOid === parentOid)
+      .map((_, i) => ({ oid: i, name: i }));
   const isCreating =
-    activeGroup === "CITY"
+    editingItem
+      ? activeGroup === "CITY"
+        ? updateCityMutation.isLoading
+        : updateCategoryMutation.isLoading
+      : activeGroup === "CITY"
       ? createCityMutation.isLoading
       : createCategoryMutation.isLoading;
+
+  const startCreate = (parent: any | null = null) => {
+    setEditingItem(null);
+    setSelectedParent(parent);
+    setNewName("");
+    setError("");
+  };
 
   return (
     <AdminCodePage
@@ -207,6 +280,8 @@ const AdminCode = () => {
       setActiveGroup={(group) => {
         setActiveGroup(group);
         setNewName("");
+        setSelectedParent(null);
+        setEditingItem(null);
         setError("");
         setFocusedRowKey(null);
       }}
@@ -216,9 +291,22 @@ const AdminCode = () => {
       error={error}
       newName={newName}
       setNewName={setNewName}
+      selectedParent={selectedParent}
+      editingItem={editingItem}
+      clearSelectedParent={() => startCreate(null)}
+      onStartCreate={() => startCreate(null)}
       onSubmitCreate={onSubmitCreate}
       isCreating={isCreating}
-      sortOptions={sortOptions}
+      getSortOptions={getSortOptions}
+      onAddChild={(data) => {
+        startCreate(data.data);
+      }}
+      onSelectEdit={(data) => {
+        setEditingItem(data.data);
+        setSelectedParent(null);
+        setNewName(data.data.name ?? "");
+        setError("");
+      }}
       onChangeSort={onChangeSort}
       onToggleDisabled={onToggleDisabled}
       onChangeNameEng={onChangeNameEng}
@@ -227,6 +315,10 @@ const AdminCode = () => {
       setContactPhone={setContactPhone}
       onSubmitContactPhone={onSubmitContactPhone}
       isSavingContactPhone={updateContactPhoneMutation.isLoading}
+      contactKakao={contactKakao}
+      setContactKakao={setContactKakao}
+      onSubmitContactKakao={onSubmitContactKakao}
+      isSavingContactKakao={updateContactKakaoMutation.isLoading}
     />
   );
 };

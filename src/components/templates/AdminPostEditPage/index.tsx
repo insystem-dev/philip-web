@@ -24,6 +24,16 @@ export interface AdminPostEditPageProps {
   categoryOptions: any;
   register: UseFormRegister<any>;
   postDelete: () => void;
+  viewsMode: "actual" | "manual";
+  setViewsMode: (value: "actual" | "manual") => void;
+  viewsManualCount: string;
+  setViewsManualCount: (value: string) => void;
+  viewsError: string;
+  saveViews: () => void;
+  isSavingViews: boolean;
+  actualViews: number;
+  categoryValue?: string;
+  onCategoryChange: (value: string) => void;
 }
 
 export const AdminPostEditPage = ({
@@ -44,6 +54,16 @@ export const AdminPostEditPage = ({
   categoryOptions,
   register,
   postDelete,
+  viewsMode,
+  setViewsMode,
+  viewsManualCount,
+  setViewsManualCount,
+  viewsError,
+  saveViews,
+  isSavingViews,
+  actualViews,
+  categoryValue,
+  onCategoryChange,
 }: AdminPostEditPageProps) => {
   return (
     <AdminLayout title="업체 정보수정">
@@ -66,6 +86,16 @@ export const AdminPostEditPage = ({
           categoryOptions={categoryOptions}
           register={register}
           postDelete={postDelete}
+          viewsMode={viewsMode}
+          setViewsMode={setViewsMode}
+          viewsManualCount={viewsManualCount}
+          setViewsManualCount={setViewsManualCount}
+          viewsError={viewsError}
+          saveViews={saveViews}
+          isSavingViews={isSavingViews}
+          actualViews={actualViews}
+          categoryValue={categoryValue}
+          onCategoryChange={onCategoryChange}
         />
       </S.adminPostPage>
     </AdminLayout>

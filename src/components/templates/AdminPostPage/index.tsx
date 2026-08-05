@@ -19,6 +19,8 @@ export interface AdminPostPageProps {
   categoryOptions: any;
   register: UseFormRegister<any>;
   errors: FieldErrors;
+  categoryValue?: string;
+  onCategoryChange: (value: string) => void;
 }
 
 export const AdminPostPage = ({
@@ -33,6 +35,8 @@ export const AdminPostPage = ({
   categoryOptions,
   register,
   errors,
+  categoryValue,
+  onCategoryChange,
 }: AdminPostPageProps) => {
   return (
     <AdminLayout title="업체 신규등록">
@@ -49,6 +53,8 @@ export const AdminPostPage = ({
           categoryOptions={categoryOptions}
           register={register}
           errors={errors}
+          categoryValue={categoryValue}
+          onCategoryChange={onCategoryChange}
         />
       </S.adminPostPage>
     </AdminLayout>

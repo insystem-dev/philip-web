@@ -47,7 +47,7 @@ export const MainPage = ({
 }: MainPageProp) => {
   return (
     <S.MainLayout>
-      <BannerSection adsData={adsData} />
+      <BannerSection adsData={adsData} categoryCode={category} />
       <AsideSection
         count={count}
         cityOptions={cityOptions}

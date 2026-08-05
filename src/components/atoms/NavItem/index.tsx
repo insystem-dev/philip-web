@@ -1,6 +1,6 @@
 import * as S from "./navItem.style";
 import { useRecoilState } from "recoil";
-import { categoryState } from "../../../recoil/category";
+import { categoryState } from "@/recoil/category";
 import { useRouter } from "next/router";
 import { searchState } from "@/recoil/search";
 

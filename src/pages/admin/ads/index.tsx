@@ -10,6 +10,10 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { InputFile } from "@/components/atoms/Input/InputFile";
 import useApiError from "@/lib/hooks/useApiError";
 import { deletePreviewImagesAPI, uploadImagesAPI } from "@/apis/postsApi";
+import { Category, getCategoryTreeApi } from "@/apis/categoryApi";
+
+const MAIN_LABELS = ["topAds", "bottom1", "bottom2", "bottom3"];
+const CATEGORY_LABELS = ["categoryTopAds", "categoryTopBottom1", "categoryTopBottom2", "categoryTopBottom3", "categoryBottomAds"];
 
 const AdminAds = () => {
   const queryClient = useQueryClient();
@@ -18,6 +22,11 @@ const AdminAds = () => {
   const [imgPreview, setImgPreview] = useState<any[]>([]);
   // 업로드 진행 중인 배너 label 목록 (미리보기 로딩 인디케이터용)
   const [uploadingLabels, setUploadingLabels] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"main" | "category">("main");
+  const [selectedCategory, setSelectedCategory] = useState("CATEGORY-ALL");
+  const { data: categories = [] } = useQuery<Category[]>(
+    ["getCategoryTreeApi"], getCategoryTreeApi
+  );
   // 쿼리키를 배열 형식으로 통일 (invalidateQueries와 일치)
   const { data: adsData } = useQuery(["getAdsData"], getAdsData, {
     retry: 1,
@@ -53,7 +62,10 @@ const AdminAds = () => {
     setUploadingLabels((prev) => prev.concat(label));
     uploadImagesAPI(imageFormData).then((result) => {
       // taeget.id 따라 label 구분해서 서버로 전송
-      result.map((data: any) => (data.label = label));
+      result.forEach((data: any) => {
+        data.label = label;
+        data.adCategoryCode = activeTab === "main" ? selectedCategory : null;
+      });
       setImgPreview((prev: any) => prev.concat(result));
     }).catch((err) => {
       // 이미지 업로드 실패 처리
@@ -69,8 +81,10 @@ const AdminAds = () => {
     e.preventDefault();
 
     // 유효한 이미지만 필터링 (filename이 있는 항목만)
+    const labels = activeTab === "main" ? MAIN_LABELS : CATEGORY_LABELS;
     const validImages = imgPreview.filter(
-      (item: any) => item && item.filename
+      (item: any) => item && item.filename && labels.includes(item.label) &&
+        (activeTab !== "main" || item.adCategoryCode === selectedCategory)
     );
 
     if (validImages.length === 0) {
@@ -92,7 +106,10 @@ const AdminAds = () => {
 
   /** 전체삭제 */
   const onDeleteAll = () => {
-    deleteAllAdsMutaion.mutate();
+    deleteAllAdsMutaion.mutate({
+      scope: activeTab,
+      ...(activeTab === "main" && { categoryCode: selectedCategory }),
+    });
   };
 
   /** 개별 삭제 */
@@ -119,6 +136,11 @@ const AdminAds = () => {
       imgPreview={imgPreview}
       setImgPreview={setImgPreview}
       uploadingLabels={uploadingLabels}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      categories={categories}
+      selectedCategory={selectedCategory}
+      setSelectedCategory={setSelectedCategory}
       adsData={adsData}
       onChangeImages={onChangeImages}
       onDeleteOne={onDeleteOne}

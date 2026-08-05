@@ -13,6 +13,7 @@ import { categoryState } from "@/recoil/category";
 import { useEffect, useState } from "react";
 import {
   getAdminStorePosts,
+  hiddenPostAPI,
   promotionAPI,
   promotionRoleAPI,
 } from "@/apis/postsApi";
@@ -53,6 +54,18 @@ const AdminStore = () => {
   const promotionHandler = (data: any) => {
     promotionMutation.mutate(data.data.oid);
   };
+
+  const hiddenMutation = useMutation(hiddenPostAPI, {
+    onSuccess() {
+      queryClient.refetchQueries(["getAdminStorePosts"]);
+      setError("");
+    },
+    onError(error: any) {
+      setError(
+        error?.response?.data?.message ?? "업체 노출 상태 변경에 실패했습니다."
+      );
+    },
+  });
 
   const changePromotionOrderMutation = useMutation(
     ["promotionRoleAPI"],
@@ -101,6 +114,7 @@ const AdminStore = () => {
         isLoading={isLoading}
         error={error}
         promotionHandler={promotionHandler}
+        hiddenHandler={(data) => hiddenMutation.mutate(data.data.oid)}
         orderOptions={orderOptions}
         onChangeOrder={onChangeOrder}
         goEdit={goEdit}

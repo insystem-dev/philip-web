@@ -6,7 +6,7 @@ import * as yup from "yup";
 import {
   Category,
   CitySub,
-  getCategoryNavApi,
+  getCategoryTreeApi,
   getCityListApi,
 } from "@/apis/categoryApi";
 import useWindowWidth from "@/lib/hooks/useWindowWidth";
@@ -19,6 +19,7 @@ import {
   deletePreviewImagesAPI,
   editPostAPI,
   getOnePostInfoApi,
+  updatePostViewsApi,
   uploadImagesAPI,
 } from "@/apis/postsApi";
 
@@ -49,6 +50,57 @@ const AdminPost = () => {
     detailItem?.detail
   );
   const [menuImages, setMenuImages] = useState<string[]>(detailItem?.menu);
+  const [viewsMode, setViewsMode] = useState<"actual" | "manual">("actual");
+  const [viewsManualCount, setViewsManualCount] = useState("0");
+  const [viewsError, setViewsError] = useState("");
+
+  const updateViewsMutation = useMutation(updatePostViewsApi, {
+    onSuccess: (savedPost) => {
+      setViewsMode(savedPost.mode);
+      setViewsManualCount(String(savedPost.manualCount));
+      setViewsError("");
+      queryClient.setQueryData(
+        ["detailItem", router.query.id],
+        (current: any) => ({
+          ...current,
+          viewsMode: savedPost.mode,
+          viewsManualCount: savedPost.manualCount,
+        })
+      );
+      queryClient.invalidateQueries(["getAdminStorePosts"]);
+      alert("조회수가 저장되었습니다.");
+    },
+    onError: (error: any) => {
+      setViewsError(
+        error?.response?.data?.message ?? "조회수 저장에 실패했습니다."
+      );
+    },
+  });
+
+  const saveViews = () => {
+    setViewsError("");
+    if (viewsMode === "manual") {
+      const parsed = Number(viewsManualCount);
+      if (
+        viewsManualCount.trim() === "" ||
+        !Number.isSafeInteger(parsed) ||
+        parsed < 0 ||
+        parsed > 2_147_483_647
+      ) {
+        setViewsError(
+          "추가 조회수는 0 이상 2,147,483,647 이하의 정수로 입력해주세요."
+        );
+        return;
+      }
+      updateViewsMutation.mutate({
+        oid: String(router.query.id),
+        mode: viewsMode,
+        count: parsed,
+      });
+      return;
+    }
+    updateViewsMutation.mutate({ oid: String(router.query.id), mode: viewsMode });
+  };
 
   /** 수정 저장 api */
   const mutation = useMutation("editPostAPI", editPostAPI, {
@@ -79,8 +131,8 @@ const AdminPost = () => {
 
   /** 카테고리 select 목록 불러오기 */
   const { data: categoryItem } = useQuery(
-    "getCategoryNavApi",
-    getCategoryNavApi
+    "getCategoryTreeApi",
+    getCategoryTreeApi
   );
   /** 시티 select 목록 불러오기 */
   const { data: cityItem } = useQuery("getCityListApi", getCityListApi);
@@ -98,7 +150,7 @@ const AdminPost = () => {
     })
     .required();
 
-  const { handleSubmit, register, reset } = useForm({
+  const { handleSubmit, register, reset, setValue, watch } = useForm({
     defaultValues: detailItem,
     resolver: yupResolver(schema),
   });
@@ -214,6 +266,8 @@ const AdminPost = () => {
       setThumbImages(detailItem.thumb);
       setDetailImages(detailItem.detail);
       setMenuImages(detailItem.menu);
+      setViewsMode(detailItem.viewsMode ?? "actual");
+      setViewsManualCount(String(detailItem.viewsManualCount ?? 0));
     }
   }, [categoryItem, cityItem, detailItem]);
 
@@ -236,6 +290,18 @@ const AdminPost = () => {
       categoryOptions={categoryOptions}
       register={register}
       postDelete={postDelete}
+      viewsMode={viewsMode}
+      setViewsMode={setViewsMode}
+      viewsManualCount={viewsManualCount}
+      setViewsManualCount={setViewsManualCount}
+      viewsError={viewsError}
+      saveViews={saveViews}
+      isSavingViews={updateViewsMutation.isLoading}
+      actualViews={Number(detailItem?.views ?? 0)}
+      categoryValue={watch("categoryOid")}
+      onCategoryChange={(value) =>
+        setValue("categoryOid", value, { shouldValidate: true })
+      }
     />
   );
 };

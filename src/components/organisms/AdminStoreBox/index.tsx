@@ -11,6 +11,7 @@ export const AdminStoreBox = ({
   isLoading,
   error,
   promotionHandler,
+  hiddenHandler,
   orderOptions,
   onChangeOrder,
   goEdit,
@@ -26,6 +27,7 @@ export const AdminStoreBox = ({
         isLoading={isLoading}
         error={error}
         promotionHandler={promotionHandler}
+        hiddenHandler={hiddenHandler}
         orderOptions={orderOptions}
         onChangeOrder={onChangeOrder}
         goEdit={goEdit}

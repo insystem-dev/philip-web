@@ -53,7 +53,7 @@ export const UserGrid = ({
   return (
     <>
       <S.AdminGrid>
-        <DataGrid dataSource={dataSource} keyExpr="kakao_id">
+        <DataGrid dataSource={dataSource} keyExpr="oid">
           <Editing mode="batch" startEditAction="dblClick" />
           <Column
             caption="No."
@@ -68,10 +68,17 @@ export const UserGrid = ({
             alignment="center"
           />
           <Column
-            caption="카카오ID"
-            dataField="kakao_id"
-            width={100}
+            caption="아이디"
+            width={120}
             alignment="center"
+            cellRender={(e) => e.data.user_id || e.data.kakao_id || "-"}
+          />
+          <Column
+            caption="이메일"
+            dataField="email"
+            minWidth={180}
+            alignment="center"
+            cellRender={(e) => e.value || "-"}
           />
           <Column
             caption="연락처"

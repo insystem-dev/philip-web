@@ -5,6 +5,8 @@ export const AdminContentSection = styled.section`
   display: flex;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   padding: 20px;
   flex-direction: column;
   gap: 10px;
@@ -15,6 +17,8 @@ export const AdminContentBox = styled.div`
   display: flex;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   max-height: calc(100vh - 132px);
   padding: 20px;
   border-radius: 4px;

@@ -1,5 +1,5 @@
 import { CheckBox, DataGrid, LoadPanel } from "devextreme-react";
-import { Column, Pager, Paging } from "devextreme-react/data-grid";
+import { Column, Paging, Scrolling } from "devextreme-react/data-grid";
 import * as S from "../adminGrid.style";
 import { Button } from "@/components/atoms/Button";
 
@@ -13,6 +13,7 @@ interface StoreGridProps {
   isLoading: boolean;
   error: string;
   promotionHandler: (data: any) => void;
+  hiddenHandler: (data: any) => void;
   orderOptions: any[];
   onChangeOrder: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   goEdit: (e: any) => void;
@@ -23,6 +24,7 @@ export const StoreGrid = ({
   isLoading,
   error,
   promotionHandler,
+  hiddenHandler,
   orderOptions,
   onChangeOrder,
   goEdit,
@@ -34,6 +36,7 @@ export const StoreGrid = ({
 
         <DataGrid
           className={"datagrid-wrap"}
+          height="100%"
           dataSource={dataSource}
           showRowLines={true}
           hoverStateEnabled={true}
@@ -46,17 +49,12 @@ export const StoreGrid = ({
             visible={isLoading}
             position={position}
           />
-          {/* 로컬 배열(전체 데이터가 이미 메모리에 있음) + 소규모(수십~수백건) 데이터라
-              virtual scroll 대신 표준 페이징으로 전환 — 스크롤 시 다음 페이지가
-              로딩 스켈레톤에서 멈춰버리던 문제(virtual scroll이 로컬 배열과 맞물려
-              다음 페이지를 못 불러오는 현상)를 근본적으로 피한다 */}
-          <Paging defaultPageSize={20} />
-          <Pager
-            visible={true}
-            showPageSizeSelector={true}
-            allowedPageSizes={[10, 20, 50]}
-            showInfo={true}
-            showNavigationButtons={true}
+          {/* 업체 수가 많지 않으므로 페이지를 나누지 않고 전체 행을 내부 스크롤로 표시 */}
+          <Paging enabled={false} />
+          <Scrolling
+            mode="standard"
+            useNative={false}
+            showScrollbar="always"
           />
           <Column
             caption="No."
@@ -99,6 +97,23 @@ export const StoreGrid = ({
             dataField="address"
             minWidth={80}
             hidingPriority={2}
+          />
+          <Column
+            caption="숨김"
+            dataField="is_hidden"
+            width={60}
+            alignment="center"
+            cellRender={(data) => (
+              <S.AdminCellBox>
+                <InputCheckbox
+                  value="1"
+                  checked={data.data.is_hidden}
+                  themeType="admin"
+                  layout="row"
+                  onChange={() => hiddenHandler(data)}
+                />
+              </S.AdminCellBox>
+            )}
           />
           <Column
             caption="프로모션"
@@ -147,6 +162,12 @@ export const StoreGrid = ({
             width={90}
             alignment="center"
             hidingPriority={1}
+          />
+          <Column
+            caption="조회수"
+            dataField="views"
+            width={80}
+            alignment="center"
           />
           <Column
             caption="상세보기"

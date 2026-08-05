@@ -39,6 +39,14 @@ export const UserModal = ({ onClose, user }: any) => {
           <span>{user?.name}</span>
         </S.ModalItemBox>
         <S.ModalItemBox>
+          <S.ItemTitBox>아이디</S.ItemTitBox>
+          <span>{user?.user_id || user?.kakao_id || "-"}</span>
+        </S.ModalItemBox>
+        <S.ModalItemBox>
+          <S.ItemTitBox>이메일</S.ItemTitBox>
+          <span>{user?.email || "-"}</span>
+        </S.ModalItemBox>
+        <S.ModalItemBox>
           <S.ItemTitBox>회원등급</S.ItemTitBox>
           {/* option value가 undefined가 되지 않도록 oid 추가 (전달값은 기존과 동일) */}
           <InputSelect

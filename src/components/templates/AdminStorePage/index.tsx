@@ -1,8 +1,6 @@
 import * as S from "./adminStorePage.style";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { AdminStoreBox } from "@/components/organisms/AdminStoreBox";
-import { adminState } from "@/recoil/adminToken";
-import { useRecoilState } from "recoil";
 
 export interface AdminStorePageProps {
   setStoreSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
@@ -11,6 +9,7 @@ export interface AdminStorePageProps {
   isLoading: boolean;
   error: string;
   promotionHandler: (data: any) => void;
+  hiddenHandler: (data: any) => void;
   orderOptions: any[];
   onChangeOrder: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   goEdit: (e: any) => void;
@@ -23,6 +22,7 @@ export const AdminStorePage = ({
   isLoading,
   error,
   promotionHandler,
+  hiddenHandler,
   orderOptions,
   onChangeOrder,
   goEdit,
@@ -37,6 +37,7 @@ export const AdminStorePage = ({
           isLoading={isLoading}
           error={error}
           promotionHandler={promotionHandler}
+          hiddenHandler={hiddenHandler}
           orderOptions={orderOptions}
           onChangeOrder={onChangeOrder}
           goEdit={goEdit}

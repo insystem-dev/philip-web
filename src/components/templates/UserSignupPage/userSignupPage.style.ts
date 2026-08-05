@@ -1,0 +1,12 @@
+import styled from "styled-components";
+export const Page = styled.section`display:flex; min-height:calc(100vh - 180px); padding:70px 20px; justify-content:center; align-items:flex-start;`;
+export const Card = styled.div`width:460px; padding:42px; border:1px solid #ddd; border-radius:8px; background:white; box-shadow:0 8px 25px rgba(0,0,0,.08);`;
+export const Title = styled.h1`margin-bottom:28px; font-size:2.6rem; text-align:center;`;
+export const Form = styled.form`display:flex; flex-direction:column; gap:12px;`;
+export const Input = styled.input`width:100%; height:46px; padding:0 12px; border:1px solid #ccc; border-radius:4px; font-size:1.4rem; outline:none; &:focus{border-color:${p=>p.theme.colors.primary};}`;
+export const IdRow = styled.div`display:grid; grid-template-columns:1fr 92px; gap:8px;`;
+export const CheckButton = styled.button`border:0; border-radius:4px; color:white; background:${p=>p.theme.colors.func}; cursor:pointer;`;
+export const Valid = styled.p`margin-top:-7px; color:#16853b; font-size:1.2rem;`;
+export const Terms = styled.div`padding:14px; margin-top:5px; border:1px solid #ddd; border-radius:4px; font-size:1.25rem; line-height:1.5; p{margin:7px 0 10px;color:#666;} label{display:flex;align-items:center;gap:7px;font-weight:600;} input{width:17px;height:17px;}`;
+export const Submit = styled.button`height:48px; border:0; border-radius:4px; color:white; background:${p=>p.theme.colors.primary}; font-weight:700; cursor:pointer; &:disabled{opacity:.45;cursor:not-allowed;}`;
+export const Back = styled.button`border:0; background:transparent; text-decoration:underline; cursor:pointer;`;

@@ -1,10 +1,18 @@
 import styled from "styled-components";
 
 export const AdminGrid = styled.div`
-  height: calc(100vh - 232px);
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
 
-  .dx-datagrid {
-    height: calc(100vh - 252px);
+  .dx-datagrid,
+  .dx-treelist {
+    height: 100%;
+    min-height: 0;
 
     .dx-datagrid-headers {
       overflow: hidden;
@@ -78,6 +86,60 @@ export const AdminGrid = styled.div`
   }
 `;
 
+export const TreeToolbar = styled.div`
+  display: flex;
+  padding-bottom: 8px;
+  justify-content: flex-end;
+  gap: 6px;
+`;
+
+export const TreeControlButton = styled.button`
+  height: 28px;
+  padding: 0 10px;
+  color: ${(props) => props.theme.colors.adminMainTxt};
+  font-size: 1.2rem;
+  background: ${(props) => props.theme.colors.white};
+  border: 1px solid ${(props) => props.theme.colors.adminBorder};
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: ${(props) => props.theme.colors.primary};
+    border-color: ${(props) => props.theme.colors.primary};
+  }
+`;
+
+export const TreeListArea = styled.div`
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+
+  > .dx-treelist {
+    flex: 1;
+    min-height: 0;
+  }
+`;
+
+export const ViewCountCell = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+`;
+
+export const ViewCountInput = styled.input`
+  width: 68px;
+  height: 28px;
+  padding: 0 6px;
+  color: ${(props) => props.theme.colors.dark};
+  font-size: 1.3rem;
+  text-align: right;
+  border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+  border-radius: 4px;
+`;
+
 export const ErrorMsg = styled.div`
   padding: 5px 10px;
   margin-bottom: 5px;
@@ -89,6 +151,16 @@ export const ErrorMsg = styled.div`
 
 export const AdminCellBox = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const GridLoading = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100%;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.4rem;
   align-items: center;
   justify-content: center;
 `;
@@ -109,6 +181,35 @@ export const NameEngInput = styled.input`
 
   &:focus {
     border-color: ${(props) => props.theme.colors.primary};
+    outline: none;
+  }
+`;
+
+export const CodeNameCell = styled.div`
+  display: flex;
+  width: 100%;
+  padding-left: 4px;
+  align-items: center;
+`;
+
+export const CodeNameInput = styled.input`
+  width: 100%;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: ${(props) => props.theme.colors.dark};
+  background: transparent;
+  font-size: 1.4rem;
+
+  &:hover {
+    border-color: ${(props) => props.theme.colors.adminInputBorder};
+    background: ${(props) => props.theme.colors.white};
+  }
+
+  &:focus {
+    border-color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.white};
     outline: none;
   }
 `;

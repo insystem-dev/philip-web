@@ -1,8 +1,11 @@
 import styled, { css } from "styled-components";
 
-export const LinkBox = styled.div<{ $stacked?: boolean }>`
+export const LinkBox = styled.div<{ $stacked?: boolean; $inline?: boolean }>`
   display: flex;
+  width: 100%;
   flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-between;
   gap: 15px;
 
   //모바일 화면 설정
@@ -26,6 +29,15 @@ export const LinkBox = styled.div<{ $stacked?: boolean }>`
         /* 같은 화면에 fixed로 떠 있는 CounterBox(오늘의 방문자수, bottom 8px)와 겹치지 않도록
            CounterBox 높이(72px = 40px 카운터 + 16px*2 패딩) + 8px 여백만큼 위에 띄운다. */
         bottom: 88px;
+      `}
+
+    ${(props) =>
+      props.$inline &&
+      css`
+        position: static;
+        width: min(920px, calc(100% - 32px));
+        flex-direction: row;
+        justify-content: space-between;
       `}
   }
 `;

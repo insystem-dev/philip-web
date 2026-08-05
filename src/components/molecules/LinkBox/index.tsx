@@ -5,13 +5,15 @@ import * as S from "./linkBox.style";
 interface LinkBoxProps {
   /** 모바일에서 같은 화면에 fixed로 떠 있는 CounterBox와 겹치지 않도록 위로 띄울지 여부 */
   stacked?: boolean;
+  /** 모바일에서도 fixed가 아닌 페이지 흐름 안에 배치 */
+  inline?: boolean;
 }
 
-export const LinkBox = ({ stacked }: LinkBoxProps = {}) => {
+export const LinkBox = ({ stacked, inline }: LinkBoxProps = {}) => {
   return (
-    <S.LinkBox $stacked={stacked}>
+    <S.LinkBox $stacked={stacked} $inline={inline}>
       {/* <VIPLink /> */}
-      <KakaoLink />
+      <KakaoLink layout={inline ? "row" : "column"} />
     </S.LinkBox>
   );
 };

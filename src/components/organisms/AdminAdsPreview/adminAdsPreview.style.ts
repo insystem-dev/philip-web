@@ -19,3 +19,24 @@ export const AdminAdsPreviewBox = styled.div`
   grid-template-rows: 89px 58px;
   grid-gap: 4px;
 `;
+
+export const CategoryAdsPreviewBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  > div {
+    width: 100%;
+  }
+`;
+
+export const CategoryPreviewGroups = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const BottomPreviewLabel = styled.div`
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.2rem;
+`;

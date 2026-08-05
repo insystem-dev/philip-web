@@ -8,10 +8,16 @@
  */
 import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputAdsFile } from "@/components/atoms/Input/InputAdsFile";
+import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
+import { Category } from "@/apis/categoryApi";
 
 import * as S from "./adminAdsBox.style";
 
 interface AmdinAdsBoxProps {
+  scope: "main" | "category";
+  adCategoryCode: string;
+  categories: Category[];
+  onChangeCategory: (code: string) => void;
   imgPreview: any[];
   setImgPreview: React.Dispatch<React.SetStateAction<any>>;
   adsData: any[];
@@ -23,6 +29,10 @@ interface AmdinAdsBoxProps {
 }
 
 export const AmdinAdsBox = ({
+  scope,
+  adCategoryCode,
+  categories,
+  onChangeCategory,
   imgPreview,
   onDeleteOne,
   onSubmit,
@@ -32,61 +42,165 @@ export const AmdinAdsBox = ({
   onChangeImages,
 }: AmdinAdsBoxProps) => {
   /** 저장된 광고 이미지 (DB에서 불러온 데이터) */
-  const topAds = adsData?.find((ads: any) => ads.label === "topAds");
-  const btm1 = adsData?.find((ads: any) => ads.label === "bottom1");
-  const btm2 = adsData?.find((ads: any) => ads.label === "bottom2");
-  const btm3 = adsData?.find((ads: any) => ads.label === "bottom3");
+  const mainAd = (label: string) => adsData?.find((ads: any) =>
+    ads.label === label && (ads.adCategoryCode || "CATEGORY-ALL") === adCategoryCode);
+  const topAds = mainAd("topAds");
+  const btm1 = mainAd("bottom1");
+  const btm2 = mainAd("bottom2");
+  const btm3 = mainAd("bottom3");
+  const categoryTopAds = adsData?.find(
+    (ads: any) => ads.label === "categoryTopAds"
+  );
+  const categoryBottomAds = adsData?.find(
+    (ads: any) => ads.label === "categoryBottomAds"
+  );
+  const categoryTopBottom1 = adsData?.find(
+    (ads: any) => ads.label === "categoryTopBottom1"
+  );
+  const categoryTopBottom2 = adsData?.find(
+    (ads: any) => ads.label === "categoryTopBottom2"
+  );
+  const categoryTopBottom3 = adsData?.find(
+    (ads: any) => ads.label === "categoryTopBottom3"
+  );
 
   /** 새로 업로드된 프리뷰 이미지 (아직 저장 안됨) */
-  const newTopAds = imgPreview?.find((ads: any) => ads.label === "topAds");
-  const newBtm1 = imgPreview?.find((ads: any) => ads.label === "bottom1");
-  const newBtm2 = imgPreview?.find((ads: any) => ads.label === "bottom2");
-  const newBtm3 = imgPreview?.find((ads: any) => ads.label === "bottom3");
+  const newMainAd = (label: string) => imgPreview?.find((ads: any) =>
+    ads.label === label && ads.adCategoryCode === adCategoryCode);
+  const newTopAds = newMainAd("topAds");
+  const newBtm1 = newMainAd("bottom1");
+  const newBtm2 = newMainAd("bottom2");
+  const newBtm3 = newMainAd("bottom3");
+  const newCategoryTopAds = imgPreview?.find(
+    (ads: any) => ads.label === "categoryTopAds"
+  );
+  const newCategoryBottomAds = imgPreview?.find(
+    (ads: any) => ads.label === "categoryBottomAds"
+  );
+  const newCategoryTopBottom1 = imgPreview?.find(
+    (ads: any) => ads.label === "categoryTopBottom1"
+  );
+  const newCategoryTopBottom2 = imgPreview?.find(
+    (ads: any) => ads.label === "categoryTopBottom2"
+  );
+  const newCategoryTopBottom3 = imgPreview?.find(
+    (ads: any) => ads.label === "categoryTopBottom3"
+  );
 
   return (
     <S.AdminAdsBox>
-      <S.AdminAdsTit>배너 등록하기</S.AdminAdsTit>
+      <S.AdminAdsTit>
+        {scope === "main" ? "메인 페이지 배너 등록" : "전체 카테고리 배너 등록"}
+      </S.AdminAdsTit>
       <S.AdminAdsInput>
-        <InputAdsFile
-          label="상단배너"
-          id="topAds"
-          onChangeImages={onChangeImages}
-          isAds={topAds}
-          isPreview={newTopAds}
-          onDelete={onDeleteOne}
-          onRemovePreviewImage={onRemovePreviewImage}
-          file={topAds || newTopAds}
-        />
-        <InputAdsFile
-          label="하단배너-1"
-          id="bottom1"
-          onChangeImages={onChangeImages}
-          isAds={btm1}
-          isPreview={newBtm1}
-          onDelete={onDeleteOne}
-          onRemovePreviewImage={onRemovePreviewImage}
-          file={btm1 || newBtm1}
-        />
-        <InputAdsFile
-          label="하단배너-2"
-          id="bottom2"
-          onChangeImages={onChangeImages}
-          isAds={btm2}
-          isPreview={newBtm2}
-          onDelete={onDeleteOne}
-          onRemovePreviewImage={onRemovePreviewImage}
-          file={btm2 || newBtm2}
-        />
-        <InputAdsFile
-          label="하단배너-3"
-          id="bottom3"
-          onChangeImages={onChangeImages}
-          isAds={btm3}
-          isPreview={newBtm3}
-          onDelete={onDeleteOne}
-          onRemovePreviewImage={onRemovePreviewImage}
-          file={btm3 || newBtm3}
-        />
+        {scope === "main" ? (
+          <>
+            <S.CategoryInputRow>
+              <S.CategoryInputLabel>노출 카테고리</S.CategoryInputLabel>
+              <S.CategoryInputControl>
+                <AdminCategoryDrilldown
+                  categories={categories}
+                  value={adCategoryCode}
+                  onChange={onChangeCategory}
+                  allowAll
+                />
+              </S.CategoryInputControl>
+            </S.CategoryInputRow>
+            <InputAdsFile
+              label="상단배너"
+              id="topAds"
+              onChangeImages={onChangeImages}
+              isAds={topAds}
+              isPreview={newTopAds}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={topAds || newTopAds}
+            />
+            <InputAdsFile
+              label="하단배너-1"
+              id="bottom1"
+              onChangeImages={onChangeImages}
+              isAds={btm1}
+              isPreview={newBtm1}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={btm1 || newBtm1}
+            />
+            <InputAdsFile
+              label="하단배너-2"
+              id="bottom2"
+              onChangeImages={onChangeImages}
+              isAds={btm2}
+              isPreview={newBtm2}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={btm2 || newBtm2}
+            />
+            <InputAdsFile
+              label="하단배너-3"
+              id="bottom3"
+              onChangeImages={onChangeImages}
+              isAds={btm3}
+              isPreview={newBtm3}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={btm3 || newBtm3}
+            />
+          </>
+        ) : (
+          <>
+            <InputAdsFile
+              label="전체 카테고리 상단배너"
+              id="categoryTopAds"
+              onChangeImages={onChangeImages}
+              isAds={categoryTopAds}
+              isPreview={newCategoryTopAds}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={categoryTopAds || newCategoryTopAds}
+            />
+            <InputAdsFile
+              label="전체 카테고리 상단 하단배너-1"
+              id="categoryTopBottom1"
+              onChangeImages={onChangeImages}
+              isAds={categoryTopBottom1}
+              isPreview={newCategoryTopBottom1}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={categoryTopBottom1 || newCategoryTopBottom1}
+            />
+            <InputAdsFile
+              label="전체 카테고리 상단 하단배너-2"
+              id="categoryTopBottom2"
+              onChangeImages={onChangeImages}
+              isAds={categoryTopBottom2}
+              isPreview={newCategoryTopBottom2}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={categoryTopBottom2 || newCategoryTopBottom2}
+            />
+            <InputAdsFile
+              label="전체 카테고리 상단 하단배너-3"
+              id="categoryTopBottom3"
+              onChangeImages={onChangeImages}
+              isAds={categoryTopBottom3}
+              isPreview={newCategoryTopBottom3}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={categoryTopBottom3 || newCategoryTopBottom3}
+            />
+            <InputAdsFile
+              label="전체 카테고리 하단배너"
+              id="categoryBottomAds"
+              onChangeImages={onChangeImages}
+              isAds={categoryBottomAds}
+              isPreview={newCategoryBottomAds}
+              onDelete={onDeleteOne}
+              onRemovePreviewImage={onRemovePreviewImage}
+              file={categoryBottomAds || newCategoryBottomAds}
+            />
+          </>
+        )}
         <ButtonGroup marginTop={20}>
           <Button
             type="submit"

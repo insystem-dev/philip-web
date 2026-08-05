@@ -8,7 +8,7 @@ import * as yup from "yup";
 import {
   Category,
   CitySub,
-  getCategoryNavApi,
+  getCategoryTreeApi,
   getCityListApi,
 } from "@/apis/categoryApi";
 
@@ -41,8 +41,8 @@ const AdminPost = () => {
 
   /** 카테고리 select 목록 불러오기 */
   const { data: categoryItem } = useQuery(
-    "getCategoryNavApi",
-    getCategoryNavApi
+    "getCategoryTreeApi",
+    getCategoryTreeApi
   );
   /** 시티 select 목록 불러오기 */
   const { data: cityItem } = useQuery("getCityListApi", getCityListApi);
@@ -160,6 +160,10 @@ const AdminPost = () => {
       categoryOptions={categoryOptions}
       register={register}
       errors={errors}
+      categoryValue={watch("categoryOid")}
+      onCategoryChange={(value) =>
+        setValue("categoryOid", value, { shouldValidate: true })
+      }
     />
   );
 };
