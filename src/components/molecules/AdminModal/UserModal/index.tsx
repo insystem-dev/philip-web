@@ -39,12 +39,8 @@ export const UserModal = ({ onClose, user }: any) => {
           <span>{user?.name || "-"}</span>
         </S.ModalItemBox>
         <S.ModalItemBox>
-          <S.ItemTitBox>가입구분</S.ItemTitBox>
-          <span>{user?.user_type === "KAKAO" ? "카카오" : "일반"}</span>
-        </S.ModalItemBox>
-        <S.ModalItemBox>
           <S.ItemTitBox>아이디</S.ItemTitBox>
-          <span>{user?.user_id || user?.kakao_id || "-"}</span>
+          <span>{user?.user_id || "-"}</span>
         </S.ModalItemBox>
         <S.ModalItemBox>
           <S.ItemTitBox>이메일</S.ItemTitBox>

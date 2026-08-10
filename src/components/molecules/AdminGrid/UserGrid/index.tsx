@@ -67,18 +67,10 @@ export const UserGrid = ({
             alignment="center"
           />
           <Column
-            caption="가입구분"
-            width={80}
-            alignment="center"
-            cellRender={(e) =>
-              e.data.user_type === "KAKAO" ? "카카오" : "일반"
-            }
-          />
-          <Column
             caption="아이디"
             width={120}
             alignment="center"
-            cellRender={(e) => e.data.user_id || e.data.kakao_id || "-"}
+            cellRender={(e) => e.data.user_id || "-"}
           />
           <Column
             caption="이메일"

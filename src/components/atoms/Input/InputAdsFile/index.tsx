@@ -20,6 +20,7 @@ type LinkMode = "none" | "store" | "url";
 
 interface InputAdsFileProps {
   id: string;
+  /** 카드 제목 — 미리보기 오버레이의 위치 태그와 동일한 문구를 쓴다 (예: "왼쪽 하단") */
   label: string;
   file: any;
   isAds?: any;

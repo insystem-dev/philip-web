@@ -43,25 +43,49 @@ export const AdminAdsInput = styled.form`
   gap: 12px;
 `;
 
-/** 이미지 등록 행(80px / 입력 / 90px)과 동일한 규격의 카테고리 선택 행 */
-export const CategoryInputRow = styled.div`
-  display: grid;
-  grid-template-columns: 80px 1fr 90px;
-  gap: 5px;
-  align-items: center;
-  font-size: 1.3rem;
-`;
-
-export const CategoryInputLabel = styled.div`
+/**
+ * 노출 카테고리 선택 박스
+ * 아래 배너 카드 전체의 노출 범위를 바꾸는 핵심 컨트롤이라
+ * 브랜드 블루 틴트 + 좌측 포인트 바로 눈에 띄게 강조한다.
+ */
+export const CategoryScopeBox = styled.div`
   display: flex;
-  height: 35px;
-  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(68, 98, 255, 0.35);
+  border-left: 4px solid ${(props) => props.theme.colors.primary};
+  border-radius: 8px;
+  background: rgba(68, 98, 255, 0.06);
+  flex-direction: column;
+  gap: 8px;
 `;
 
-export const CategoryInputControl = styled.div`
-  grid-column: 2 / 4;
+export const CategoryScopeLabel = styled.div`
+  display: flex;
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 1.35rem;
+  font-weight: 700;
+  align-items: center;
+  gap: 6px;
 
-  button[aria-haspopup="listbox"] {
-    height: 35px;
+  svg {
+    flex: none;
   }
+`;
+
+export const CategoryScopeControl = styled.div`
+  button[aria-haspopup="listbox"] {
+    height: 38px;
+    border-color: rgba(68, 98, 255, 0.45);
+    font-weight: 600;
+
+    &:hover {
+      border-color: ${(props) => props.theme.colors.primary};
+    }
+  }
+`;
+
+export const CategoryScopeHint = styled.p`
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.15rem;
+  line-height: 1.5;
 `;

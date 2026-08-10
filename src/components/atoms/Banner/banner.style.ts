@@ -66,6 +66,24 @@ export const Banner = styled.div<BannerProps>`
   }
 `;
 
+/** 관리자 미리보기용 노출 위치 태그 (좌상단 오버레이) — 등록 카드의 위치 태그와 같은 룩 */
+export const BannerPositionTag = styled.span`
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  display: inline-flex;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  color: white;
+  background: rgba(0, 0, 0, 0.62);
+  font-size: 1.05rem;
+  font-weight: 600;
+  align-items: center;
+  pointer-events: none;
+`;
+
 export const BannerLoadingOverlay = styled.div`
   position: absolute;
   top: 0;

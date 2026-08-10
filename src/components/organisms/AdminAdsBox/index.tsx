@@ -9,6 +9,7 @@
 import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputAdsFile } from "@/components/atoms/Input/InputAdsFile";
 import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
+import { AD_POSITION_LABELS } from "@/components/organisms/AdminAdsPreview";
 import { Category } from "@/apis/categoryApi";
 import { AdsLink } from "@/apis/adsApi";
 
@@ -109,20 +110,40 @@ export const AmdinAdsBox = ({
       <S.AdminAdsInput>
         {scope === "main" ? (
           <>
-            <S.CategoryInputRow>
-              <S.CategoryInputLabel>노출 카테고리</S.CategoryInputLabel>
-              <S.CategoryInputControl>
+            <S.CategoryScopeBox>
+              <S.CategoryScopeLabel>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+                노출 카테고리
+              </S.CategoryScopeLabel>
+              <S.CategoryScopeControl>
                 <AdminCategoryDrilldown
                   categories={categories}
                   value={adCategoryCode}
                   onChange={onChangeCategory}
                   allowAll
                 />
-              </S.CategoryInputControl>
-            </S.CategoryInputRow>
+              </S.CategoryScopeControl>
+              <S.CategoryScopeHint>
+                아래 배너들은 여기서 선택한 카테고리의 메인 페이지에
+                노출됩니다. 카테고리를 바꾸면 해당 카테고리의 배너 목록으로
+                전환됩니다.
+              </S.CategoryScopeHint>
+            </S.CategoryScopeBox>
             <InputAdsFile
               key={`topAds:${adCategoryCode}`}
-              label="상단배너"
+              label={AD_POSITION_LABELS.topAds}
               id="topAds"
               onChangeImages={onChangeImages}
               isAds={topAds}
@@ -136,7 +157,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key={`bottom1:${adCategoryCode}`}
-              label="하단배너-1"
+              label={AD_POSITION_LABELS.bottom1}
               id="bottom1"
               onChangeImages={onChangeImages}
               isAds={btm1}
@@ -150,7 +171,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key={`bottom2:${adCategoryCode}`}
-              label="하단배너-2"
+              label={AD_POSITION_LABELS.bottom2}
               id="bottom2"
               onChangeImages={onChangeImages}
               isAds={btm2}
@@ -164,7 +185,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key={`bottom3:${adCategoryCode}`}
-              label="하단배너-3"
+              label={AD_POSITION_LABELS.bottom3}
               id="bottom3"
               onChangeImages={onChangeImages}
               isAds={btm3}
@@ -181,7 +202,7 @@ export const AmdinAdsBox = ({
           <>
             <InputAdsFile
               key="categoryTopAds"
-              label="전체 카테고리 상단배너"
+              label={AD_POSITION_LABELS.categoryTopAds}
               id="categoryTopAds"
               onChangeImages={onChangeImages}
               isAds={categoryTopAds}
@@ -195,7 +216,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key="categoryTopBottom1"
-              label="전체 카테고리 상단 하단배너-1"
+              label={AD_POSITION_LABELS.categoryTopBottom1}
               id="categoryTopBottom1"
               onChangeImages={onChangeImages}
               isAds={categoryTopBottom1}
@@ -209,7 +230,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key="categoryTopBottom2"
-              label="전체 카테고리 상단 하단배너-2"
+              label={AD_POSITION_LABELS.categoryTopBottom2}
               id="categoryTopBottom2"
               onChangeImages={onChangeImages}
               isAds={categoryTopBottom2}
@@ -223,7 +244,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key="categoryTopBottom3"
-              label="전체 카테고리 상단 하단배너-3"
+              label={AD_POSITION_LABELS.categoryTopBottom3}
               id="categoryTopBottom3"
               onChangeImages={onChangeImages}
               isAds={categoryTopBottom3}
@@ -237,7 +258,7 @@ export const AmdinAdsBox = ({
             />
             <InputAdsFile
               key="categoryBottomAds"
-              label="전체 카테고리 하단배너"
+              label={AD_POSITION_LABELS.categoryBottomAds}
               id="categoryBottomAds"
               onChangeImages={onChangeImages}
               isAds={categoryBottomAds}

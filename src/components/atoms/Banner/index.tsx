@@ -6,6 +6,8 @@ interface BannerProps {
   ads?: any;
   admin?: boolean;
   loading?: boolean;
+  /** 노출 위치 태그 (관리자 미리보기 전용 — 미전달 시 렌더하지 않는다) */
+  positionLabel?: string;
   /** 연결 대상이 있는 배너의 클릭 핸들러 (관리자 미리보기에는 넘기지 않는다) */
   onAdClick?: (ads: any) => void;
 }
@@ -15,6 +17,7 @@ export const Banner: React.FC<BannerProps> = ({
   ads,
   admin,
   loading,
+  positionLabel,
   onAdClick,
 }) => {
   /** 연결 대상과 핸들러가 모두 있을 때만 클릭 가능 */
@@ -27,6 +30,9 @@ export const Banner: React.FC<BannerProps> = ({
       $clickable={clickable}
       onClick={clickable ? () => onAdClick?.(ads) : undefined}
     >
+      {positionLabel && (
+        <S.BannerPositionTag>{positionLabel}</S.BannerPositionTag>
+      )}
       {ads?.filename && (
         <Image
           src={`${process.env.NEXT_PUBLIC_API_URL}/${ads.filename}`}
