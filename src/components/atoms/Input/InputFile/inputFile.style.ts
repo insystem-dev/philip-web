@@ -44,6 +44,23 @@ export const FileLabelBox = styled.div<InputFileProps>`
   }
 `;
 
+export const FileLabelDisabled = styled.span`
+  display: flex;
+  width: 100px;
+  height: 30px;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  background: ${(props) => props.theme.colors.adminInputBg};
+  border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+  align-items: center;
+  justify-content: center;
+  cursor: not-allowed;
+`;
+
+export const FileLimitTxt = styled.span`
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.3rem;
+`;
+
 export const ImgPreviewList = styled.ul`
   overflow: auto;
   display: flex;

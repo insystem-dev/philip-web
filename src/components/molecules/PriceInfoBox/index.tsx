@@ -1,25 +1,15 @@
-import Image from "next/image";
+import { ImageSlide } from "@/components/atoms/ImageSlide";
 import * as S from "./priceInfoBox.style";
 
 export const PriceInfoBox = ({ post, title }: any) => {
-  const filename = post?.menu?.[0]?.filename;
-  const hasImage = Boolean(filename);
   const hasContents = Boolean(post?.contents?.trim());
 
   return (
     <S.PriceInfoBox>
       <S.PriceTit>{title}</S.PriceTit>
-      <S.PriceImg $empty={!hasImage}>
-        {hasImage ? (
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}/${filename}`}
-            alt="선택된 업체 이미지"
-            width={800}
-            height={100}
-          />
-        ) : (
-          <S.PriceImgEmpty>등록된 이미지가 없습니다.</S.PriceImgEmpty>
-        )}
+      <S.PriceImg>
+        {/* 메뉴 이미지는 여러 장이므로 슬라이드로 노출 (빈 배열 안내는 ImageSlide 가 처리) */}
+        <ImageSlide items={post?.menu} />
       </S.PriceImg>
       <S.PriceInfo>
         {hasContents ? (

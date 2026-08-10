@@ -8,7 +8,7 @@
  */
 import { DataGrid } from "devextreme-react";
 import * as S from "../adminGrid.style";
-import { Column, Editing } from "devextreme-react/data-grid";
+import { Column } from "devextreme-react/data-grid";
 import { Button } from "@/components/atoms/Button";
 import { UserModal } from "../../AdminModal/UserModal";
 
@@ -54,7 +54,6 @@ export const UserGrid = ({
     <>
       <S.AdminGrid>
         <DataGrid dataSource={dataSource} keyExpr="oid">
-          <Editing mode="batch" startEditAction="dblClick" />
           <Column
             caption="No."
             cellRender={(e) => e.row.loadIndex + 1}
@@ -66,6 +65,14 @@ export const UserGrid = ({
             dataField="name"
             width={100}
             alignment="center"
+          />
+          <Column
+            caption="가입구분"
+            width={80}
+            alignment="center"
+            cellRender={(e) =>
+              e.data.user_type === "KAKAO" ? "카카오" : "일반"
+            }
           />
           <Column
             caption="아이디"
@@ -84,6 +91,7 @@ export const UserGrid = ({
             caption="연락처"
             dataField="phone_number"
             alignment="center"
+            cellRender={(e) => e.value || "-"}
           />
           <Column
             caption="회원등급"

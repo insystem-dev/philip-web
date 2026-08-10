@@ -10,6 +10,7 @@ import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputAdsFile } from "@/components/atoms/Input/InputAdsFile";
 import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
 import { Category } from "@/apis/categoryApi";
+import { AdsLink } from "@/apis/adsApi";
 
 import * as S from "./adminAdsBox.style";
 
@@ -26,6 +27,12 @@ interface AmdinAdsBoxProps {
   onSubmit: (e: Event) => void;
   onRemovePreviewImage: (isAds: any) => void;
   onDeleteAll: () => void;
+  /** 배너 연결 대상으로 고를 수 있는 등록 업체 목록 */
+  stores: any[];
+  /** label별 연결 대상 입력값 조회 */
+  getLink: (label: string) => AdsLink;
+  /** label별 연결 대상 변경 */
+  onChangeLink: (label: string, next: AdsLink) => void;
 }
 
 export const AmdinAdsBox = ({
@@ -40,6 +47,9 @@ export const AmdinAdsBox = ({
   onDeleteAll,
   adsData,
   onChangeImages,
+  stores,
+  getLink,
+  onChangeLink,
 }: AmdinAdsBoxProps) => {
   /** 저장된 광고 이미지 (DB에서 불러온 데이터) */
   const mainAd = (label: string) => adsData?.find((ads: any) =>
@@ -92,6 +102,10 @@ export const AmdinAdsBox = ({
       <S.AdminAdsTit>
         {scope === "main" ? "메인 페이지 배너 등록" : "전체 카테고리 배너 등록"}
       </S.AdminAdsTit>
+      <S.AdminAdsDesc>
+        배너 이미지를 등록하고 클릭 시 이동할 대상을 연결하세요. 변경 사항은{" "}
+        <strong>저장</strong>을 눌러야 반영됩니다.
+      </S.AdminAdsDesc>
       <S.AdminAdsInput>
         {scope === "main" ? (
           <>
@@ -107,6 +121,7 @@ export const AmdinAdsBox = ({
               </S.CategoryInputControl>
             </S.CategoryInputRow>
             <InputAdsFile
+              key={`topAds:${adCategoryCode}`}
               label="상단배너"
               id="topAds"
               onChangeImages={onChangeImages}
@@ -115,8 +130,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={topAds || newTopAds}
+              stores={stores}
+              link={getLink("topAds")}
+              onChangeLink={(next) => onChangeLink("topAds", next)}
             />
             <InputAdsFile
+              key={`bottom1:${adCategoryCode}`}
               label="하단배너-1"
               id="bottom1"
               onChangeImages={onChangeImages}
@@ -125,8 +144,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={btm1 || newBtm1}
+              stores={stores}
+              link={getLink("bottom1")}
+              onChangeLink={(next) => onChangeLink("bottom1", next)}
             />
             <InputAdsFile
+              key={`bottom2:${adCategoryCode}`}
               label="하단배너-2"
               id="bottom2"
               onChangeImages={onChangeImages}
@@ -135,8 +158,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={btm2 || newBtm2}
+              stores={stores}
+              link={getLink("bottom2")}
+              onChangeLink={(next) => onChangeLink("bottom2", next)}
             />
             <InputAdsFile
+              key={`bottom3:${adCategoryCode}`}
               label="하단배너-3"
               id="bottom3"
               onChangeImages={onChangeImages}
@@ -145,11 +172,15 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={btm3 || newBtm3}
+              stores={stores}
+              link={getLink("bottom3")}
+              onChangeLink={(next) => onChangeLink("bottom3", next)}
             />
           </>
         ) : (
           <>
             <InputAdsFile
+              key="categoryTopAds"
               label="전체 카테고리 상단배너"
               id="categoryTopAds"
               onChangeImages={onChangeImages}
@@ -158,8 +189,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={categoryTopAds || newCategoryTopAds}
+              stores={stores}
+              link={getLink("categoryTopAds")}
+              onChangeLink={(next) => onChangeLink("categoryTopAds", next)}
             />
             <InputAdsFile
+              key="categoryTopBottom1"
               label="전체 카테고리 상단 하단배너-1"
               id="categoryTopBottom1"
               onChangeImages={onChangeImages}
@@ -168,8 +203,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={categoryTopBottom1 || newCategoryTopBottom1}
+              stores={stores}
+              link={getLink("categoryTopBottom1")}
+              onChangeLink={(next) => onChangeLink("categoryTopBottom1", next)}
             />
             <InputAdsFile
+              key="categoryTopBottom2"
               label="전체 카테고리 상단 하단배너-2"
               id="categoryTopBottom2"
               onChangeImages={onChangeImages}
@@ -178,8 +217,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={categoryTopBottom2 || newCategoryTopBottom2}
+              stores={stores}
+              link={getLink("categoryTopBottom2")}
+              onChangeLink={(next) => onChangeLink("categoryTopBottom2", next)}
             />
             <InputAdsFile
+              key="categoryTopBottom3"
               label="전체 카테고리 상단 하단배너-3"
               id="categoryTopBottom3"
               onChangeImages={onChangeImages}
@@ -188,8 +231,12 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={categoryTopBottom3 || newCategoryTopBottom3}
+              stores={stores}
+              link={getLink("categoryTopBottom3")}
+              onChangeLink={(next) => onChangeLink("categoryTopBottom3", next)}
             />
             <InputAdsFile
+              key="categoryBottomAds"
               label="전체 카테고리 하단배너"
               id="categoryBottomAds"
               onChangeImages={onChangeImages}
@@ -198,6 +245,9 @@ export const AmdinAdsBox = ({
               onDelete={onDeleteOne}
               onRemovePreviewImage={onRemovePreviewImage}
               file={categoryBottomAds || newCategoryBottomAds}
+              stores={stores}
+              link={getLink("categoryBottomAds")}
+              onChangeLink={(next) => onChangeLink("categoryBottomAds", next)}
             />
           </>
         )}

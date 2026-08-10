@@ -77,7 +77,7 @@ export const AdminEditForm = ({
         </S.PostFormImgInput>
         <S.PostFormBoxTit>
           메뉴이미지 등록
-          <span>(최대 1장 등록)</span>
+          <span>(최대 5장 등록)</span>
         </S.PostFormBoxTit>
         {/* 메뉴이미지 등록 */}
         <S.PostFormImgInput>
@@ -88,6 +88,7 @@ export const AdminEditForm = ({
             onRemoveServerImage={onRemoveMenu}
             imgPreview={newMenuImages}
             imageFromDB={menuImages}
+            maxCount={5}
           />
         </S.PostFormImgInput>
       </S.PostFormImgBox>

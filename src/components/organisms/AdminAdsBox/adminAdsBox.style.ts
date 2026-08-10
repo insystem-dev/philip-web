@@ -11,8 +11,21 @@ export const AdminAdsBox = styled.div`
 `;
 
 export const AdminAdsTit = styled.div`
+  color: ${(props) => props.theme.colors.adminMainTxt};
   font-size: 1.6rem;
-  margin-bottom: 10px;
+  font-weight: 700;
+`;
+
+export const AdminAdsDesc = styled.p`
+  margin-bottom: 8px;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.2rem;
+  line-height: 1.5;
+
+  strong {
+    color: ${(props) => props.theme.colors.primary};
+    font-weight: 700;
+  }
 `;
 
 export const AdminAdsGroupTitle = styled.div`
@@ -27,7 +40,7 @@ export const AdminAdsGroupTitle = styled.div`
 export const AdminAdsInput = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 `;
 
 /** 이미지 등록 행(80px / 입력 / 90px)과 동일한 규격의 카테고리 선택 행 */

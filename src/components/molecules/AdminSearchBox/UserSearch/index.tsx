@@ -15,7 +15,7 @@ export const UserSearch = ({ setUserSearchKeyword }: UserSearchProps) => {
           layout="adminRow"
           size="sm"
           width="200px"
-          placeholder="이름/카카오ID/연락처"
+          placeholder="이름/아이디/이메일/연락처"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setUserSearchKeyword(e.target.value)
           }

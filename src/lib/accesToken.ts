@@ -18,8 +18,7 @@ export function isTokenExpired(token: string): boolean {
 /**
  * localStorage의 관리자 토큰 조회.
  * 만료·손상된 admin 토큰은 자동 삭제하고 null을 반환한다 —
- * 죽은 admin 토큰이 요청 인터셉터에서 카카오 토큰보다 우선 적용되어
- * 카카오 로그인 사용자까지 401(강제 로그아웃)로 오염시키던 문제 방지.
+ * 죽은 토큰을 그대로 실어 보내 관리자 화면 요청이 401로 반복 실패하는 것을 막는다.
  */
 export async function readAdminAccessToken() {
   try {

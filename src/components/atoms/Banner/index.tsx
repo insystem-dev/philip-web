@@ -6,6 +6,8 @@ interface BannerProps {
   ads?: any;
   admin?: boolean;
   loading?: boolean;
+  /** 연결 대상이 있는 배너의 클릭 핸들러 (관리자 미리보기에는 넘기지 않는다) */
+  onAdClick?: (ads: any) => void;
 }
 
 export const Banner: React.FC<BannerProps> = ({
@@ -13,9 +15,18 @@ export const Banner: React.FC<BannerProps> = ({
   ads,
   admin,
   loading,
+  onAdClick,
 }) => {
+  /** 연결 대상과 핸들러가 모두 있을 때만 클릭 가능 */
+  const clickable = !!onAdClick && !!(ads?.adLinkPostOid || ads?.adLinkUrl);
+
   return (
-    <S.Banner order={order} admin={admin}>
+    <S.Banner
+      order={order}
+      admin={admin}
+      $clickable={clickable}
+      onClick={clickable ? () => onAdClick?.(ads) : undefined}
+    >
       {ads?.filename && (
         <Image
           src={`${process.env.NEXT_PUBLIC_API_URL}/${ads.filename}`}

@@ -2,6 +2,7 @@ import { AmdinAdsBox } from "@/components/organisms/AdminAdsBox";
 import { AdminAdsPreview } from "@/components/organisms/AdminAdsPreview";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { Category } from "@/apis/categoryApi";
+import { AdsLink } from "@/apis/adsApi";
 
 import * as S from "./adminAdsPage.style";
 
@@ -20,6 +21,12 @@ interface AdminAdsPageProps {
   categories: Category[];
   selectedCategory: string;
   setSelectedCategory: (code: string) => void;
+  /** 배너 연결 대상으로 고를 수 있는 등록 업체 목록 */
+  stores: any[];
+  /** label별 연결 대상 입력값 조회 */
+  getLink: (label: string) => AdsLink;
+  /** label별 연결 대상 변경 */
+  onChangeLink: (label: string, next: AdsLink) => void;
 }
 export const AdminAdsPage = ({
   imgPreview,
@@ -36,6 +43,9 @@ export const AdminAdsPage = ({
   categories,
   selectedCategory,
   setSelectedCategory,
+  stores,
+  getLink,
+  onChangeLink,
 }: AdminAdsPageProps) => {
   return (
     <AdminLayout title="광고관리">
@@ -80,6 +90,9 @@ export const AdminAdsPage = ({
           onSubmit={onSubmit}
           onRemovePreviewImage={onRemovePreviewImage}
           onDeleteAll={onDeleteAll}
+          stores={stores}
+          getLink={getLink}
+          onChangeLink={onChangeLink}
         />
       </S.AdminAdsPage>
     </AdminLayout>

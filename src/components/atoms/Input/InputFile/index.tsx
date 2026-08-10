@@ -10,20 +10,47 @@ export const InputFile = ({
   onRemoveServerImage,
   imgPreview,
   imageFromDB,
+  maxCount,
 }: any) => {
+  // maxCount 를 넘기지 않으면 기존과 동일하게 개수 제한 없이 동작한다
+  const hasMaxCount = typeof maxCount === "number";
+  const totalCount = (imgPreview?.length ?? 0) + (imageFromDB?.length ?? 0);
+  const isMaxReached = hasMaxCount && totalCount >= maxCount;
+
+  /** 남은 장수보다 많이 선택하면 업로드 자체를 막는다 (maxCount 지정 시에만 동작) */
+  const onSelectFiles = (e: any) => {
+    if (hasMaxCount && e.target.files?.length > maxCount - totalCount) {
+      alert(`이미지는 최대 ${maxCount}장까지 등록할 수 있습니다.`);
+      e.target.value = "";
+      return;
+    }
+    onChangeImages(e);
+  };
+
   return (
     <S.InputFile>
       <S.FileLabelBox>
-        <label htmlFor={id || "input-img"}>
-          이미지 등록
-          <input
-            type="file"
-            id={id || "input-img"}
-            multiple
-            hidden
-            onChange={onChangeImages}
-          />
-        </label>
+        {isMaxReached ? (
+          <S.FileLabelDisabled>이미지 등록</S.FileLabelDisabled>
+        ) : (
+          <label htmlFor={id || "input-img"}>
+            이미지 등록
+            <input
+              type="file"
+              id={id || "input-img"}
+              multiple
+              hidden
+              onChange={onSelectFiles}
+            />
+          </label>
+        )}
+        {hasMaxCount && (
+          <S.FileLimitTxt>
+            {isMaxReached
+              ? `최대 ${maxCount}장까지 등록할 수 있습니다.`
+              : `${totalCount}/${maxCount}장`}
+          </S.FileLimitTxt>
+        )}
       </S.FileLabelBox>
       <S.ImgPreviewList>
         {imgPreview?.length > 0 || imageFromDB?.length > 0 ? (

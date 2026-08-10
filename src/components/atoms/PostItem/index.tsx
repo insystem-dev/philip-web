@@ -7,12 +7,10 @@ import { useMutation } from "react-query";
 import { fetchCountViews } from "@/apis/postsApi";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
-import { adminState } from "@/recoil/adminToken";
 import { AlertModal } from "@/components/molecules/AlertModal";
 
 export const PostItem = ({ item }: any) => {
   const router = useRouter();
-  const admin = useRecoilValue(adminState);
   /** 고객 토큰관리 */
   const userToken = useRecoilValue(userTokenState);
   /** 비로그인 상태로 게시물 클릭 시 로그인 안내 모달 */
@@ -22,15 +20,16 @@ export const PostItem = ({ item }: any) => {
   const mutation = useMutation(["fetchCountViews"], fetchCountViews);
 
   /** 게시물 클릭시 로그인 토큰 값(userToken) 이 없다면 알림 */
+  /** 관리자 토큰(admin)은 유저 로그인으로 치지 않는다 — 헤더 로그인 상태와 어긋나기 때문 */
   const goDetail = (e: any) => {
-    if (userToken || admin) router.push(`/main/post/${item.oid}`);
+    if (userToken) router.push(`/main/post/${item.oid}`);
     else setShowLoginModal(true);
     // router.push(`/main/post/${item.oid}`);
   };
 
   /** 게시물 클릭시 handler (로그인 상태일 때만 조회수 증가) */
   const countViews = () => {
-    if (userToken || admin) mutation.mutate(item.oid);
+    if (userToken) mutation.mutate(item.oid);
   };
 
   return (

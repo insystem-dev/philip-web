@@ -15,8 +15,8 @@ export const PriceInfoBox = styled.div`
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {
+    /* ImageSlide 가 모바일에서 100vw 를 쓰므로 컨테이너에는 좌우 여백을 주지 않는다 */
     width: 100vw;
-    padding: 0 16px;
     grid-template-areas:
       "TT"
       "IMG"
@@ -33,38 +33,16 @@ export const PriceTit = styled.div`
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {
+    padding: 0 16px;
     font-size: 1.8rem;
   }
 `;
 
-export const PriceImg = styled.div<{ $empty?: boolean }>`
-  position: relative;
-  overflow: hidden;
+export const PriceImg = styled.div`
   grid-area: IMG;
-  display: flex;
+  /* ImageSlide(메인 505px + 썸네일 85px) 가 그리드 컬럼을 넘기지 않도록 */
   width: 100%;
-  min-height: 200px;
-  height: auto;
-  background: ${(props) => (props.$empty ? "rgba(255, 255, 255, 0.03)" : "#171717")};
-  border-radius: 4px;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: auto !important;
-    object-position: top;
-  }
-
-  //모바일 화면 설정
-  @media screen and (max-width: 768px) {
-    min-height: 160px;
-  }
-`;
-
-export const PriceImgEmpty = styled.span`
-  color: ${(props) => props.theme.colors.categorySubTxt};
-  font-size: 1.5rem;
+  min-width: 0;
 `;
 
 export const PriceInfo = styled.div`
@@ -73,7 +51,7 @@ export const PriceInfo = styled.div`
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {
-    padding: 0 0 10px;
+    padding: 0 16px 10px;
     font-size: 1.5rem;
   }
 `;

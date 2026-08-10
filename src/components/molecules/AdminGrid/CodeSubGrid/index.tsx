@@ -9,6 +9,47 @@ import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
 
+/**
+ * 이름 인라인 편집 — blur 시점에 값이 바뀐 경우에만 저장 요청을 보낸다.
+ * Enter 는 저장(blur), Escape 는 원래 값으로 되돌린다.
+ */
+const NameCell = ({
+  data,
+  onChangeName,
+}: {
+  data: any;
+  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
+}) => {
+  const original = data.data.name ?? "";
+  const [value, setValue] = useState(original);
+
+  return (
+    <S.CodeNameCell>
+      <S.CodeNameInput
+        type="text"
+        value={value}
+        title="클릭해서 이름 수정"
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "Escape") {
+            setValue(original);
+            e.currentTarget.blur();
+          }
+        }}
+        onBlur={(e) => {
+          const next = e.target.value.trim();
+          if (!next || next === original) {
+            setValue(original);
+            return;
+          }
+          onChangeName(e, data);
+        }}
+      />
+    </S.CodeNameCell>
+  );
+};
+
 /** 영문명 인라인 편집 — blur 시점에만 저장 요청을 보내기 위해 로컬 state로 관리 */
 const NameEngCell = ({
   data,
@@ -41,9 +82,12 @@ interface CodeSubGridProps {
   isLoading: boolean;
   /** CITY 그룹일 때만 사용여부/영문명 컬럼을 추가로 보여준다 */
   showCityColumns?: boolean;
+  /** 하위 추가 컬럼 노출 여부 (CATEGORY 그룹에서만 사용) */
+  allowAddChild?: boolean;
   getSortOptions: (parentOid: string | null) => any[];
   onAddChild: (data: any) => void;
-  onSelectEdit: (data: any) => void;
+  /** 이름 인라인 수정 (blur 시 저장) */
+  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled?: (data: any) => void;
   onChangeNameEng?: (
@@ -58,9 +102,10 @@ export const CodeSubGrid = ({
   focusedRowKey,
   isLoading,
   showCityColumns,
+  allowAddChild,
   getSortOptions,
   onAddChild,
-  onSelectEdit,
+  onChangeName,
   onChangeSort,
   onToggleDisabled,
   onChangeNameEng,
@@ -129,10 +174,11 @@ export const CodeSubGrid = ({
           dataField="name"
           minWidth={180}
           cellRender={(data) => (
-            <button type="button" onClick={() => onSelectEdit(data)}
-              style={{ border: 0, background: "none", padding: 0, color: "#2554c7", cursor: "pointer", textDecoration: "underline" }}>
-              {data.data.name}
-            </button>
+            <NameCell
+              key={`${data.data.oid}:${data.data.name}`}
+              data={data}
+              onChangeName={onChangeName}
+            />
           )}
         />
         <Column caption="코드" dataField="oid" minWidth={180} width={240} />
@@ -183,22 +229,24 @@ export const CodeSubGrid = ({
             )}
           />
         )}
-        <Column
-          caption="하위 추가"
-          width={90}
-          alignment="center"
-          cellRender={(data) => (
-            <Button
-              type="button"
-              color="primary"
-              layout="solid"
-              width="76px"
-              height={24}
-              label="하위 추가"
-              onClick={() => onAddChild(data)}
-            />
-          )}
-        />
+        {allowAddChild && (
+          <Column
+            caption="하위 추가"
+            width={90}
+            alignment="center"
+            cellRender={(data) => (
+              <Button
+                type="button"
+                color="primary"
+                layout="solid"
+                width="76px"
+                height={24}
+                label="하위 추가"
+                onClick={() => onAddChild(data)}
+              />
+            )}
+          />
+        )}
         <Column
           caption="삭제"
           width={70}

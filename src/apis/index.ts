@@ -9,14 +9,26 @@ const AxiosInstance = axios.create({
   },
 });
 
+/**
+ * 현재 보고 있는 화면 기준으로 토큰을 나눠 싣는다.
+ * 예전처럼 admin 토큰을 무조건 우선 적용하면, 관리자 토큰만 가진 사람이
+ * 유저 화면에서도 인증된 요청을 보내 비로그인 사용자가 로그인된 것처럼 보였다.
+ * 관리자 화면(/admin)에서는 admin 토큰만, 그 외 유저 화면에서는 카카오 토큰만 사용한다.
+ */
 AxiosInstance.interceptors.request.use(
   async (config) => {
+    // SSR(Next.js 서버 렌더링)에서는 localStorage가 없으므로 헤더 조작 없이 통과
+    if (typeof window === "undefined") return config;
+
     try {
-      // admin 토큰 우선, 없으면 카카오 사용자 토큰 사용
-      const adminToken = await readAdminAccessToken();
-      if (adminToken?.accessToken) {
-        config.headers.Authorization = `Bearer ${adminToken.accessToken}`;
+      if (window.location.pathname.startsWith("/admin")) {
+        // 관리자 화면 — 카카오 토큰으로 폴백하지 않는다
+        const adminToken = await readAdminAccessToken();
+        if (adminToken?.accessToken) {
+          config.headers.Authorization = `Bearer ${adminToken.accessToken}`;
+        }
       } else {
+        // 유저 화면 — admin 토큰이 있어도 무시한다
         const kakaoToken = localStorage.getItem("kakaoSignKey");
         if (kakaoToken) {
           config.headers.Authorization = `Bearer ${kakaoToken}`;

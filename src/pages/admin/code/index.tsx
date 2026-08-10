@@ -28,7 +28,6 @@ const AdminCode = () => {
   const [activeGroup, setActiveGroup] = useState<CodeGroup>("CATEGORY");
   const [newName, setNewName] = useState("");
   const [selectedParent, setSelectedParent] = useState<any | null>(null);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [error, setError] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactKakao, setContactKakao] = useState("philip69");
@@ -180,23 +179,25 @@ const AdminCode = () => {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
-    if (editingItem) {
-      const onSuccess = () => {
-        setEditingItem(null);
-        setNewName("");
-      };
-      if (activeGroup === "CATEGORY") {
-        updateCategoryMutation.mutate({ oid: editingItem.oid, name }, { onSuccess });
-      } else {
-        updateCityMutation.mutate({ oid: editingItem.oid, name }, { onSuccess });
-      }
-      return;
-    }
     const parentCode = selectedParent?.oid;
     if (activeGroup === "CATEGORY")
       createCategoryMutation.mutate({ name, parentCode });
     if (activeGroup === "CITY")
       createCityMutation.mutate({ name, parentCode });
+  };
+
+  /** 그리드 인라인 이름 수정 — 값이 실제로 바뀐 경우에만 호출된다(그리드 셀에서 필터링) */
+  const onChangeName = (
+    e: React.FocusEvent<HTMLInputElement>,
+    data: any
+  ) => {
+    const name = e.target.value.trim();
+    if (!name || name === data.data.name) return;
+    if (activeGroup === "CATEGORY") {
+      updateCategoryMutation.mutate({ oid: data.data.oid, name });
+    } else if (activeGroup === "CITY") {
+      updateCityMutation.mutate({ oid: data.data.oid, name });
+    }
   };
 
   const onChangeSort = (
@@ -259,16 +260,11 @@ const AdminCode = () => {
       .filter((item) => item.parentOid === parentOid)
       .map((_, i) => ({ oid: i, name: i }));
   const isCreating =
-    editingItem
-      ? activeGroup === "CITY"
-        ? updateCityMutation.isLoading
-        : updateCategoryMutation.isLoading
-      : activeGroup === "CITY"
+    activeGroup === "CITY"
       ? createCityMutation.isLoading
       : createCategoryMutation.isLoading;
 
   const startCreate = (parent: any | null = null) => {
-    setEditingItem(null);
     setSelectedParent(parent);
     setNewName("");
     setError("");
@@ -281,7 +277,6 @@ const AdminCode = () => {
         setActiveGroup(group);
         setNewName("");
         setSelectedParent(null);
-        setEditingItem(null);
         setError("");
         setFocusedRowKey(null);
       }}
@@ -292,21 +287,14 @@ const AdminCode = () => {
       newName={newName}
       setNewName={setNewName}
       selectedParent={selectedParent}
-      editingItem={editingItem}
       clearSelectedParent={() => startCreate(null)}
-      onStartCreate={() => startCreate(null)}
       onSubmitCreate={onSubmitCreate}
       isCreating={isCreating}
       getSortOptions={getSortOptions}
       onAddChild={(data) => {
         startCreate(data.data);
       }}
-      onSelectEdit={(data) => {
-        setEditingItem(data.data);
-        setSelectedParent(null);
-        setNewName(data.data.name ?? "");
-        setError("");
-      }}
+      onChangeName={onChangeName}
       onChangeSort={onChangeSort}
       onToggleDisabled={onToggleDisabled}
       onChangeNameEng={onChangeNameEng}

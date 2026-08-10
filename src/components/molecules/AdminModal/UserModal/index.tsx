@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
-import { cityState } from "@/recoil/city";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { AdminModal } from "..";
 import { Button, ButtonGroup } from "@/components/atoms/Button";
@@ -27,6 +25,8 @@ export const UserModal = ({ onClose, user }: any) => {
     const data = {
       oid: user.oid,
       role: e.target.value,
+      /** 카카오/일반 회원이 각각 다른 테이블이라 서버가 대상 구분에 사용 */
+      userType: user?.user_type,
     };
     changeUserRoleMutation.mutate(data);
   };
@@ -36,7 +36,11 @@ export const UserModal = ({ onClose, user }: any) => {
       <S.ModalBody>
         <S.ModalItemBox>
           <S.ItemTitBox>이름</S.ItemTitBox>
-          <span>{user?.name}</span>
+          <span>{user?.name || "-"}</span>
+        </S.ModalItemBox>
+        <S.ModalItemBox>
+          <S.ItemTitBox>가입구분</S.ItemTitBox>
+          <span>{user?.user_type === "KAKAO" ? "카카오" : "일반"}</span>
         </S.ModalItemBox>
         <S.ModalItemBox>
           <S.ItemTitBox>아이디</S.ItemTitBox>
@@ -47,8 +51,13 @@ export const UserModal = ({ onClose, user }: any) => {
           <span>{user?.email || "-"}</span>
         </S.ModalItemBox>
         <S.ModalItemBox>
+          <S.ItemTitBox>연락처</S.ItemTitBox>
+          <span>{user?.phone_number || "-"}</span>
+        </S.ModalItemBox>
+        <S.ModalItemBox>
           <S.ItemTitBox>회원등급</S.ItemTitBox>
           {/* option value가 undefined가 되지 않도록 oid 추가 (전달값은 기존과 동일) */}
+          {/* value 가 비면 InputSelect 가 localStorage 의 city 로 폴백하므로 기본값을 넘긴다 */}
           <InputSelect
             options={[
               {
@@ -64,7 +73,7 @@ export const UserModal = ({ onClose, user }: any) => {
             size="sm"
             themeType="admin"
             onChange={onChangeRole}
-            value={role}
+            value={role || "COMMON"}
           />
         </S.ModalItemBox>
         <ButtonGroup marginTop={10}>
@@ -78,13 +87,14 @@ export const UserModal = ({ onClose, user }: any) => {
             onClick={onClose}
           />
           {/* form submit으로 인한 페이지 리로드 방지 */}
+          {/* 등급 변경은 select onChange 에서 이미 저장되므로 라벨은 "확인" */}
           <Button
             type="button"
             layout="solid"
             width="60px"
             height={36}
             color="primary"
-            label="저장"
+            label="확인"
             onClick={onClose}
           />
         </ButtonGroup>

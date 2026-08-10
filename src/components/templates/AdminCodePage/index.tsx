@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import * as S from "./adminCodePage.style";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { CodeSubGrid } from "@/components/molecules/AdminGrid/CodeSubGrid";
@@ -22,16 +23,15 @@ export interface AdminCodePageProps {
   newName: string;
   setNewName: (value: string) => void;
   selectedParent: any | null;
-  editingItem: any | null;
   clearSelectedParent: () => void;
-  onStartCreate: () => void;
   onSubmitCreate: (e: React.FormEvent<HTMLFormElement>) => void;
   isCreating: boolean;
   getSortOptions: (parentOid: string | null) => any[];
   onAddChild: (data: any) => void;
-  onSelectEdit: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled: (data: any) => void;
+  /** 그리드 인라인 이름 수정 (blur 시 저장) */
+  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
   onChangeNameEng: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
   onDelete: (data: any) => void;
   contactPhone: string;
@@ -54,16 +54,14 @@ export const AdminCodePage = ({
   newName,
   setNewName,
   selectedParent,
-  editingItem,
   clearSelectedParent,
-  onStartCreate,
   onSubmitCreate,
   isCreating,
   getSortOptions,
   onAddChild,
-  onSelectEdit,
   onChangeSort,
   onToggleDisabled,
+  onChangeName,
   onChangeNameEng,
   onDelete,
   contactPhone,
@@ -75,15 +73,27 @@ export const AdminCodePage = ({
   onSubmitContactKakao,
   isSavingContactKakao,
 }: AdminCodePageProps) => {
+  const nameFieldRef = useRef<HTMLDivElement | null>(null);
+
+  /** 행의 '하위 추가'를 누르면 이름 입력으로 바로 포커스를 옮긴다 */
+  useEffect(() => {
+    if (!selectedParent) return;
+    nameFieldRef.current?.querySelector("input")?.focus();
+  }, [selectedParent]);
+
+  const groupLabel = activeGroup === "CATEGORY" ? "카테고리" : "지역";
+
   return (
     <AdminLayout title="공통코드 관리">
       <S.AdminCodePage>
-        <S.GroupTabs>
+        <S.GroupTabs role="tablist" aria-label="공통코드 구분">
           {GROUP_TABS.map((tab) => (
             <S.GroupTab
               key={tab.key}
               type="button"
-              active={activeGroup === tab.key}
+              role="tab"
+              aria-selected={activeGroup === tab.key}
+              $active={activeGroup === tab.key}
               onClick={() => setActiveGroup(tab.key)}
             >
               {tab.label}
@@ -100,7 +110,7 @@ export const AdminCodePage = ({
                   <InputText
                     layout="column"
                     themeType="admin"
-                    size="lg"
+                    size="md"
                     width="240px"
                     placeholder="전화번호 입력 (예: 010-1234-5678)"
                     value={contactPhone}
@@ -112,8 +122,8 @@ export const AdminCodePage = ({
                     type="submit"
                     color="primary"
                     layout="solid"
-                    width="120px"
-                    height={44}
+                    width="90px"
+                    height={32}
                     label={isSavingContactPhone ? "저장 중..." : "저장"}
                     disabled={isSavingContactPhone || !contactPhone.trim()}
                   />
@@ -127,7 +137,7 @@ export const AdminCodePage = ({
                   <InputText
                     layout="column"
                     themeType="admin"
-                    size="lg"
+                    size="md"
                     width="240px"
                     placeholder="카카오톡 아이디"
                     value={contactKakao}
@@ -139,8 +149,8 @@ export const AdminCodePage = ({
                     type="submit"
                     color="primary"
                     layout="solid"
-                    width="120px"
-                    height={44}
+                    width="90px"
+                    height={32}
                     label={isSavingContactKakao ? "저장 중..." : "저장"}
                     disabled={isSavingContactKakao || !contactKakao.trim()}
                   />
@@ -150,49 +160,52 @@ export const AdminCodePage = ({
           </S.ContactCards>
         ) : (
           <>
-            <S.CreateSection>
-              <S.ParentGuide>
-                {editingItem ? (
-                  <><strong>{editingItem.name}</strong> 이름을 수정합니다.</>
-                ) : selectedParent ? (
-                  <>
-                    <strong>{selectedParent.name}</strong> 하위에 추가합니다.
-                    <S.ClearParentButton type="button" onClick={clearSelectedParent}>
-                      최상위로 변경
-                    </S.ClearParentButton>
-                  </>
-                ) : (
-                  "최상위 코드를 추가합니다. 각 행의 ‘하위 추가’를 누르면 하위 코드를 등록할 수 있습니다."
-                )}
-              </S.ParentGuide>
-              <S.CreateForm onSubmit={onSubmitCreate}>
-              <InputText
-                label={activeGroup === "CATEGORY" ? "카테고리명" : "지역명"}
-                layout="column"
-                themeType="admin"
-                size="lg"
-                width="240px"
-                placeholder="이름 입력"
-                value={newName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewName(e.target.value)
-                }
+            <S.CreateBar
+              onSubmit={onSubmitCreate}
+              $childMode={!!selectedParent}
+            >
+              <S.CreateLabel>{groupLabel} 추가</S.CreateLabel>
+
+              {selectedParent ? (
+                <S.TargetChip $child>
+                  <strong>{selectedParent.name}</strong> 하위
+                  <button
+                    type="button"
+                    onClick={clearSelectedParent}
+                    aria-label="최상위로 변경"
+                    title="최상위로 변경"
+                  >
+                    ×
+                  </button>
+                </S.TargetChip>
+              ) : (
+                <S.TargetChip>최상위</S.TargetChip>
+              )}
+
+              <S.NameField ref={nameFieldRef}>
+                <input
+                  type="text"
+                  placeholder={`${groupLabel}명 입력`}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
                 />
+              </S.NameField>
               <Button
                 type="submit"
                 color="primary"
                 layout="solid"
-                width="140px"
-                height={44}
-                label={isCreating ? "처리 중..." : editingItem ? "저장" : "추가"}
+                width="90px"
+                height={32}
+                label={isCreating ? "처리 중..." : "추가"}
                 disabled={isCreating || !newName.trim()}
-                />
-              {editingItem && (
-                <Button type="button" color="func" layout="solid" width="140px" height={44}
-                  label="추가" onClick={onStartCreate} />
-              )}
-              </S.CreateForm>
-            </S.CreateSection>
+              />
+
+              <S.BarHint>
+                {activeGroup === "CATEGORY"
+                  ? "이름은 표에서 바로 수정, 하위 코드는 각 행의 ‘하위 추가’로 등록합니다."
+                  : "이름·영문명은 표에서 바로 수정됩니다."}
+              </S.BarHint>
+            </S.CreateBar>
 
             {error && <S.ErrorMsg>{error}</S.ErrorMsg>}
 
@@ -202,9 +215,10 @@ export const AdminCodePage = ({
                 focusedRowKey={focusedRowKey}
                 isLoading={isLoading}
                 showCityColumns={activeGroup === "CITY"}
+                allowAddChild={activeGroup === "CATEGORY"}
                 getSortOptions={getSortOptions}
                 onAddChild={onAddChild}
-                onSelectEdit={onSelectEdit}
+                onChangeName={onChangeName}
                 onChangeSort={onChangeSort}
                 onToggleDisabled={onToggleDisabled}
                 onChangeNameEng={onChangeNameEng}

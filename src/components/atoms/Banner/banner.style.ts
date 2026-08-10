@@ -7,6 +7,8 @@ import BannerEmptySMMobile from "public/assets/images/img-banner-empty-sm-mobile
 interface BannerProps {
   order: string;
   admin?: boolean;
+  /** 연결 대상이 있어 클릭 이동이 가능한 배너 */
+  $clickable?: boolean;
 }
 
 export const Banner = styled.div<BannerProps>`
@@ -36,6 +38,12 @@ export const Banner = styled.div<BannerProps>`
     props.admin &&
     css`
       height: ${props.order === "LG" ? "89px" : "58px"} !important;
+    `}
+
+  ${(props) =>
+    props.$clickable &&
+    css`
+      cursor: pointer;
     `}
 
   //업로드 중 로딩 오버레이가 배너 영역을 덮도록 함
