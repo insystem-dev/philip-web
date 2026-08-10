@@ -11,6 +11,8 @@ interface MainPageProp {
   postListData: any[];
   /** 게시글 로딩 상태 */
   isPostLoading: boolean;
+  /** 선택 카테고리의 직계 하위 카테고리 (있으면 하위 카테고리별 섹션으로 표시) */
+  categoryChildren: any[];
   /** 광고 데이터 */
   adsData: any[];
   /** 방문자 수 */
@@ -35,6 +37,7 @@ export const MainPage = ({
   postItem,
   postListData,
   isPostLoading,
+  categoryChildren,
   adsData,
   count,
   cityOptions,
@@ -62,6 +65,7 @@ export const MainPage = ({
         postItem={postItem}
         postListData={postListData}
         isPostLoading={isPostLoading}
+        categoryChildren={categoryChildren}
       />
     </S.MainLayout>
   );

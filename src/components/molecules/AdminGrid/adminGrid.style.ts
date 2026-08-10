@@ -83,6 +83,67 @@ export const AdminGrid = styled.div`
         }
       }
     }
+
+    /* TreeList(공통코드) — DataGrid와 동일한 룩을 treelist 클래스에도 적용 */
+    .dx-treelist-headers {
+      overflow: hidden;
+      border: none;
+      border-radius: 3px;
+
+      .dx-header-row {
+        background: ${(props) => props.theme.colors.primary};
+
+        td {
+          height: 40px;
+          color: ${(props) => props.theme.colors.white};
+          font-size: 1.4rem;
+          font-weight: 500;
+          vertical-align: middle;
+          border: none;
+        }
+      }
+    }
+
+    .dx-treelist-rowsview {
+      border-top: none;
+
+      .dx-row {
+        td {
+          height: 50px;
+          color: ${(props) => props.theme.colors.dark};
+          font-size: 1.4rem;
+          vertical-align: middle;
+          border-top: none;
+          border-right: none;
+          border-left: none;
+          border-bottom: 1px solid ${(props) => props.theme.colors.adminBorder};
+        }
+
+        /* 최상위 코드 행 — 배경 틴트 + 이름 굵게로 하위 행과 구분 */
+        &.code-row-root {
+          td {
+            background: rgba(68, 98, 255, 0.05);
+          }
+
+          input {
+            font-weight: 700;
+          }
+        }
+
+        &.dx-row-focused {
+          td {
+            color: ${(props) => props.theme.colors.primary};
+            background: ${(props) => props.theme.colors.adminBorder};
+          }
+        }
+      }
+
+      /* 펼침/접힘 화살표 — 브랜드 컬러로 강조해 하위 존재 여부가 눈에 띄게 */
+      .dx-treelist-collapsed,
+      .dx-treelist-expanded {
+        color: ${(props) => props.theme.colors.primary};
+      }
+    }
   }
 `;
 
@@ -190,10 +251,49 @@ export const CodeNameCell = styled.div`
   width: 100%;
   padding-left: 4px;
   align-items: center;
+  gap: 2px;
+
+  /* 편집 중에는 연필 버튼을 숨긴다 (이미 편집 상태이므로) */
+  &:focus-within button {
+    visibility: hidden;
+  }
+`;
+
+/** 하위 코드 행의 └ 모양 연결 가이드 — 상위-하위 관계를 시각적으로 표시 */
+export const ChildGuide = styled.span`
+  width: 10px;
+  height: 10px;
+  margin: -8px 6px 0 2px;
+  border-left: 1px solid ${(props) => props.theme.colors.adminPlaceholder};
+  border-bottom: 1px solid ${(props) => props.theme.colors.adminPlaceholder};
+  border-radius: 0 0 0 3px;
+  flex: none;
+`;
+
+/** 이름 수정 가능 표시 연필 버튼 — 클릭 시 이름 입력에 포커스 */
+export const NameEditButton = styled.button`
+  display: flex;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: pointer;
+
+  &:hover {
+    color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.adminInputBg};
+  }
 `;
 
 export const CodeNameInput = styled.input`
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 32px;
   padding: 0 9px;
   border: 1px solid transparent;

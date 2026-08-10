@@ -69,6 +69,22 @@ export async function getCategoryNavApi(): Promise<Category[]> {
   return rows.map(toCategory);
 }
 
+/**
+ * GET 특정 카테고리의 직계 하위 카테고리 목록 (공개)
+ * 메인 화면에서 상위 카테고리 선택 시 하위 카테고리별 섹션을 구성할 때 사용한다.
+ * queryKey: ["getCategoryChildrenApi", parentCode]
+ */
+export async function getCategoryChildrenApi({
+  queryKey,
+}: any): Promise<Category[]> {
+  const rows: CodeSubRow[] = await axiosInstance
+    .get("/code/sub", {
+      params: { mainCd: CATEGORY_MAIN_CD, parentCode: queryKey[1] },
+    })
+    .then((res) => res.data);
+  return rows.map(toCategory);
+}
+
 /** GET 관리자 카테고리 계층 전체 조회 */
 export async function getCategoryTreeApi(): Promise<Category[]> {
   const rows: CodeSubRow[] = await axiosInstance

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import TreeList, {
   Column,
   Scrolling,
@@ -9,9 +9,27 @@ import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
 
+const PencilIcon = () => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+);
+
 /**
  * 이름 인라인 편집 — blur 시점에 값이 바뀐 경우에만 저장 요청을 보낸다.
  * Enter 는 저장(blur), Escape 는 원래 값으로 되돌린다.
+ * 하위 코드는 └ 가이드로 상위-하위 관계를 표시하고,
+ * 연필 버튼으로 "클릭해서 수정"이 가능함을 드러낸다.
  */
 const NameCell = ({
   data,
@@ -22,10 +40,14 @@ const NameCell = ({
 }) => {
   const original = data.data.name ?? "";
   const [value, setValue] = useState(original);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const isChild = !!data.data.parentOid;
 
   return (
     <S.CodeNameCell>
+      {isChild && <S.ChildGuide aria-hidden />}
       <S.CodeNameInput
+        ref={inputRef}
         type="text"
         value={value}
         title="클릭해서 이름 수정"
@@ -46,6 +68,14 @@ const NameCell = ({
           onChangeName(e, data);
         }}
       />
+      <S.NameEditButton
+        type="button"
+        title="이름 수정"
+        aria-label={`${original} 이름 수정`}
+        onClick={() => inputRef.current?.focus()}
+      >
+        <PencilIcon />
+      </S.NameEditButton>
     </S.CodeNameCell>
   );
 };
@@ -166,6 +196,12 @@ export const CodeSubGrid = ({
           focusedRowEnabled={!!focusedRowKey}
           focusedRowKey={focusedRowKey ?? undefined}
           autoNavigateToFocusedRow={true}
+          // 최상위 행에 클래스를 달아 배경 틴트/굵은 이름으로 계층을 구분한다
+          onRowPrepared={(e: any) => {
+            if (e.rowType === "data" && !e.data?.parentOid) {
+              e.rowElement.classList.add("code-row-root");
+            }
+          }}
         >
         <Sorting mode="none" />
         <Scrolling mode="standard" useNative={false} showScrollbar="always" />
@@ -181,7 +217,6 @@ export const CodeSubGrid = ({
             />
           )}
         />
-        <Column caption="코드" dataField="oid" minWidth={180} width={240} />
         {showCityColumns && (
           <Column
             caption="영문명"

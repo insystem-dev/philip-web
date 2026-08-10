@@ -11,7 +11,7 @@ import MainPage from "@/components/templates/MainPage";
 import Head from "next/head";
 import { useEffect, useState, useCallback } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { categoryState } from "@/recoil/category";
+import { categoryAll, categoryState } from "@/recoil/category";
 import { cityState } from "@/recoil/city";
 import { useQuery } from "react-query";
 import { getPostsListApi, getPromtionListApi } from "@/apis/postsApi";
@@ -21,6 +21,7 @@ import { searchState } from "@/recoil/search";
 import {
   Category,
   CitySub,
+  getCategoryChildrenApi,
   getCategoryNavApi,
   getCityListApi,
 } from "@/apis/categoryApi";
@@ -77,6 +78,15 @@ const Main = () => {
   const { data: categoryItem } = useQuery(
     "getCategoryNavApi",
     getCategoryNavApi
+  );
+
+  // 선택 카테고리의 직계 하위 카테고리 — 있으면 목록을 하위 카테고리별 섹션으로 나눠 보여준다
+  const { data: categoryChildren } = useQuery<Category[]>(
+    ["getCategoryChildrenApi", category],
+    getCategoryChildrenApi,
+    {
+      enabled: !!category && category !== categoryAll,
+    }
   );
 
   // 도시 목록
@@ -153,6 +163,8 @@ const Main = () => {
         // 전체 게시글 데이터 (PostListBox용)
         postListData={postListData ?? []}
         isPostLoading={isPostLoading}
+        // 선택 카테고리의 하위 카테고리 (하위 카테고리별 섹션 구분용)
+        categoryChildren={categoryChildren ?? []}
         // 광고 데이터
         adsData={adsData || []}
         // 방문자 수
