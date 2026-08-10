@@ -6,9 +6,10 @@ export function kakaoLoginAPI(code: any) {
     .then((response) => response.data);
 }
 
-export function getKakaoUserList({ queryKey }: any) {
+/** 관리자 회원관리 목록 — 자체(일반) 회원만 반환한다 (카카오 소셜 회원 미노출) */
+export function getUserListAPI({ queryKey }: any) {
   return axiosInstance
-    .get(`/user/kakao?search=${queryKey[1]}`)
+    .get(`/user/list?search=${queryKey[1]}`)
     .then((response) => response.data);
 }
 

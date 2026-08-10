@@ -15,7 +15,7 @@ export const UserModal = ({ onClose, user }: any) => {
     changeUserRoleAPI,
     {
       onSuccess() {
-        queryClient.refetchQueries("getKakaoUsers");
+        queryClient.refetchQueries("getUserList");
       },
     }
   );

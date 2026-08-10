@@ -8,7 +8,7 @@
 import { AdminUserPage } from "@/components/templates/AdminUserPage";
 import { useState, useCallback } from "react";
 import { useQuery } from "react-query";
-import { getKakaoUserList } from "@/apis/kakaoApi";
+import { getUserListAPI } from "@/apis/kakaoApi";
 import useApiError from "@/lib/hooks/useApiError";
 
 const AdminUsers = () => {
@@ -25,10 +25,10 @@ const AdminUsers = () => {
   // API 쿼리
   // ─────────────────────────────────────────────────────────────
 
-  /** 회원 목록 불러오기 */
+  /** 회원 목록 불러오기 (자체 일반 회원만) */
   const { data: dataSource, isLoading } = useQuery(
-    ["getKakaoUsers", userSearchKeyword],
-    getKakaoUserList,
+    ["getUserList", userSearchKeyword],
+    getUserListAPI,
     {
       retry: 1,
       onError(error: any) {
