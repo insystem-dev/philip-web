@@ -23,6 +23,18 @@ export const InputCommon = styled.div<InputProps>`
       font-size: 1.4rem;
       cursor: pointer;
     }
+
+    //라벨 텍스트와 필수 표시(*)를 한 덩어리로 묶어 label의 gap이 끼어들지 않게 한다
+    .label-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .required {
+      color: ${(props) => props.theme.colors.red};
+      font-style: normal;
+    }
   }
 
   input,
@@ -33,18 +45,18 @@ export const InputCommon = styled.div<InputProps>`
       props.size === "sm"
         ? "24px"
         : props.size === "md"
-        ? "30px"
-        : props.size === "lg"
-        ? "40px"
-        : props.size === "xlg"
-        ? "48px"
-        : "unset"};
+          ? "30px"
+          : props.size === "lg"
+            ? "40px"
+            : props.size === "xlg"
+              ? "48px"
+              : "unset"};
     padding: ${(props) =>
       props.size === "sm" || props.size === "md"
         ? "0 6px 2px"
         : props.size === "lg"
-        ? "0 15px"
-        : "0"};
+          ? "0 15px"
+          : "0"};
     font-size: ${(props) => (props.size === "lg" ? "1.5rem;" : "1.3rem;")};
   }
 
@@ -58,6 +70,13 @@ export const InputCommon = styled.div<InputProps>`
     props.layout === "row" &&
     css`
       label {
+        //라벨이 있을 때 텍스트를 첫 줄 왼쪽 끝에 두고 인풋을 아래 줄로 내린다
+        flex-wrap: wrap;
+
+        .label-text {
+          width: 100%;
+        }
+
         input,
         select {
           color: white;

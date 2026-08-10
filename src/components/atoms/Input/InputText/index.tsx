@@ -14,6 +14,8 @@ interface TextProps {
   type?: string;
   errors?: any;
   name?: string;
+  /** 라벨 옆에 필수 입력 표시(*) 노출 */
+  required?: boolean;
 }
 
 export const InputText: React.FC<TextProps> = ({
@@ -29,6 +31,7 @@ export const InputText: React.FC<TextProps> = ({
   type,
   errors,
   name,
+  required,
 }) => {
   return (
     <S.InputCommon
@@ -38,13 +41,19 @@ export const InputText: React.FC<TextProps> = ({
       width={width}
     >
       <label>
-        {label && label}
+        {label && (
+          <span className="label-text">
+            {label}
+            {required && <em className="required">*</em>}
+          </span>
+        )}
+        {/* register 사용 시 onChange/value를 undefined로 덮어써 값이 수집되지 않던 문제 방지 */}
         <input
           type={type || "text"}
           placeholder={placeholder}
           {...register}
-          onChange={onChange}
-          value={value}
+          {...(onChange ? { onChange } : {})}
+          {...(value !== undefined ? { value } : {})}
         />
         {errors && errors[name!]?.type !== "true" ? (
           <p className="err-message">{errors[name!]?.message}</p>

@@ -36,7 +36,7 @@ export const PostItem = ({ item }: any) => {
   return (
     <S.PostItem
       onClick={() => {
-        goDetail(item), countViews();
+        (goDetail(item), countViews());
       }}
     >
       {item.thumb ? (
@@ -61,8 +61,10 @@ export const PostItem = ({ item }: any) => {
           <div onClick={(e) => e.stopPropagation()}>
             <AlertModal
               title="로그인이 필요합니다"
-              message={"로그인이 필요한 서비스 입니다.\n카카오 로그인 후 이용해주세요."}
-              confirmLabel="카카오 로그인하기"
+              message={
+                "로그인이 필요한 서비스 입니다.\n로그인 후 이용해주세요."
+              }
+              confirmLabel="로그인하기"
               onConfirm={() => router.push("/auth/login")}
             />
           </div>,

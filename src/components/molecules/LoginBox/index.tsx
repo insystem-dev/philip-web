@@ -1,37 +1,102 @@
 import { Button } from "@/components/atoms/Button";
+import { InputText } from "@/components/atoms/Input/InputText";
 import * as S from "./loginBox.style";
 import IconKakao from "public/assets/svg/icon-kakao.svg";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/router";
+
+/**
+ * 소셜(카카오) 로그인 노출 여부.
+ * 현재는 일반 로그인/회원가입만 사용하므로 false. 되살릴 때 true 로만 바꾸면 된다.
+ * (카카오 콜백 pages/kakao.tsx 와 _app.tsx 의 SDK 로드는 기존 회원 토큰 유지를 위해 그대로 둔다)
+ */
+const ENABLE_SOCIAL_LOGIN = false;
+
 interface LoginBoxProp {
   kakaoLogin: () => void;
   localLogin: (userId: string, password: string) => void;
   isLoading: boolean;
 }
-export const LoginBox = ({ kakaoLogin, localLogin, isLoading }: LoginBoxProp) => {
+export const LoginBox = ({
+  kakaoLogin,
+  localLogin,
+  isLoading,
+}: LoginBoxProp) => {
+  const router = useRouter();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
+
   return (
     <S.LoginBox>
       <S.LoginTit>로그인</S.LoginTit>
-      <S.LocalForm onSubmit={(e) => { e.preventDefault(); localLogin(userId.trim(), password); }}>
-        <S.LoginInput placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
-        <S.LoginInput type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <Button type="submit" width="100%" height={48} color="primary" layout="solid" label={isLoading ? "로그인 중..." : "로그인"} disabled={isLoading || !userId.trim() || !password} />
+      <S.LocalForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          localLogin(userId.trim(), password);
+        }}
+      >
+        <S.FieldList>
+          <InputText
+            layout="row"
+            size="lg"
+            width="100%"
+            placeholder="아이디"
+            value={userId}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setUserId(e.target.value)
+            }
+          />
+          <InputText
+            layout="row"
+            size="lg"
+            width="100%"
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPassword(e.target.value)
+            }
+          />
+        </S.FieldList>
+        <Button
+          type="submit"
+          width="100%"
+          height={48}
+          color="primary"
+          layout="solid"
+          label="로그인"
+          disabled={isLoading || !userId.trim() || !password}
+          className={`${isLoading ? "spinner spinner-white spinner-right" : ""}`}
+        />
       </S.LocalForm>
-      <S.SignupLink><Link href="/auth/signup">일반 회원가입</Link></S.SignupLink>
-      <S.Divider><span>또는</span></S.Divider>
+
+      <S.Divider>
+        <span>또는</span>
+      </S.Divider>
+
       <Button
         type="button"
         width="100%"
-        height={56}
-        color="kakaoBg"
+        height={48}
+        color="callBg"
         layout="solid"
-        label="카카오톡으로 로그인하기"
-        onClick={kakaoLogin}
-      >
-        <IconKakao />
-      </Button>
+        label="일반 회원가입"
+        onClick={() => router.push("/auth/signup")}
+      />
+
+      {ENABLE_SOCIAL_LOGIN && (
+        <Button
+          type="button"
+          width="100%"
+          height={56}
+          color="kakaoBg"
+          layout="solid"
+          label="카카오톡으로 로그인하기"
+          onClick={kakaoLogin}
+        >
+          <IconKakao />
+        </Button>
+      )}
     </S.LoginBox>
   );
 };

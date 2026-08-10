@@ -45,6 +45,7 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
         </S.ArrowIcon>
       </S.KakaoLink>
       <S.KakaoLink
+        $variant="kakao"
         onClick={copyKakaoId}
         aria-disabled={!kakaoId}
         title={`카카오톡 문의${kakaoId ? ` (${kakaoId})` : ""}`}
