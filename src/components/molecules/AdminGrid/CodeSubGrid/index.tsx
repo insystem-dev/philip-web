@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import TreeList, {
   Column,
   Scrolling,
@@ -139,6 +139,18 @@ export const CodeSubGrid = ({
     [dataSource]
   );
 
+  /**
+   * 최상위 행 강조 클래스.
+   * 인라인 함수로 넘기면 편집 draft 리렌더마다 함수 identity 가 바뀌고,
+   * DevExtreme 이 onRowPrepared 옵션 변경으로 행 전체를 다시 그려
+   * 이름 입력 포커스가 한 글자마다 끊긴다 → useCallback 으로 고정한다.
+   */
+  const handleRowPrepared = useCallback((e: any) => {
+    if (e.rowType === "data" && !e.data?.parentOid) {
+      e.rowElement.classList.add("code-row-root");
+    }
+  }, []);
+
   if (isLoading) {
     return <S.GridLoading>공통코드를 불러오는 중입니다.</S.GridLoading>;
   }
@@ -173,11 +185,7 @@ export const CodeSubGrid = ({
           focusedRowKey={focusedRowKey ?? undefined}
           autoNavigateToFocusedRow={true}
           // 최상위 행에 클래스를 달아 배경 틴트/굵은 이름으로 계층을 구분한다
-          onRowPrepared={(e: any) => {
-            if (e.rowType === "data" && !e.data?.parentOid) {
-              e.rowElement.classList.add("code-row-root");
-            }
-          }}
+          onRowPrepared={handleRowPrepared}
         >
         <Sorting mode="none" />
         <Scrolling mode="standard" useNative={false} showScrollbar="always" />
