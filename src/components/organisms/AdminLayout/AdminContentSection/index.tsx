@@ -8,6 +8,7 @@ export const AdminContentSection = ({
   linkLabel,
   onClick,
   clickLabel,
+  titleActions,
   children,
 }: any) => {
   const router = useRouter();
@@ -43,6 +44,8 @@ export const AdminContentSection = ({
               onClick={onClick}
             />
           )}
+          {/* 화면별 버튼 슬롯 — link/onClick 규격에 맞지 않는 버튼을 직접 넘겨 쓴다 */}
+          {titleActions}
         </ButtonGroup>
       </S.AdminContentTit>
       <S.AdminContentBox>{children}</S.AdminContentBox>

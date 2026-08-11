@@ -8,6 +8,7 @@ interface CheckProps {
   displayValue?: string;
   checked?: boolean;
   onChange?: any;
+  disabled?: boolean;
 }
 
 export const InputCheckbox: React.FC<CheckProps> = ({
@@ -18,6 +19,7 @@ export const InputCheckbox: React.FC<CheckProps> = ({
   displayValue,
   checked,
   onChange,
+  disabled,
 }) => {
   return (
     <S.InputCommon layout={layout} themeType={themeType}>
@@ -28,6 +30,7 @@ export const InputCheckbox: React.FC<CheckProps> = ({
           value={value}
           checked={checked}
           onChange={onChange}
+          disabled={disabled}
         />
         <span className="displayValue">{displayValue && displayValue}</span>
       </label>

@@ -26,9 +26,10 @@ export const LinkBox = styled.div<{ $stacked?: boolean; $inline?: boolean }>`
     ${(props) =>
       props.$stacked &&
       css`
-        /* 같은 화면에 fixed로 떠 있는 CounterBox(오늘의 방문자수, bottom 8px)와 겹치지 않도록
-           CounterBox 높이(72px = 40px 카운터 + 16px*2 패딩) + 8px 여백만큼 위에 띄운다. */
-        bottom: 88px;
+        /* 메인화면 사이드 영역(AsideSection)의 문의 버튼은 모바일에서 fixed로 떠 있으면
+           CounterBox(오늘의 방문자수)와 겹쳐 화면 하단을 가리므로 모바일에서만 숨긴다.
+           769px 이상 데스크탑 사이드바에서는 이 미디어쿼리 밖 기본 스타일로 그대로 노출된다. */
+        display: none;
       `}
 
     ${(props) =>

@@ -56,8 +56,13 @@ const Main = () => {
     enabled: visitChecked, // 방문 체크 완료 후 조회
   });
 
-  // 광고 데이터
-  const { data: adsData } = useQuery("getAdsData", getAdsData);
+  // 광고 데이터 (선택 지역 전용 배너만 조회)
+  // 배너는 지역 전용이라 지역을 고르기 전에는 노출할 것이 없다 → 전체 목록을 헛되이 받지 않도록 막는다
+  const { data: adsData } = useQuery(
+    ["getAdsData", city || null],
+    getAdsData,
+    { enabled: !!city }
+  );
 
   // 프로모션 목록 (도시 선택 시에만 조회)
   const { data: postItem } = useQuery(
@@ -74,15 +79,15 @@ const Main = () => {
     getPostsListApi
   );
 
-  // 카테고리 목록
+  // 카테고리 목록 (선택 지역의 노출 설정 반영 — 미선택이면 cityCode 없이 전역 목록)
   const { data: categoryItem } = useQuery(
-    "getCategoryNavApi",
+    ["getCategoryNavApi", city ?? null],
     getCategoryNavApi
   );
 
   // 선택 카테고리의 직계 하위 카테고리 — 있으면 목록을 하위 카테고리별 섹션으로 나눠 보여준다
   const { data: categoryChildren } = useQuery<Category[]>(
-    ["getCategoryChildrenApi", category],
+    ["getCategoryChildrenApi", category, city ?? null],
     getCategoryChildrenApi,
     {
       enabled: !!category && category !== categoryAll,

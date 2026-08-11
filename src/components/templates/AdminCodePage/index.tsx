@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import * as S from "./adminCodePage.style";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
-import { CodeSubGrid } from "@/components/molecules/AdminGrid/CodeSubGrid";
+import {
+  CodeNameDraft,
+  CodeSubGrid,
+} from "@/components/molecules/AdminGrid/CodeSubGrid";
 import { InputText } from "@/components/atoms/Input/InputText";
 import { Button } from "@/components/atoms/Button";
 
@@ -30,9 +33,16 @@ export interface AdminCodePageProps {
   onAddChild: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled: (data: any) => void;
-  /** 그리드 인라인 이름 수정 (blur 시 저장) */
-  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
-  onChangeNameEng: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
+  /** 이름·영문명 편집 모드 상태와 입력값 */
+  isEditMode: boolean;
+  nameDraft: CodeNameDraft;
+  isSavingNames: boolean;
+  onStartEditNames: () => void;
+  onSaveEditNames: () => void;
+  onCancelEditNames: () => void;
+  /** 편집 모드 이름 입력 (저장은 타이틀의 저장 버튼에서) */
+  onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
+  onChangeNameEng: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
   onDelete: (data: any) => void;
   contactPhone: string;
   setContactPhone: (value: string) => void;
@@ -61,6 +71,12 @@ export const AdminCodePage = ({
   onAddChild,
   onChangeSort,
   onToggleDisabled,
+  isEditMode,
+  nameDraft,
+  isSavingNames,
+  onStartEditNames,
+  onSaveEditNames,
+  onCancelEditNames,
   onChangeName,
   onChangeNameEng,
   onDelete,
@@ -83,8 +99,46 @@ export const AdminCodePage = ({
 
   const groupLabel = activeGroup === "CATEGORY" ? "카테고리" : "지역";
 
+  // 문의처 설정 탭은 카드마다 저장 버튼이 따로 있어 타이틀 버튼을 두지 않는다
+  const titleActions =
+    activeGroup === "CONTACT" ? null : isEditMode ? (
+      <>
+        <Button
+          type="button"
+          color="primary"
+          layout="solid"
+          width="90px"
+          height={32}
+          label={isSavingNames ? "저장 중..." : "저장"}
+          disabled={isSavingNames}
+          onClick={onSaveEditNames}
+        />
+        <Button
+          type="button"
+          color="secondary"
+          layout="solid"
+          width="90px"
+          height={32}
+          label="취소"
+          disabled={isSavingNames}
+          onClick={onCancelEditNames}
+        />
+      </>
+    ) : (
+      <Button
+        type="button"
+        color="primary"
+        layout="solid"
+        width="90px"
+        height={32}
+        label="수정"
+        disabled={isLoading}
+        onClick={onStartEditNames}
+      />
+    );
+
   return (
-    <AdminLayout title="공통코드 관리">
+    <AdminLayout title="공통코드 관리" titleActions={titleActions}>
       <S.AdminCodePage>
         <S.GroupTabs role="tablist" aria-label="공통코드 구분">
           {GROUP_TABS.map((tab) => (
@@ -201,9 +255,11 @@ export const AdminCodePage = ({
               />
 
               <S.BarHint>
-                {activeGroup === "CATEGORY"
-                  ? "이름은 표에서 바로 수정, 하위 코드는 각 행의 ‘하위 추가’로 등록합니다."
-                  : "이름·영문명은 표에서 바로 수정됩니다."}
+                {isEditMode
+                  ? "편집 중 — 값을 고친 뒤 우측 상단 ‘저장’을 눌러야 반영됩니다. 순서·사용여부·삭제는 저장 후에 변경할 수 있습니다."
+                  : activeGroup === "CATEGORY"
+                  ? "이름은 우측 상단 ‘수정’으로 편집하고, 하위 코드는 각 행의 ‘하위 추가’로 등록합니다."
+                  : "이름·영문명은 우측 상단 ‘수정’으로 편집합니다."}
               </S.BarHint>
             </S.CreateBar>
 
@@ -216,6 +272,8 @@ export const AdminCodePage = ({
                 isLoading={isLoading}
                 showCityColumns={activeGroup === "CITY"}
                 allowAddChild={activeGroup === "CATEGORY"}
+                isEditMode={isEditMode}
+                nameDraft={nameDraft}
                 getSortOptions={getSortOptions}
                 onAddChild={onAddChild}
                 onChangeName={onChangeName}

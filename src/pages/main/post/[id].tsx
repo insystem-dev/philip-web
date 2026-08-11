@@ -3,19 +3,26 @@ import { useQuery } from "react-query";
 import { getOnePostInfoApi } from "@/apis/postsApi";
 import { useRouter } from "next/router";
 import { getAdsData } from "@/apis/adsApi";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
+import { cityState } from "@/recoil/city";
 import { useState } from "react";
 import { AlertModal } from "@/components/molecules/AlertModal";
 
 export const Post = () => {
   const router = useRouter();
   const [, setUserToken] = useRecoilState(userTokenState);
+  /** 선택된 지역 (배너 지역별 노출용) */
+  const city = useRecoilValue(cityState);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
   const queryFn = () => getOnePostInfoApi(router.query.id);
 
-  /** 광고 배너 데이터  */
-  const { data: adsData } = useQuery("getAdsData", getAdsData);
+  /** 광고 배너 데이터 (선택 지역 전용 — 지역 미선택이면 노출할 배너가 없어 조회하지 않는다) */
+  const { data: adsData } = useQuery(
+    ["getAdsData", city || null],
+    getAdsData,
+    { enabled: !!city }
+  );
 
   /** 업체 상세 데이터 */
   const { data: detailItem, isError } = useQuery(
@@ -45,7 +52,7 @@ export const Post = () => {
 
   return (
     <>
-      <PostPage detailItem={detailItem} adsData={adsData} />
+      <PostPage detailItem={detailItem} adsData={adsData} cityCode={city} />
       {showSessionExpired && (
         <AlertModal
           title="로그인이 필요합니다"

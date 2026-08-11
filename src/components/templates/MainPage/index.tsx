@@ -50,7 +50,7 @@ export const MainPage = ({
 }: MainPageProp) => {
   return (
     <S.MainLayout>
-      <BannerSection adsData={adsData} categoryCode={category} />
+      <BannerSection adsData={adsData} categoryCode={category} cityCode={city} />
       <AsideSection
         count={count}
         cityOptions={cityOptions}

@@ -23,6 +23,11 @@ export const AdminNavList = () => {
       path: "/admin/code",
     },
     {
+      id: 8,
+      name: "지역별 카테고리",
+      path: "/admin/category-city",
+    },
+    {
       id: 3,
       name: "회원관리",
       path: "/admin/users",

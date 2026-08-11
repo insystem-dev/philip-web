@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+import { cityScope } from "@/components/molecules/AdminCityChips/adminCityChips.style";
+
 export const AdminAdsBox = styled.div`
   display: flex;
   padding: 30px;
@@ -88,4 +90,45 @@ export const CategoryScopeHint = styled.p`
   color: ${(props) => props.theme.colors.adminLabelTxt};
   font-size: 1.15rem;
   line-height: 1.5;
+`;
+
+/**
+ * 노출 지역 선택 박스
+ * 카테고리 박스와 같은 골격(좌측 포인트 바 + 라벨 + 안내)을 쓰되 두 가지를 달리해 축을 구분한다.
+ * - 색: 브랜드 블루 대신 앰버 (adminCityChips.style 의 cityScope 램프를 공유)
+ * - 컨트롤: 드롭다운 대신 칩 그룹 — 클릭 없이 전체 선택지와 현재 값이 함께 보인다
+ */
+export const CityScopeBox = styled.div`
+  display: flex;
+  padding: 12px 14px;
+  border: 1px solid ${cityScope.lineSoft};
+  border-left: 4px solid ${cityScope.line};
+  border-radius: 8px;
+  background: ${cityScope.tint};
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const CityScopeLabel = styled.div`
+  display: flex;
+  color: ${cityScope.text};
+  font-size: 1.35rem;
+  font-weight: 700;
+  align-items: center;
+  gap: 6px;
+
+  svg {
+    flex: none;
+  }
+`;
+
+export const CityScopeHint = styled.p`
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.15rem;
+  line-height: 1.5;
+
+  strong {
+    color: ${cityScope.text};
+    font-weight: 700;
+  }
 `;

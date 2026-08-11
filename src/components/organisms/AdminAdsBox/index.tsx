@@ -9,9 +9,11 @@
 import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputAdsFile } from "@/components/atoms/Input/InputAdsFile";
 import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
+import { AdminCityChips } from "@/components/molecules/AdminCityChips";
 import { AD_POSITION_LABELS } from "@/components/organisms/AdminAdsPreview";
-import { Category } from "@/apis/categoryApi";
+import { Category, CitySub } from "@/apis/categoryApi";
 import { AdsLink } from "@/apis/adsApi";
+import { adCategoryOf, adCityOf } from "@/lib/adsMatch";
 
 import * as S from "./adminAdsBox.style";
 
@@ -20,6 +22,10 @@ interface AmdinAdsBoxProps {
   adCategoryCode: string;
   categories: Category[];
   onChangeCategory: (code: string) => void;
+  /** 선택된 노출 지역 (code_sub.code). 배너는 이 지역에서만 노출된다 */
+  adCityCode: string;
+  cities: CitySub[];
+  onChangeCity: (code: string) => void;
   imgPreview: any[];
   setImgPreview: React.Dispatch<React.SetStateAction<any>>;
   adsData: any[];
@@ -41,6 +47,9 @@ export const AmdinAdsBox = ({
   adCategoryCode,
   categories,
   onChangeCategory,
+  adCityCode,
+  cities,
+  onChangeCity,
   imgPreview,
   onDeleteOne,
   onSubmit,
@@ -52,51 +61,60 @@ export const AmdinAdsBox = ({
   getLink,
   onChangeLink,
 }: AmdinAdsBoxProps) => {
-  /** 저장된 광고 이미지 (DB에서 불러온 데이터) */
-  const mainAd = (label: string) => adsData?.find((ads: any) =>
-    ads.label === label && (ads.adCategoryCode || "CATEGORY-ALL") === adCategoryCode);
+  /**
+   * 저장된 광고 이미지 (DB에서 불러온 데이터).
+   * 등록 카드는 "지금 고른 조합에 실제로 저장된 행"만 다뤄야 하므로 폴백 없이 정확히 일치하는 것만 찾는다.
+   * (미리보기는 유저 화면과 같은 폴백을 적용하지만, 여기서 폴백 행을 보여주면
+   *  다른 조합의 배너를 이 조합의 것으로 착각해 삭제·교체하게 된다)
+   */
+  const mainAd = (label: string) =>
+    adsData?.find(
+      (ads: any) =>
+        ads.label === label &&
+        adCategoryOf(ads) === adCategoryCode &&
+        adCityOf(ads) === adCityCode
+    );
   const topAds = mainAd("topAds");
   const btm1 = mainAd("bottom1");
   const btm2 = mainAd("bottom2");
   const btm3 = mainAd("bottom3");
-  const categoryTopAds = adsData?.find(
-    (ads: any) => ads.label === "categoryTopAds"
-  );
-  const categoryBottomAds = adsData?.find(
-    (ads: any) => ads.label === "categoryBottomAds"
-  );
-  const categoryTopBottom1 = adsData?.find(
-    (ads: any) => ads.label === "categoryTopBottom1"
-  );
-  const categoryTopBottom2 = adsData?.find(
-    (ads: any) => ads.label === "categoryTopBottom2"
-  );
-  const categoryTopBottom3 = adsData?.find(
-    (ads: any) => ads.label === "categoryTopBottom3"
-  );
 
-  /** 새로 업로드된 프리뷰 이미지 (아직 저장 안됨) */
-  const newMainAd = (label: string) => imgPreview?.find((ads: any) =>
-    ads.label === label && ads.adCategoryCode === adCategoryCode);
+  const categoryAd = (label: string) =>
+    adsData?.find(
+      (ads: any) => ads.label === label && adCityOf(ads) === adCityCode
+    );
+  const categoryTopAds = categoryAd("categoryTopAds");
+  const categoryBottomAds = categoryAd("categoryBottomAds");
+  const categoryTopBottom1 = categoryAd("categoryTopBottom1");
+  const categoryTopBottom2 = categoryAd("categoryTopBottom2");
+  const categoryTopBottom3 = categoryAd("categoryTopBottom3");
+
+  /**
+   * 새로 업로드된 프리뷰 이미지 (아직 저장 안됨).
+   * 업로드 시점의 카테고리·지역이 태깅돼 있으므로, 조합을 바꾸면 화면에서만 빠지고 값은 유지된다
+   * (기존 카테고리 전환과 동일한 규칙).
+   */
+  const newMainAd = (label: string) =>
+    imgPreview?.find(
+      (ads: any) =>
+        ads.label === label &&
+        ads.adCategoryCode === adCategoryCode &&
+        adCityOf(ads) === adCityCode
+    );
   const newTopAds = newMainAd("topAds");
   const newBtm1 = newMainAd("bottom1");
   const newBtm2 = newMainAd("bottom2");
   const newBtm3 = newMainAd("bottom3");
-  const newCategoryTopAds = imgPreview?.find(
-    (ads: any) => ads.label === "categoryTopAds"
-  );
-  const newCategoryBottomAds = imgPreview?.find(
-    (ads: any) => ads.label === "categoryBottomAds"
-  );
-  const newCategoryTopBottom1 = imgPreview?.find(
-    (ads: any) => ads.label === "categoryTopBottom1"
-  );
-  const newCategoryTopBottom2 = imgPreview?.find(
-    (ads: any) => ads.label === "categoryTopBottom2"
-  );
-  const newCategoryTopBottom3 = imgPreview?.find(
-    (ads: any) => ads.label === "categoryTopBottom3"
-  );
+
+  const newCategoryAd = (label: string) =>
+    imgPreview?.find(
+      (ads: any) => ads.label === label && adCityOf(ads) === adCityCode
+    );
+  const newCategoryTopAds = newCategoryAd("categoryTopAds");
+  const newCategoryBottomAds = newCategoryAd("categoryBottomAds");
+  const newCategoryTopBottom1 = newCategoryAd("categoryTopBottom1");
+  const newCategoryTopBottom2 = newCategoryAd("categoryTopBottom2");
+  const newCategoryTopBottom3 = newCategoryAd("categoryTopBottom3");
 
   return (
     <S.AdminAdsBox>
@@ -108,6 +126,35 @@ export const AmdinAdsBox = ({
         <strong>저장</strong>을 눌러야 반영됩니다.
       </S.AdminAdsDesc>
       <S.AdminAdsInput>
+        {/* 지역은 메인·전체 카테고리 배너 양쪽 모두가 가지므로 탭과 무관하게 항상 노출한다 */}
+        <S.CityScopeBox>
+          <S.CityScopeLabel>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            노출 지역
+          </S.CityScopeLabel>
+          <AdminCityChips
+            cities={cities}
+            value={adCityCode}
+            onChange={onChangeCity}
+          />
+          <S.CityScopeHint>
+            아래 배너들은 <strong>선택한 지역에서만</strong> 노출됩니다. 다른
+            지역에는 대신 노출되는 배너가 없으니 지역마다 각각 등록하세요.
+          </S.CityScopeHint>
+        </S.CityScopeBox>
         {scope === "main" ? (
           <>
             <S.CategoryScopeBox>
@@ -142,7 +189,7 @@ export const AmdinAdsBox = ({
               </S.CategoryScopeHint>
             </S.CategoryScopeBox>
             <InputAdsFile
-              key={`topAds:${adCategoryCode}`}
+              key={`topAds:${adCategoryCode}:${adCityCode}`}
               label={AD_POSITION_LABELS.topAds}
               id="topAds"
               onChangeImages={onChangeImages}
@@ -156,7 +203,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("topAds", next)}
             />
             <InputAdsFile
-              key={`bottom1:${adCategoryCode}`}
+              key={`bottom1:${adCategoryCode}:${adCityCode}`}
               label={AD_POSITION_LABELS.bottom1}
               id="bottom1"
               onChangeImages={onChangeImages}
@@ -170,7 +217,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("bottom1", next)}
             />
             <InputAdsFile
-              key={`bottom2:${adCategoryCode}`}
+              key={`bottom2:${adCategoryCode}:${adCityCode}`}
               label={AD_POSITION_LABELS.bottom2}
               id="bottom2"
               onChangeImages={onChangeImages}
@@ -184,7 +231,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("bottom2", next)}
             />
             <InputAdsFile
-              key={`bottom3:${adCategoryCode}`}
+              key={`bottom3:${adCategoryCode}:${adCityCode}`}
               label={AD_POSITION_LABELS.bottom3}
               id="bottom3"
               onChangeImages={onChangeImages}
@@ -201,7 +248,7 @@ export const AmdinAdsBox = ({
         ) : (
           <>
             <InputAdsFile
-              key="categoryTopAds"
+              key={`categoryTopAds:${adCityCode}`}
               label={AD_POSITION_LABELS.categoryTopAds}
               id="categoryTopAds"
               onChangeImages={onChangeImages}
@@ -215,7 +262,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("categoryTopAds", next)}
             />
             <InputAdsFile
-              key="categoryTopBottom1"
+              key={`categoryTopBottom1:${adCityCode}`}
               label={AD_POSITION_LABELS.categoryTopBottom1}
               id="categoryTopBottom1"
               onChangeImages={onChangeImages}
@@ -229,7 +276,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("categoryTopBottom1", next)}
             />
             <InputAdsFile
-              key="categoryTopBottom2"
+              key={`categoryTopBottom2:${adCityCode}`}
               label={AD_POSITION_LABELS.categoryTopBottom2}
               id="categoryTopBottom2"
               onChangeImages={onChangeImages}
@@ -243,7 +290,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("categoryTopBottom2", next)}
             />
             <InputAdsFile
-              key="categoryTopBottom3"
+              key={`categoryTopBottom3:${adCityCode}`}
               label={AD_POSITION_LABELS.categoryTopBottom3}
               id="categoryTopBottom3"
               onChangeImages={onChangeImages}
@@ -257,7 +304,7 @@ export const AmdinAdsBox = ({
               onChangeLink={(next) => onChangeLink("categoryTopBottom3", next)}
             />
             <InputAdsFile
-              key="categoryBottomAds"
+              key={`categoryBottomAds:${adCityCode}`}
               label={AD_POSITION_LABELS.categoryBottomAds}
               id="categoryBottomAds"
               onChangeImages={onChangeImages}

@@ -84,6 +84,28 @@ export const BannerPositionTag = styled.span`
   pointer-events: none;
 `;
 
+/**
+ * 관리자 미리보기용 노출 범위 태그 (우상단 오버레이)
+ * 이 지역 전용 배너가 아니라 "전 지역 공통" 배너가 폴백으로 잡혔을 때만 표시한다.
+ * 위치 태그와 겹치지 않도록 반대편에 두고, 경고 톤(앰버)으로 구분한다.
+ */
+export const BannerScopeTag = styled.span`
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  display: inline-flex;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  color: #3a2a00;
+  background: rgba(255, 196, 61, 0.92);
+  font-size: 1.05rem;
+  font-weight: 700;
+  align-items: center;
+  pointer-events: none;
+`;
+
 export const BannerLoadingOverlay = styled.div`
   position: absolute;
   top: 0;

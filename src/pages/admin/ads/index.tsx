@@ -7,7 +7,7 @@ import {
   getAdsData,
   updateAdsLinkApi,
 } from "@/apis/adsApi";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { InputFile } from "@/components/atoms/Input/InputFile";
 import useApiError from "@/lib/hooks/useApiError";
@@ -16,7 +16,13 @@ import {
   getAdminStorePosts,
   uploadImagesAPI,
 } from "@/apis/postsApi";
-import { Category, getCategoryTreeApi } from "@/apis/categoryApi";
+import {
+  Category,
+  CitySub,
+  getCategoryTreeApi,
+  getCityListApi,
+} from "@/apis/categoryApi";
+import { CATEGORY_ALL, CITY_ALL } from "@/lib/adsMatch";
 
 const MAIN_LABELS = ["topAds", "bottom1", "bottom2", "bottom3"];
 const CATEGORY_LABELS = ["categoryTopAds", "categoryTopBottom1", "categoryTopBottom2", "categoryTopBottom3", "categoryBottomAds"];
@@ -25,15 +31,19 @@ const EMPTY_LINK: AdsLink = { postOid: null, url: "", isExternal: false };
 
 /**
  * 링크 드래프트 key
- * 메인 배너는 같은 label 이 카테고리별로 다른 행이라 카테고리까지 키에 넣는다.
- * 저장된 행의 adCategoryCode 는 전체 카테고리일 때 null 로 오므로 "CATEGORY-ALL" 로 정규화한다
- * (AdminAdsBox / AdminAdsPreview 의 매칭 규칙과 동일).
- * 전체 카테고리 배너(CATEGORY_LABELS)는 카테고리 구분이 없으므로 "-" 로 고정한다.
+ * 메인 배너는 같은 label 이 카테고리·지역별로 다른 행이라 두 축을 모두 키에 넣는다.
+ * 카테고리는 전체일 때 null 로 오므로 "CATEGORY-ALL" 로 정규화하고(AdminAdsBox / AdminAdsPreview 와 동일),
+ * 지역은 정규화 없이 그대로 쓴다 — 지역이 비어 있는 행은 어느 지역에서도 다루지 않는다.
+ * 전체 카테고리 배너(CATEGORY_LABELS)는 카테고리 구분이 없으므로 "-" 로 고정하고 지역만 붙인다.
  */
-const linkKey = (label: string, adCategoryCode?: string | null) =>
+const linkKey = (
+  label: string,
+  adCategoryCode?: string | null,
+  adCityCode?: string | null
+) =>
   MAIN_LABELS.includes(label)
-    ? `${label}::${adCategoryCode || "CATEGORY-ALL"}`
-    : `${label}::-`;
+    ? `${label}::${adCategoryCode || CATEGORY_ALL}::${adCityCode || "-"}`
+    : `${label}::-::${adCityCode || "-"}`;
 
 /** 링크 드래프트 → 서버 전송 값. 외부 URL 체크 여부로 둘 중 하나만 보낸다 */
 const toLinkPayload = (draft?: AdsLink) => ({
@@ -70,11 +80,33 @@ const AdminAds = () => {
   // 업로드 진행 중인 배너 label 목록 (미리보기 로딩 인디케이터용)
   const [uploadingLabels, setUploadingLabels] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"main" | "category">("main");
-  const [selectedCategory, setSelectedCategory] = useState("CATEGORY-ALL");
+  const [selectedCategory, setSelectedCategory] = useState(CATEGORY_ALL);
+  /**
+   * 선택된 노출 지역.
+   * 지역 축에는 폴백이 없어 지역을 고르기 전에는 다룰 배너 자체가 없다 → 목록이 오면 첫 지역을 자동 선택한다.
+   */
+  const [selectedCity, setSelectedCity] = useState("");
   const { data: categories = [] } = useQuery<Category[]>(
     ["getCategoryTreeApi"], getCategoryTreeApi
   );
+  const { data: cityList = [] } = useQuery<CitySub[]>(
+    ["getCityListApi"], getCityListApi
+  );
+
+  // 폐지된 전 지역 공통(CITY-ALL)이 공통코드에 남아 있어도 배너 지역 선택지로는 보이지 않게 거른다
+  const cities = useMemo(
+    () => cityList.filter((city) => city.oid !== CITY_ALL),
+    [cityList]
+  );
+
+  // 첫 진입 시 첫 활성 지역을 자동 선택 (활성 지역이 없으면 첫 지역)
+  useEffect(() => {
+    if (selectedCity || cities.length === 0) return;
+    setSelectedCity((cities.find((city) => !city.disabled) ?? cities[0]).oid);
+  }, [cities, selectedCity]);
   // 쿼리키를 배열 형식으로 통일 (invalidateQueries와 일치)
+  // 관리자 화면은 지역 필터 없이 전체를 받아 클라이언트에서 거른다
+  // (지역 전환 시 재요청 없이 즉시 전환되고, 어느 지역에 무엇이 걸려 있는지 파악하기 쉽다)
   const { data: adsData } = useQuery(["getAdsData"], getAdsData, {
     retry: 1,
     onError(error: any) {
@@ -106,7 +138,7 @@ const AdminAds = () => {
     setLinkDrafts((prev) => {
       const next = { ...prev };
       adsData.forEach((ads: any) => {
-        const key = linkKey(ads.label, ads.adCategoryCode);
+        const key = linkKey(ads.label, ads.adCategoryCode, ads.adCityCode);
         if (next[key]) return;
         next[key] = {
           postOid: ads.adLinkPostOid ?? null,
@@ -118,14 +150,14 @@ const AdminAds = () => {
     });
   }, [adsData]);
 
-  /** 현재 탭/카테고리 기준 label 의 연결 대상 입력값 */
+  /** 현재 탭/카테고리/지역 기준 label 의 연결 대상 입력값 */
   const getLink = (label: string) =>
-    linkDrafts[linkKey(label, selectedCategory)] ?? EMPTY_LINK;
+    linkDrafts[linkKey(label, selectedCategory, selectedCity)] ?? EMPTY_LINK;
 
   const onChangeLink = (label: string, next: AdsLink) => {
     setLinkDrafts((prev) => ({
       ...prev,
-      [linkKey(label, selectedCategory)]: next,
+      [linkKey(label, selectedCategory, selectedCity)]: next,
     }));
   };
 
@@ -159,6 +191,8 @@ const AdminAds = () => {
       result.forEach((data: any) => {
         data.label = label;
         data.adCategoryCode = activeTab === "main" ? selectedCategory : null;
+        // 지역은 카테고리와 달리 메인/전체 카테고리 배너 양쪽 모두가 가진다
+        data.adCityCode = selectedCity;
       });
       setImgPreview((prev: any) => prev.concat(result));
     }).catch((err) => {
@@ -174,17 +208,27 @@ const AdminAds = () => {
   const onSubmit = (e: Event) => {
     e.preventDefault();
 
+    // 지역은 필수다 — 서버가 지역 없는 배너를 400 으로 막는다
+    if (!selectedCity) {
+      alert("노출 지역을 먼저 선택해주세요.");
+      return;
+    }
+
     // 유효한 이미지만 필터링 (filename이 있는 항목만)
     const labels = activeTab === "main" ? MAIN_LABELS : CATEGORY_LABELS;
     const validImages = imgPreview.filter(
       (item: any) => item && item.filename && labels.includes(item.label) &&
-        (activeTab !== "main" || item.adCategoryCode === selectedCategory)
+        (activeTab !== "main" || item.adCategoryCode === selectedCategory) &&
+        item.adCityCode === selectedCity
     );
 
     // 새로 저장할 이미지에 해당 키의 링크 값을 주입
+    // (아직 oid 가 없어 PUT 을 쓸 수 없는 칸은 이렇게 등록 페이로드에 실어 보낸다)
     const imagesToSave = validImages.map((item: any) => ({
       ...item,
-      ...toLinkPayload(linkDrafts[linkKey(item.label, item.adCategoryCode)]),
+      ...toLinkPayload(
+        linkDrafts[linkKey(item.label, item.adCategoryCode, item.adCityCode)]
+      ),
     }));
 
     /**
@@ -193,17 +237,20 @@ const AdminAds = () => {
      * 같은 키로 새 이미지를 올린 경우는 위 생성 요청이 링크를 함께 보내므로 제외한다.
      */
     const uploadedKeys = validImages.map((item: any) =>
-      linkKey(item.label, item.adCategoryCode)
+      linkKey(item.label, item.adCategoryCode, item.adCityCode)
     );
-    const changedLinks = (adsData ?? [])
-      .filter(
-        (ads: any) =>
-          labels.includes(ads.label) &&
-          (activeTab !== "main" ||
-            (ads.adCategoryCode || "CATEGORY-ALL") === selectedCategory)
-      )
+    /** 지금 보고 있는 (탭, 카테고리, 지역) 조합에 이미 저장돼 있는 배너 행 */
+    const scopedAds = (adsData ?? []).filter(
+      (ads: any) =>
+        labels.includes(ads.label) &&
+        (activeTab !== "main" ||
+          (ads.adCategoryCode || CATEGORY_ALL) === selectedCategory) &&
+        ads.adCityCode === selectedCity
+    );
+
+    const changedLinks = scopedAds
       .map((ads: any) => {
-        const key = linkKey(ads.label, ads.adCategoryCode);
+        const key = linkKey(ads.label, ads.adCategoryCode, ads.adCityCode);
         return { ads, key, draft: linkDrafts[key] };
       })
       .filter((row: any) => row.draft && !uploadedKeys.includes(row.key))
@@ -223,7 +270,7 @@ const AdminAds = () => {
     const targets = [
       ...validImages.map((item: any) => ({
         label: item.label,
-        key: linkKey(item.label, item.adCategoryCode),
+        key: linkKey(item.label, item.adCategoryCode, item.adCityCode),
       })),
       ...changedLinks.map((row: any) => ({ label: row.ads.label, key: row.key })),
     ];
@@ -231,7 +278,8 @@ const AdminAds = () => {
       return;
     }
 
-    const saveLinks = () =>
+    /** 이미 저장된 행의 링크 변경분을 한 번에 반영 */
+    const saveRowChanges = () =>
       Promise.all(
         changedLinks.map((row: any) => updateAdsLinkApi(row.ads.oid, row.payload))
       );
@@ -246,23 +294,26 @@ const AdminAds = () => {
 
     // 이미지 변경 없이 링크만 바꾸는 경우
     if (imagesToSave.length === 0) {
-      saveLinks().then(onDone).catch(onFail);
+      saveRowChanges().then(onDone).catch(onFail);
       return;
     }
 
     addAdsMutation.mutate(imagesToSave, {
       onSuccess: () => {
-        saveLinks().then(onDone).catch(onFail);
+        saveRowChanges().then(onDone).catch(onFail);
       },
       onError: onFail,
     });
   };
 
-  /** 전체삭제 */
+  /** 전체삭제 — 지금 보고 있는 (탭, 카테고리, 지역) 조합만 지운다 */
   const onDeleteAll = () => {
+    // cityCode 없이 보내면 서버가 400 으로 막는다 (범위 삭제는 항상 한 지역 안에서만)
+    if (!selectedCity) return;
     deleteAllAdsMutaion.mutate({
       scope: activeTab,
       ...(activeTab === "main" && { categoryCode: selectedCategory }),
+      cityCode: selectedCity,
     });
   };
 
@@ -295,6 +346,9 @@ const AdminAds = () => {
       categories={categories}
       selectedCategory={selectedCategory}
       setSelectedCategory={setSelectedCategory}
+      cities={cities}
+      selectedCity={selectedCity}
+      setSelectedCity={setSelectedCity}
       adsData={adsData}
       onChangeImages={onChangeImages}
       onDeleteOne={onDeleteOne}

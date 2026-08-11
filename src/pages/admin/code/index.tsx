@@ -20,6 +20,7 @@ import {
   updateContactKakaoApi,
   updateContactPhoneApi,
 } from "@/apis/categoryApi";
+import type { CodeNameDraft } from "@/components/molecules/AdminGrid/CodeSubGrid";
 import useApiError from "@/lib/hooks/useApiError";
 
 const AdminCode = () => {
@@ -34,6 +35,10 @@ const AdminCode = () => {
   // 방금 추가한 행의 key — 새 항목이 목록 맨 아래(스크롤 밖)에 추가되어
   // 화면에 안 보이던 문제를 그리드 자동 스크롤/포커스로 해결
   const [focusedRowKey, setFocusedRowKey] = useState<string | null>(null);
+  // 이름·영문명은 즉시 저장하지 않고 편집모드에서 draft 로 모았다가 저장 버튼에서 한 번에 보낸다
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [nameDraft, setNameDraft] = useState<CodeNameDraft>({});
+  const [isSavingNames, setIsSavingNames] = useState(false);
 
   const { data: categories, isLoading: isCategoryLoading } = useQuery<
     Category[]
@@ -186,18 +191,14 @@ const AdminCode = () => {
       createCityMutation.mutate({ name, parentCode });
   };
 
-  /** 그리드 인라인 이름 수정 — 값이 실제로 바뀐 경우에만 호출된다(그리드 셀에서 필터링) */
-  const onChangeName = (
-    e: React.FocusEvent<HTMLInputElement>,
-    data: any
-  ) => {
-    const name = e.target.value.trim();
-    if (!name || name === data.data.name) return;
-    if (activeGroup === "CATEGORY") {
-      updateCategoryMutation.mutate({ oid: data.data.oid, name });
-    } else if (activeGroup === "CITY") {
-      updateCityMutation.mutate({ oid: data.data.oid, name });
-    }
+  /** 편집모드 이름 입력 — 저장 버튼을 누르기 전까지 draft 에만 반영한다 */
+  const onChangeName = (e: React.ChangeEvent<HTMLInputElement>, data: any) => {
+    const { oid, name_eng } = data.data;
+    const name = e.target.value;
+    setNameDraft((prev) => ({
+      ...prev,
+      [oid]: { name, name_eng: prev[oid]?.name_eng ?? name_eng ?? "" },
+    }));
   };
 
   const onChangeSort = (
@@ -219,14 +220,17 @@ const AdminCode = () => {
     });
   };
 
+  /** 편집모드 영문명 입력 — 이름과 같이 draft 에만 반영한다 */
   const onChangeNameEng = (
-    e: React.FocusEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>,
     data: any
   ) => {
-    updateCityMutation.mutate({
-      oid: data.data.oid,
-      name_eng: e.target.value,
-    });
+    const { oid, name } = data.data;
+    const nameEng = e.target.value;
+    setNameDraft((prev) => ({
+      ...prev,
+      [oid]: { name: prev[oid]?.name ?? name ?? "", name_eng: nameEng },
+    }));
   };
 
   const onDelete = (data: any) => {
@@ -270,6 +274,84 @@ const AdminCode = () => {
     setError("");
   };
 
+  /** 편집 시작 — 현재 목록의 이름·영문명을 draft 로 스냅샷 */
+  const startEditNames = () => {
+    const draft: CodeNameDraft = {};
+    items.forEach((item: any) => {
+      draft[item.oid] = {
+        name: item.name ?? "",
+        name_eng: item.name_eng ?? "",
+      };
+    });
+    setNameDraft(draft);
+    setError("");
+    setIsEditMode(true);
+  };
+
+  const cancelEditNames = () => {
+    setNameDraft({});
+    setError("");
+    setIsEditMode(false);
+  };
+
+  /** 저장 — 원본과 값이 다른 행만 모아 한 번에 보내고, 하나라도 실패하면 편집모드를 유지한다 */
+  const saveEditNames = async () => {
+    const changed = items.filter((item: any) => {
+      const draft = nameDraft[item.oid];
+      if (!draft) return false;
+      const isNameChanged = draft.name.trim() !== (item.name ?? "");
+      if (activeGroup !== "CITY") return isNameChanged;
+      return isNameChanged || draft.name_eng.trim() !== (item.name_eng ?? "");
+    });
+
+    // 이름이 비면 목록에서 그 행을 식별할 수 없게 되므로 저장 자체를 막는다
+    if (changed.some((item: any) => !nameDraft[item.oid].name.trim())) {
+      setError("이름은 비워 둘 수 없습니다.");
+      return;
+    }
+
+    if (!changed.length) {
+      cancelEditNames();
+      return;
+    }
+
+    setIsSavingNames(true);
+    try {
+      await Promise.all(
+        changed.map((item: any) => {
+          const draft = nameDraft[item.oid];
+          return activeGroup === "CITY"
+            ? updateCitySubApi({
+                oid: item.oid,
+                name: draft.name.trim(),
+                name_eng: draft.name_eng.trim(),
+              })
+            : updateCategorySortApi({
+                oid: item.oid,
+                name: draft.name.trim(),
+              });
+        })
+      );
+      if (activeGroup === "CITY") {
+        queryClient.invalidateQueries(["getCityTreeApi"]);
+        queryClient.invalidateQueries(["getCityListApi"]);
+      } else {
+        queryClient.invalidateQueries(["getCategoryTreeApi"]);
+        queryClient.invalidateQueries(["getCategoryNavApi"]);
+      }
+      setNameDraft({});
+      setError("");
+      setIsEditMode(false);
+    } catch (error: any) {
+      // 편집모드를 유지해 입력한 값이 날아가지 않게 한다
+      setError(
+        error?.response?.data?.message ?? "저장 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsSavingNames(false);
+    }
+  };
+
   return (
     <AdminCodePage
       activeGroup={activeGroup}
@@ -279,11 +361,19 @@ const AdminCode = () => {
         setSelectedParent(null);
         setError("");
         setFocusedRowKey(null);
+        setIsEditMode(false);
+        setNameDraft({});
       }}
       items={items}
       focusedRowKey={focusedRowKey}
       isLoading={isLoading}
       error={error}
+      isEditMode={isEditMode}
+      nameDraft={nameDraft}
+      isSavingNames={isSavingNames}
+      onStartEditNames={startEditNames}
+      onSaveEditNames={saveEditNames}
+      onCancelEditNames={cancelEditNames}
       newName={newName}
       setNewName={setNewName}
       selectedParent={selectedParent}

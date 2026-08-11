@@ -13,6 +13,7 @@ interface SelectProps {
   register?: UseFormRegisterReturn;
   onChange?: any;
   value?: any;
+  disabled?: boolean;
 }
 
 export const InputSelect: React.FC<SelectProps> = ({
@@ -26,6 +27,7 @@ export const InputSelect: React.FC<SelectProps> = ({
   register,
   onChange,
   value,
+  disabled,
 }) => {
   const [name, setName] = useState<any>();
 
@@ -43,7 +45,12 @@ export const InputSelect: React.FC<SelectProps> = ({
     >
       <label>
         {label && label}
-        <select {...register} onChange={onChange} value={value || name || ""}>
+        <select
+          {...register}
+          onChange={onChange}
+          value={value || name || ""}
+          disabled={disabled}
+        >
           {placeholder && <option>{placeholder}</option>}
           {options?.map((option: any, idx: number) => {
             return (

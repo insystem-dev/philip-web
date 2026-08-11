@@ -61,6 +61,14 @@ export const AlertModalTit = styled.h2`
   font-family: "Roboto";
 `;
 
+/** 버튼 영역 — 확인 1개일 때도 폭 100%를 유지하고, 취소가 붙으면 좌우로 나눠 배치한다 */
+export const AlertModalBtns = styled.div`
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+`;
+
 export const AlertModalMsg = styled.p`
   margin: 0;
   color: ${(props) => props.theme.colors.subTxt};

@@ -125,7 +125,9 @@ export const AdminGrid = styled.div`
             background: rgba(68, 98, 255, 0.05);
           }
 
-          input {
+          /* 이름 열만 굵게 — 읽기 모드는 텍스트, 편집 모드는 입력이 들어온다 */
+          td:first-child,
+          td:first-child input {
             font-weight: 700;
           }
         }
@@ -289,6 +291,36 @@ export const NameEditButton = styled.button`
     color: ${(props) => props.theme.colors.primary};
     background: ${(props) => props.theme.colors.adminInputBg};
   }
+`;
+
+/** 이름 표시 전용 셀 텍스트 (지역별 카테고리 화면은 이름을 여기서 고치지 않는다) */
+export const CodeNameText = styled.span`
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  padding: 0 9px;
+  color: ${(props) => props.theme.colors.dark};
+  font-size: 1.4rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+/** 전역값과 다르게 이 지역 전용 설정이 저장된 행 표시 배지 */
+export const OverrideBadge = styled.span<{ $on: boolean }>`
+  display: inline-flex;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 11px;
+  font-size: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  color: ${(props) =>
+    props.$on ? props.theme.colors.primary : props.theme.colors.adminLabelTxt};
+  background: ${(props) =>
+    props.$on ? "rgba(68, 98, 255, 0.09)" : props.theme.colors.adminInputBg};
+  border: 1px solid
+    ${(props) =>
+      props.$on ? props.theme.colors.primary : props.theme.colors.adminInputBorder};
 `;
 
 export const CodeNameInput = styled.input`

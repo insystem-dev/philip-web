@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import TreeList, {
   Column,
   Scrolling,
@@ -9,98 +9,71 @@ import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
 
-const PencilIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-  >
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-  </svg>
-);
+/** 편집모드에서 상위가 들고 있는 이름/영문명 입력값 (oid 기준) */
+export type CodeNameDraft = Record<string, { name: string; name_eng: string }>;
 
 /**
- * 이름 인라인 편집 — blur 시점에 값이 바뀐 경우에만 저장 요청을 보낸다.
- * Enter 는 저장(blur), Escape 는 원래 값으로 되돌린다.
- * 하위 코드는 └ 가이드로 상위-하위 관계를 표시하고,
- * 연필 버튼으로 "클릭해서 수정"이 가능함을 드러낸다.
+ * 이름 셀 — 읽기 모드는 텍스트로만 보여주고, 편집 모드에서만 입력으로 바뀐다.
+ * 입력값은 상위 draft 가 들고 있어 저장 버튼을 누를 때까지 서버로 나가지 않는다.
+ * 하위 코드는 양쪽 모드 모두 └ 가이드로 상위-하위 관계를 표시한다.
  */
 const NameCell = ({
   data,
+  isEditMode,
+  draftName,
   onChangeName,
 }: {
   data: any;
-  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
+  isEditMode?: boolean;
+  draftName?: string;
+  onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
 }) => {
-  const original = data.data.name ?? "";
-  const [value, setValue] = useState(original);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const name = data.data.name ?? "";
   const isChild = !!data.data.parentOid;
 
   return (
     <S.CodeNameCell>
       {isChild && <S.ChildGuide aria-hidden />}
-      <S.CodeNameInput
-        ref={inputRef}
-        type="text"
-        value={value}
-        title="클릭해서 이름 수정"
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") e.currentTarget.blur();
-          if (e.key === "Escape") {
-            setValue(original);
-            e.currentTarget.blur();
-          }
-        }}
-        onBlur={(e) => {
-          const next = e.target.value.trim();
-          if (!next || next === original) {
-            setValue(original);
-            return;
-          }
-          onChangeName(e, data);
-        }}
-      />
-      <S.NameEditButton
-        type="button"
-        title="이름 수정"
-        aria-label={`${original} 이름 수정`}
-        onClick={() => inputRef.current?.focus()}
-      >
-        <PencilIcon />
-      </S.NameEditButton>
+      {isEditMode ? (
+        <S.CodeNameInput
+          type="text"
+          value={draftName ?? name}
+          aria-label={`${name} 이름`}
+          onChange={(e) => onChangeName(e, data)}
+        />
+      ) : (
+        <S.CodeNameText title={name}>{name}</S.CodeNameText>
+      )}
     </S.CodeNameCell>
   );
 };
 
-/** 영문명 인라인 편집 — blur 시점에만 저장 요청을 보내기 위해 로컬 state로 관리 */
+/** 영문명 셀 — 이름 셀과 같은 방식으로 편집 모드에서만 입력을 연다 */
 const NameEngCell = ({
   data,
+  isEditMode,
+  draftNameEng,
   onChangeNameEng,
 }: {
   data: any;
-  onChangeNameEng?: (
-    e: React.FocusEvent<HTMLInputElement>,
-    data: any
-  ) => void;
+  isEditMode?: boolean;
+  draftNameEng?: string;
+  onChangeNameEng?: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
 }) => {
-  const [value, setValue] = useState(data.data.name_eng ?? "");
+  const nameEng = data.data.name_eng ?? "";
 
   return (
     <S.AdminCellBox>
-      <S.NameEngInput
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={(e) => onChangeNameEng?.(e, data)}
-      />
+      {isEditMode ? (
+        <S.NameEngInput
+          type="text"
+          value={draftNameEng ?? nameEng}
+          aria-label={`${data.data.name ?? ""} 영문명`}
+          onChange={(e) => onChangeNameEng?.(e, data)}
+        />
+      ) : (
+        <S.CodeNameText title={nameEng}>{nameEng}</S.CodeNameText>
+      )}
     </S.AdminCellBox>
   );
 };
@@ -114,16 +87,17 @@ interface CodeSubGridProps {
   showCityColumns?: boolean;
   /** 하위 추가 컬럼 노출 여부 (CATEGORY 그룹에서만 사용) */
   allowAddChild?: boolean;
+  /** 이름·영문명 편집 모드 — 즉시 반영 컬럼(순서/사용여부/하위 추가/삭제)은 잠긴다 */
+  isEditMode?: boolean;
+  /** 편집 모드에서 표시할 이름/영문명 입력값 */
+  nameDraft?: CodeNameDraft;
   getSortOptions: (parentOid: string | null) => any[];
   onAddChild: (data: any) => void;
-  /** 이름 인라인 수정 (blur 시 저장) */
-  onChangeName: (e: React.FocusEvent<HTMLInputElement>, data: any) => void;
+  /** 이름 입력 — 상위 draft 갱신용 (저장은 저장 버튼에서) */
+  onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled?: (data: any) => void;
-  onChangeNameEng?: (
-    e: React.FocusEvent<HTMLInputElement>,
-    data: any
-  ) => void;
+  onChangeNameEng?: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
   onDelete: (data: any) => void;
 }
 
@@ -133,6 +107,8 @@ export const CodeSubGrid = ({
   isLoading,
   showCityColumns,
   allowAddChild,
+  isEditMode,
+  nameDraft,
   getSortOptions,
   onAddChild,
   onChangeName,
@@ -211,8 +187,9 @@ export const CodeSubGrid = ({
           minWidth={180}
           cellRender={(data) => (
             <NameCell
-              key={`${data.data.oid}:${data.data.name}`}
               data={data}
+              isEditMode={isEditMode}
+              draftName={nameDraft?.[data.data.oid]?.name}
               onChangeName={onChangeName}
             />
           )}
@@ -223,10 +200,16 @@ export const CodeSubGrid = ({
             width={160}
             alignment="center"
             cellRender={(data) => (
-              <NameEngCell data={data} onChangeNameEng={onChangeNameEng} />
+              <NameEngCell
+                data={data}
+                isEditMode={isEditMode}
+                draftNameEng={nameDraft?.[data.data.oid]?.name_eng}
+                onChangeNameEng={onChangeNameEng}
+              />
             )}
           />
         )}
+        {/* 아래 컬럼들은 즉시 반영(=리패치)이라 편집 중에는 잠근다. 열어두면 draft 가 날아간다 */}
         <Column
           caption="순서"
           dataField="sort"
@@ -239,6 +222,7 @@ export const CodeSubGrid = ({
               size="sm"
               width="70px"
               themeType="admin"
+              disabled={isEditMode}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 onChangeSort(e, data);
               }}
@@ -258,6 +242,7 @@ export const CodeSubGrid = ({
                   checked={!data.data.disabled}
                   themeType="admin"
                   layout="row"
+                  disabled={isEditMode}
                   onChange={() => onToggleDisabled?.(data)}
                 />
               </S.AdminCellBox>
@@ -277,6 +262,7 @@ export const CodeSubGrid = ({
                 width="76px"
                 height={24}
                 label="하위 추가"
+                disabled={isEditMode}
                 onClick={() => onAddChild(data)}
               />
             )}
@@ -294,6 +280,7 @@ export const CodeSubGrid = ({
               width="60px"
               height={24}
               label="삭제"
+              disabled={isEditMode}
               onClick={() => onDelete(data)}
             />
           )}

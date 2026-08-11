@@ -11,6 +11,16 @@ export const AdminAdsPreviewTit = styled.div`
   font-size: 1.6rem;
 `;
 
+/** 범위 노출 설정이 꺼져 있을 때 미리보기 상단에 뜨는 안내문 */
+export const AdminAdsHiddenNotice = styled.p`
+  padding: 8px 10px;
+  border-radius: 4px;
+  color: ${(props) => props.theme.colors.red};
+  background: ${(props) => props.theme.colors.adminInputBg};
+  font-size: 1.2rem;
+  line-height: 1.6;
+`;
+
 export const AdminAdsPreviewBox = styled.div`
   display: grid;
   grid-template-areas:

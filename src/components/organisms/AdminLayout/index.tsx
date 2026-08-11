@@ -6,7 +6,14 @@ import { AlertModal } from "@/components/molecules/AlertModal";
 import { MAINTENANCE_BLOCKED_EVENT } from "@/apis";
 import * as S from "./adminLayout.style";
 
-export const AdminLayout = ({ title, link, linkLabel, children }: any) => {
+// titleActions — 타이틀 우측 버튼 영역에 화면별 버튼(수정/저장/취소 등)을 꽂는 슬롯
+export const AdminLayout = ({
+  title,
+  link,
+  linkLabel,
+  titleActions,
+  children,
+}: any) => {
   const [maintenanceBlocked, setMaintenanceBlocked] = useState(false);
 
   // 점검 모드로 차단된 요청(503 MAINTENANCE)이 발생하면 점검 안내 모달 표시
@@ -21,7 +28,12 @@ export const AdminLayout = ({ title, link, linkLabel, children }: any) => {
     <S.AdminLayout>
       <AdminHeader />
       <AdminAsideSection />
-      <AdminContentSection title={title} link={link} linkLabel={linkLabel}>
+      <AdminContentSection
+        title={title}
+        link={link}
+        linkLabel={linkLabel}
+        titleActions={titleActions}
+      >
         {children}
       </AdminContentSection>
       {maintenanceBlocked && (
