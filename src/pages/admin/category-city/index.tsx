@@ -105,10 +105,10 @@ const AdminCategoryCity = () => {
     [cityList]
   );
 
-  // 첫 진입 시 첫 지역을 자동 선택 (지역이 없으면 선택 없음)
+  // 첫 진입 시 첫 활성 지역을 자동 선택 (활성 지역이 없으면 첫 지역, 지역이 없으면 선택 없음)
   useEffect(() => {
     if (cityCode || cities.length === 0) return;
-    setCityCode(cities[0].oid);
+    setCityCode((cities.find((city) => !city.disabled) ?? cities[0]).oid);
   }, [cities, cityCode]);
 
   const { data: settings, isLoading } = useQuery<CategoryCitySetting[]>(

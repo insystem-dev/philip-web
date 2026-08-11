@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 
 export const AdminCategoryCityPage = styled.div`
   display: flex;
@@ -30,15 +30,11 @@ export const CityTab = styled.button<{ $active: boolean }>`
   font-weight: ${(props) => (props.$active ? 700 : 400)};
   cursor: pointer;
 
-  /* 비활성 지역도 관리자에겐 보이되 흐리게 표시한다 */
-  ${(props) =>
-    props.$active
-      ? css``
-      : css`
-          &[data-disabled="true"] {
-            color: ${props.theme.colors.adminPlaceholder};
-          }
-        `}
+  /* 비활성 지역은 클릭 불가 — 존재는 보이되 흐리게, 목록 맨 뒤로 정렬된다 */
+  &:disabled {
+    color: ${(props) => props.theme.colors.adminPlaceholder};
+    cursor: not-allowed;
+  }
 `;
 
 /** 저장·초기화 액션 바 — 공통코드 관리의 추가 바와 같은 그레이 박스 */

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as S from "./adminCategoryCityPage.style";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { CategoryCityGrid } from "@/components/molecules/AdminGrid/CategoryCityGrid";
@@ -125,6 +125,12 @@ export const AdminCategoryCityPage = ({
   const selectedCity = cities.find((city) => city.oid === cityCode);
   const [parentPickerOpen, setParentPickerOpen] = useState(false);
 
+  /** 활성 지역을 앞에, 비활성 지역은 뒤로 보낸다 (각 그룹 안에서는 관리자 sort 순 유지) */
+  const orderedCities = useMemo(
+    () => [...cities].sort((a, b) => Number(a.disabled) - Number(b.disabled)),
+    [cities]
+  );
+
   const parentLabel = newParentCode
     ? getPathLabel(newParentCode)
     : "최상위 카테고리";
@@ -170,13 +176,13 @@ export const AdminCategoryCityPage = ({
     <AdminLayout title="지역별 카테고리" titleActions={titleActions}>
       <S.AdminCategoryCityPage>
         <S.CityTabs role="tablist" aria-label="지역 선택">
-          {cities.map((city) => (
+          {orderedCities.map((city) => (
             <S.CityTab
               key={city.oid}
               type="button"
               role="tab"
               aria-selected={cityCode === city.oid}
-              data-disabled={city.disabled}
+              disabled={city.disabled}
               $active={cityCode === city.oid}
               onClick={() => onChangeCity(city.oid)}
             >
