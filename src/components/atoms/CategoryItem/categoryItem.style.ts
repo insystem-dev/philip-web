@@ -58,6 +58,11 @@ export const CategoryItem = styled.li<{ $index: number; $active: boolean }>`
       }
     `}
 
+  @media screen and (max-width: 768px) {
+    opacity: 1;
+    animation: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     opacity: 1;
     animation: none;
@@ -195,6 +200,25 @@ export const CategoryButton = styled.button`
     border-radius: 14px;
   }
 
+  @media screen and (max-width: 768px) {
+    backdrop-filter: none;
+
+    &::before {
+      filter: none;
+    }
+
+    &::after {
+      opacity: 0.14;
+      transform: none;
+      animation: none;
+      will-change: auto;
+    }
+
+    ${HoverShine} {
+      display: none;
+    }
+  }
+
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       outline: none;
@@ -283,6 +307,14 @@ export const CategoryIcon = styled.span`
         filter 0.16s ease,
         transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
     }
+  }
+
+  @media screen and (max-width: 768px) {
+    filter: none;
+    transform: none;
+    animation: none;
+    transition: none;
+    will-change: auto;
   }
 
   @media (prefers-reduced-motion: reduce) {

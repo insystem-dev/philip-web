@@ -85,8 +85,17 @@ export const CategoryPage = styled.section`
     z-index: -1;
     inset: 0;
     background:
-      radial-gradient(circle at 50% 9%, rgba(255, 227, 146, 0.14), transparent 22%),
-      linear-gradient(180deg, rgba(4, 11, 22, 0.08), rgba(2, 8, 17, 0.54) 68%, rgba(2, 7, 14, 0.88));
+      radial-gradient(
+        circle at 50% 9%,
+        rgba(255, 227, 146, 0.14),
+        transparent 22%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(4, 11, 22, 0.08),
+        rgba(2, 8, 17, 0.54) 68%,
+        rgba(2, 7, 14, 0.88)
+      );
     pointer-events: none;
   }
 
@@ -99,7 +108,9 @@ export const CategoryPage = styled.section`
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-delay: 0ms !important;
     }
@@ -118,10 +129,28 @@ export const FlagSurface = styled.div`
   overflow: hidden;
   inset: -4%;
   background:
-    radial-gradient(ellipse at 18% 80%, rgba(255, 255, 255, 0.12), transparent 22%),
-    radial-gradient(ellipse at 79% 48%, rgba(255, 255, 255, 0.1), transparent 20%),
-    repeating-linear-gradient(104deg, rgba(255,255,255,.025) 0 1px, transparent 1px 9px),
-    linear-gradient(90deg, #6d1322 0%, #8b1d30 48.5%, #103863 51.5%, #061d3f 100%);
+    radial-gradient(
+      ellipse at 18% 80%,
+      rgba(255, 255, 255, 0.12),
+      transparent 22%
+    ),
+    radial-gradient(
+      ellipse at 79% 48%,
+      rgba(255, 255, 255, 0.1),
+      transparent 20%
+    ),
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.025) 0 1px,
+      transparent 1px 9px
+    ),
+    linear-gradient(
+      90deg,
+      #6d1322 0%,
+      #8b1d30 48.5%,
+      #103863 51.5%,
+      #061d3f 100%
+    );
   transform-origin: 50% 12%;
   will-change: transform, background-position;
   animation:
@@ -133,7 +162,11 @@ export const FlagSurface = styled.div`
     position: absolute;
     inset: -2px;
     background:
-      radial-gradient(ellipse at 28% 58%, rgba(10, 4, 6, 0.36), transparent 38%),
+      radial-gradient(
+        ellipse at 28% 58%,
+        rgba(10, 4, 6, 0.36),
+        transparent 38%
+      ),
       radial-gradient(ellipse at 72% 70%, rgba(2, 9, 25, 0.42), transparent 40%);
     mix-blend-mode: multiply;
   }
@@ -146,12 +179,18 @@ export const FlagSurface = styled.div`
     width: 100%;
     height: 58%;
     background:
-      linear-gradient(142deg, rgba(255,255,255,.28), transparent 32%),
-      linear-gradient(218deg, rgba(255,255,255,.18), transparent 31%),
+      linear-gradient(142deg, rgba(255, 255, 255, 0.28), transparent 32%),
+      linear-gradient(218deg, rgba(255, 255, 255, 0.18), transparent 31%),
       linear-gradient(180deg, #eee8d2, #d9d7cc);
     clip-path: polygon(0 0, 100% 0, 50% 100%);
-    opacity: .88;
-    filter: brightness(.78);
+    opacity: 0.88;
+    filter: brightness(0.78);
+  }
+
+  @media screen and (max-width: 768px) {
+    transform: scale(1.055);
+    animation: none;
+    will-change: auto;
   }
 `;
 
@@ -174,7 +213,12 @@ export const FlagFold = styled.span<{ $index: number }>`
   filter: blur(${(props) => 10 + props.$index * 3}px);
   transform: skewX(-8deg);
   pointer-events: none;
-  animation: ${foldDrift} ${(props) => 5.3 + props.$index * 0.9}s ${(props) => -props.$index * 1.7}s ease-in-out infinite;
+  animation: ${foldDrift} ${(props) => 5.3 + props.$index * 0.9}s
+    ${(props) => -props.$index * 1.7}s ease-in-out infinite;
+
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const FlagSun = styled.span`
@@ -196,9 +240,25 @@ export const FlagStar = styled.span<{ $position: "left" | "right" | "bottom" }>`
   font-size: 21px;
   line-height: 1;
 
-  ${(props) => props.$position === "left" && css`top: 34px; left: 9%;`}
-  ${(props) => props.$position === "right" && css`top: 34px; right: 9%;`}
-  ${(props) => props.$position === "bottom" && css`top: 43%; left: 50%; transform: translateX(-50%);`}
+  ${(props) =>
+    props.$position === "left" &&
+    css`
+      top: 34px;
+      left: 9%;
+    `}
+  ${(props) =>
+    props.$position === "right" &&
+    css`
+      top: 34px;
+      right: 9%;
+    `}
+  ${(props) =>
+    props.$position === "bottom" &&
+    css`
+      top: 43%;
+      left: 50%;
+      transform: translateX(-50%);
+    `}
 `;
 
 export const CategoryContent = styled.div`
@@ -222,7 +282,7 @@ export const TopBanner = styled.section`
   gap: 8px;
   border-radius: 6px;
   opacity: 0;
-  animation: ${copyIn} .55s 1.4s ease-out forwards;
+  animation: ${copyIn} 0.55s 1.4s ease-out forwards;
 
   > div {
     width: 100%;
@@ -248,12 +308,12 @@ export const Brand = styled.h1`
   overflow: visible;
   display: inline-flex;
   margin: 0 0 1px;
-  padding: 0 .22em .12em;
+  padding: 0 0.22em 0.12em;
   color: #ead496;
   font-family: "Trebuchet MS", "Malgun Gothic", sans-serif;
   font-size: clamp(4.4rem, 7vw, 6.8rem);
   font-weight: 800;
-  line-height: .95;
+  line-height: 0.95;
   letter-spacing: -0.06em;
   text-shadow:
     0 1px 0 #fff3c0,
@@ -261,7 +321,7 @@ export const Brand = styled.h1`
     0 10px 24px rgba(0, 0, 0, 0.48),
     0 0 20px rgba(255, 228, 142, 0.22);
   transform-origin: center top;
-  animation: ${brandSettle} 1.25s .06s cubic-bezier(.16,.82,.2,1) both;
+  animation: ${brandSettle} 1.25s 0.06s cubic-bezier(0.16, 0.82, 0.2, 1) both;
 
   @media screen and (max-width: 768px) {
     font-size: 3.8rem;
@@ -271,20 +331,20 @@ export const Brand = styled.h1`
 export const BrandText = styled.span`
   position: relative;
   display: inline-block;
-  padding: .08em .12em .13em .08em;
-  margin: -.08em -.12em -.13em -.08em;
+  padding: 0.08em 0.12em 0.13em 0.08em;
+  margin: -0.08em -0.12em -0.13em -0.08em;
 
   &::after {
     content: attr(data-text);
     position: absolute;
-    inset: .08em .12em .13em .08em;
+    inset: 0.08em 0.12em 0.13em 0.08em;
     color: transparent;
     background: linear-gradient(
       108deg,
       transparent 35%,
-      rgba(255, 255, 255, .18) 43%,
+      rgba(255, 255, 255, 0.18) 43%,
       #fffce4 50%,
-      rgba(255, 241, 169, .28) 57%,
+      rgba(255, 241, 169, 0.28) 57%,
       transparent 65%
     );
     background-size: 260% 100%;
@@ -292,15 +352,17 @@ export const BrandText = styled.span`
     background-clip: text;
     -webkit-background-clip: text;
     pointer-events: none;
-    animation: ${glint} 3.25s .12s ease-in-out infinite;
+    animation: ${glint} 3.25s 0.12s ease-in-out infinite;
   }
 `;
 
-export const BrandSparkle = styled.span<{ $position: "left" | "top" | "right" | "bottom" }>`
+export const BrandSparkle = styled.span<{
+  $position: "left" | "top" | "right" | "bottom";
+}>`
   position: absolute;
   z-index: 2;
   color: #fff9cf;
-  font-size: .42em;
+  font-size: 0.42em;
   line-height: 1;
   opacity: 0;
   pointer-events: none;
@@ -310,18 +372,37 @@ export const BrandSparkle = styled.span<{ $position: "left" | "top" | "right" | 
     0 0 24px #ffd45c;
   animation: ${sparkle} 3.2s ease-in-out infinite;
 
-  ${(props) => props.$position === "left" && css`
-    top: 32%; left: 5%; animation-delay: .55s;
-  `}
-  ${(props) => props.$position === "top" && css`
-    top: -3%; left: 48%; font-size: .3em; animation-delay: 1.35s;
-  `}
-  ${(props) => props.$position === "right" && css`
-    top: 27%; right: 3%; font-size: .5em; animation-delay: 2.05s;
-  `}
-  ${(props) => props.$position === "bottom" && css`
-    right: 26%; bottom: -2%; font-size: .28em; animation-delay: 2.65s;
-  `}
+  ${(props) =>
+    props.$position === "left" &&
+    css`
+      top: 32%;
+      left: 5%;
+      animation-delay: 0.55s;
+    `}
+  ${(props) =>
+    props.$position === "top" &&
+    css`
+      top: -3%;
+      left: 48%;
+      font-size: 0.3em;
+      animation-delay: 1.35s;
+    `}
+  ${(props) =>
+    props.$position === "right" &&
+    css`
+      top: 27%;
+      right: 3%;
+      font-size: 0.5em;
+      animation-delay: 2.05s;
+    `}
+  ${(props) =>
+    props.$position === "bottom" &&
+    css`
+      right: 26%;
+      bottom: -2%;
+      font-size: 0.28em;
+      animation-delay: 2.65s;
+    `}
 `;
 
 export const BottomBanners = styled.section`
@@ -332,7 +413,7 @@ export const BottomBanners = styled.section`
   width: min(1240px, 100%);
   border-radius: 6px;
   opacity: 0;
-  animation: ${copyIn} .55s 1.55s ease-out forwards;
+  animation: ${copyIn} 0.55s 1.55s ease-out forwards;
 
   > div {
     width: 100%;
@@ -351,15 +432,15 @@ export const ContactArea = styled.div`
   width: min(920px, 100%);
   justify-content: center;
   opacity: 0;
-  animation: ${contactIn} .5s 1.15s cubic-bezier(.18,.82,.2,1) forwards;
+  animation: ${contactIn} 0.5s 1.15s cubic-bezier(0.18, 0.82, 0.2, 1) forwards;
 `;
 
 export const CategoryTxtBox = styled.div`
   color: rgba(255, 250, 236, 0.84);
   font-size: 2rem;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .55);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
   opacity: 0;
-  animation: ${copyIn} .45s .76s ease-out forwards;
+  animation: ${copyIn} 0.45s 0.76s ease-out forwards;
 
   @media screen and (min-width: 769px) {
     font-size: 2.4rem;

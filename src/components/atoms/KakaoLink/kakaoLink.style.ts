@@ -69,6 +69,12 @@ export const IconCircle = styled.div`
   will-change: transform;
   animation: ${iconBob} 3.1s ease-in-out infinite;
   transition: none;
+
+  @media screen and (max-width: 768px) {
+    transform: none;
+    animation: none;
+    will-change: auto;
+  }
 `;
 
 export const KakaoLinkTxtSpan = styled.span`
@@ -325,7 +331,19 @@ export const KakaoLink = styled.button<{ $variant?: "call" | "kakao" }>`
     border-radius: 6px;
 
     &::after {
+      opacity: 0.16;
+      transform: none;
       border-radius: 4px;
+      animation: none;
+      will-change: auto;
+    }
+
+    &::before {
+      filter: none;
+    }
+
+    ${HoverShine} {
+      display: none;
     }
   }
 
