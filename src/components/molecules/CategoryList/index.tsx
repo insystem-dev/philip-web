@@ -16,9 +16,9 @@ export const CategoryList = ({ cityCode }: CategoryListProps) => {
   );
 
   return (
-    <S.CategoryList>
+    <S.CategoryList aria-busy={isLoading}>
       {categoryItem?.map((item: any, idx: number) => {
-        return <CategoryItem item={item} key={idx} />;
+        return <CategoryItem item={item} index={idx} key={item.oid ?? idx} />;
       })}
     </S.CategoryList>
   );

@@ -10,6 +10,7 @@ import { userTokenState } from "@/recoil/userToken";
 
 export const MobileHeader = () => {
   const router = useRouter();
+  const isCategorySelect = router.pathname === "/select/category";
   /** 사용자 로그인 체크 */
   const [userToken, setUserToken] = useRecoilState(userTokenState);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -51,7 +52,7 @@ export const MobileHeader = () => {
   }, [isMenuOpen]);
 
   return (
-    <S.MobileHeader>
+    <S.MobileHeader $overlay={isCategorySelect}>
       <Button
         type="button"
         width="64px"
@@ -62,7 +63,7 @@ export const MobileHeader = () => {
       >
         <IconBack width="28px" height="28px" viewBox="0 0 24 24" />
       </Button>
-      <Logo main={true} mobile={true} />
+      {!isCategorySelect && <Logo main={true} mobile={true} />}
       {userToken ? (
         <S.UserMenu ref={menuRef}>
           <Button

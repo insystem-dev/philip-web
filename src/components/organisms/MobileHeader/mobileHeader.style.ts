@@ -1,6 +1,6 @@
 import styled, { css, keyframes } from "styled-components";
 
-export const MobileHeader = styled.header`
+export const MobileHeader = styled.header<{ $overlay?: boolean }>`
   position: -webkit-sticky;
   position: sticky;
   display: flex;
@@ -10,6 +10,19 @@ export const MobileHeader = styled.header`
   align-items: center;
   justify-content: space-between;
   z-index: 11;
+
+  ${(props) =>
+    props.$overlay &&
+    css`
+      position: absolute;
+      width: 100%;
+      color: rgba(255, 255, 255, 0.92);
+      background: transparent;
+
+      svg path {
+        fill: currentColor;
+      }
+    `}
 `;
 
 export const MobileHeaderImgSpan = styled.span`

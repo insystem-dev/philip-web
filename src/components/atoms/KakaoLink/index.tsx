@@ -33,7 +33,13 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
 
   return (
     <S.ContactBox $layout={layout}>
-      <S.KakaoLink onClick={goCall} aria-disabled={!phone} title="전화 문의">
+      <S.KakaoLink
+        type="button"
+        onClick={goCall}
+        disabled={!phone}
+        aria-disabled={!phone}
+        title="전화 문의"
+      >
         <S.KakaoLinkTitBox>
           <S.IconCircle>
             <IconPhone />
@@ -43,10 +49,13 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
         <S.ArrowIcon>
           <IconLinkArrow />
         </S.ArrowIcon>
+        <S.HoverShine aria-hidden="true" />
       </S.KakaoLink>
       <S.KakaoLink
+        type="button"
         $variant="kakao"
         onClick={copyKakaoId}
+        disabled={!kakaoId}
         aria-disabled={!kakaoId}
         title={`카카오톡 문의${kakaoId ? ` (${kakaoId})` : ""}`}
       >
@@ -59,6 +68,7 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
         <S.ArrowIcon>
           <IconLinkArrow />
         </S.ArrowIcon>
+        <S.HoverShine aria-hidden="true" />
       </S.KakaoLink>
     </S.ContactBox>
   );

@@ -18,6 +18,11 @@ export const AdminNavList = () => {
       path: "/admin/ads",
     },
     {
+      id: 9,
+      name: "팝업 관리",
+      path: "/admin/popup",
+    },
+    {
       id: 6,
       name: "공통코드 관리",
       path: "/admin/code",
