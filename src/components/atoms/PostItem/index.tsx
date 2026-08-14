@@ -38,20 +38,20 @@ export const PostItem = ({ item }: any) => {
         (goDetail(item), countViews());
       }}
     >
-      {item.thumb ? (
-        <Image
-          src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
-          layout="fill"
-          sizes="(max-width: 768px) 33vw, 220px"
-          alt="업체 이미지"
-        />
-      ) : (
-        <S.PostItemNoImage aria-label="등록된 이미지 없음" />
-      )}
-      <S.PostItemSpan>
-        <span>{item.category}</span>
-        {item.store_name}
-      </S.PostItemSpan>
+      <S.PostItemImage>
+        {item.thumb ? (
+          <Image
+            src={`${process.env.NEXT_PUBLIC_API_URL}/${item.thumb}`}
+            layout="fill"
+            objectFit="cover"
+            sizes="(max-width: 768px) 33vw, 220px"
+            alt="업체 이미지"
+          />
+        ) : (
+          <S.PostItemNoImage aria-label="등록된 이미지 없음" />
+        )}
+      </S.PostItemImage>
+      <S.PostItemSpan title={item.store_name}>{item.store_name}</S.PostItemSpan>
       {/* li(position: relative + z-index)의 쌓임 맥락에 갇히면 다른 카드 뒤로
           모달이 숨으므로 portal로 body에 직접 렌더링해 최상위에 띄운다 */}
       {showLoginModal &&

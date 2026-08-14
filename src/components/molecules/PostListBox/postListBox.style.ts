@@ -11,7 +11,7 @@ export const PostList = styled.ul`
   display: flex;
   width: 100%;
   flex-wrap: wrap;
-  gap: 32px 15px;
+  gap: 22px 15px;
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {

@@ -74,7 +74,24 @@ export const CategoryPage = styled.section`
   min-height: calc(100vh - 64px);
   padding: 36px 20px 52px;
   color: white;
-  background: #091527;
+  background:
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.018) 0 1px,
+      transparent 1px 10px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.01) 0 2px,
+      rgba(0, 0, 0, 0.018) 2px 7px
+    ),
+    linear-gradient(
+      90deg,
+      #6d1322 0%,
+      #8b1d30 48.5%,
+      #103863 51.5%,
+      #061d3f 100%
+    );
   flex-direction: column;
   align-items: center;
   gap: 24px;
@@ -86,15 +103,16 @@ export const CategoryPage = styled.section`
     inset: 0;
     background:
       radial-gradient(
-        circle at 50% 9%,
+        circle at 50% 82px,
         rgba(255, 227, 146, 0.14),
-        transparent 22%
+        transparent 190px
       ),
       linear-gradient(
         180deg,
-        rgba(4, 11, 22, 0.08),
-        rgba(2, 8, 17, 0.54) 68%,
-        rgba(2, 7, 14, 0.88)
+        rgba(4, 11, 22, 0.08) 0,
+        rgba(2, 8, 17, 0.42) 560px,
+        rgba(2, 7, 14, 0.58) 820px,
+        rgba(2, 7, 14, 0.58) 100%
       );
     pointer-events: none;
   }
@@ -121,7 +139,14 @@ export const FlagBackdrop = styled.div`
   position: absolute;
   z-index: -2;
   overflow: hidden;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: clamp(720px, calc(100dvh - 80px), 900px);
+
+  @media screen and (max-width: 768px) {
+    height: max(680px, 100dvh);
+  }
 `;
 
 export const FlagSurface = styled.div`
@@ -175,8 +200,8 @@ export const FlagSurface = styled.div`
     content: "";
     position: absolute;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 50%;
+    width: min(620px, 48vw);
     height: 58%;
     background:
       linear-gradient(142deg, rgba(255, 255, 255, 0.28), transparent 32%),
@@ -185,12 +210,19 @@ export const FlagSurface = styled.div`
     clip-path: polygon(0 0, 100% 0, 50% 100%);
     opacity: 0.88;
     filter: brightness(0.78);
+    transform: translateX(-50%);
   }
 
   @media screen and (max-width: 768px) {
     transform: scale(1.055);
     animation: none;
     will-change: auto;
+
+    &::after {
+      left: 0;
+      width: 100%;
+      transform: none;
+    }
   }
 `;
 
@@ -243,22 +275,42 @@ export const FlagStar = styled.span<{ $position: "left" | "right" | "bottom" }>`
   ${(props) =>
     props.$position === "left" &&
     css`
-      top: 34px;
-      left: 9%;
+      top: 52px;
+      left: calc(50% - min(310px, 24vw) + 38px);
     `}
   ${(props) =>
     props.$position === "right" &&
     css`
-      top: 34px;
-      right: 9%;
+      top: 52px;
+      right: calc(50% - min(310px, 24vw) + 38px);
     `}
   ${(props) =>
     props.$position === "bottom" &&
     css`
-      top: 43%;
+      top: 49%;
       left: 50%;
       transform: translateX(-50%);
     `}
+
+  @media screen and (max-width: 768px) {
+    ${(props) =>
+      props.$position === "left" &&
+      css`
+        top: 34px;
+        left: 9%;
+      `}
+    ${(props) =>
+      props.$position === "right" &&
+      css`
+        top: 34px;
+        right: 9%;
+      `}
+    ${(props) =>
+      props.$position === "bottom" &&
+      css`
+        top: 43%;
+      `}
+  }
 `;
 
 export const CategoryContent = styled.div`
@@ -329,6 +381,7 @@ export const Brand = styled.h1`
 `;
 
 export const BrandText = styled.span`
+  font-size: 5.5rem;
   position: relative;
   display: inline-block;
   padding: 0.08em 0.12em 0.13em 0.08em;

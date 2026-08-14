@@ -1,44 +1,58 @@
 import styled from "styled-components";
 
 export const PostItem = styled.li`
-  position: relative;
+  overflow: hidden;
+  display: flex;
   width: 220px;
-  height: 140px;
+  height: 180px;
   color: white;
+  background: transparent;
   cursor: pointer;
-  z-index: 0;
+  flex-direction: column;
+  /* box-shadow: ${(props) => props.theme.shadow.dark}; */
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
 
-  // 임시게시글 디자인(사진X)
-  // background: ${(props) => props.theme.colors.dark};
-
-  // 임시게시글 디자인(사진O)
-  box-shadow: ${(props) => props.theme.shadow.dark};
-
-  &::before {
-    position: absolute;
-    content: "";
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    opacity: 1;
-    background: ${(props) => props.theme.gradient.dark};
-    transition: all 0.2s ease-in-out;
-    z-index: 1;
+  &:hover {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    transform: translateY(-2px);
   }
 
-  // &:hover {
-  //   box-shadow: ${(props) => props.theme.shadow.dark};
-
-  //   &::before {
-  //     opacity: 1;
-  //   }
-  // }
-
-  //모바일 화면 설정
   @media screen and (max-width: 768px) {
     width: calc(33% - 6px);
-    height: 90px;
+    height: 122px;
+
+    &:hover {
+      transform: none;
+    }
+  }
+`;
+
+export const PostItemImage = styled.div`
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 136px;
+  flex: 0 0 136px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 55%,
+      rgba(0, 0, 0, 0.14) 100%
+    );
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 768px) {
+    height: 88px;
+    flex-basis: 88px;
   }
 `;
 
@@ -65,40 +79,21 @@ export const PostItemNoImage = styled.div`
 `;
 
 export const PostItemSpan = styled.span`
-  position: absolute;
-  display: flex;
-  top: 0;
-  right: 0;
-  bottom: 16px;
-  left: 16px;
-  padding-right: 16px;
-  font-size: 2.4rem;
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 7px 10px 8px;
+  overflow: hidden;
+  font-size: 2.1rem;
   font-weight: 600;
-  word-wrap: break-word;
-  word-breae: break-all;
-  opacity: 1;
-  justify-content: flex-end;
-  flex-direction: column;
-  transition: all 0.2s ease-in-out;
-  gap: 2px;
-  z-index: 2;
+  line-height: 29px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
-  // ${PostItem}:hover & {
-  //   opacity: 1;
-  // }
-
-  span {
-    color: ${(props) => props.theme.colors.white}f2;
-    font-size: 1.6rem;
-    font-weight: 400;
-  }
-
-  //모바일 화면 설정
   @media screen and (max-width: 768px) {
-    font-size: 1.8rem;
-
-    span {
-      font-size: 1.3rem;
-    }
+    height: 34px;
+    padding: 5px 7px 6px;
+    font-size: 1.45rem;
+    line-height: 23px;
   }
 `;

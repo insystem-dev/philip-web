@@ -281,12 +281,12 @@ export const CategoryIcon = styled.span`
   animation: ${iconFloat} 3.4s var(--button-motion-delay) ease-in-out infinite;
   transition: none;
 
-  svg {
+  img {
     width: 100%;
     height: 100%;
-    overflow: visible;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    object-fit: contain;
+    filter: invert(84%) sepia(29%) saturate(646%) hue-rotate(2deg)
+      brightness(99%) contrast(91%);
   }
 
   ${CategoryButton}:focus-visible & {

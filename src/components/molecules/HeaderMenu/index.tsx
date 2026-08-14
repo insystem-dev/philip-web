@@ -35,8 +35,21 @@ export const HeaderMenu = () => {
   };
 
   useEffect(() => {
-    if (cityItem) setCityOptions(cityItem);
-  }, [cityItem]);
+    if (!cityItem) return;
+    const activeCities = cityItem.filter((item) => !item.disabled);
+    setCityOptions(activeCities);
+
+    if (activeCities.length === 0) {
+      setCityState(null);
+      localStorage.removeItem("city");
+      return;
+    }
+
+    if (!city || !activeCities.some((item) => item.oid === city)) {
+      setCityState(activeCities[0].oid);
+      localStorage.setItem("city", activeCities[0].oid);
+    }
+  }, [cityItem, city, setCityState]);
 
   return (
     <S.HeaderMenu>

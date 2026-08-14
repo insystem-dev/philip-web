@@ -302,6 +302,12 @@ export const EditHint = styled(PanelHint)`
   margin-bottom: 14px;
 `;
 
+export const InheritanceHint = styled(PanelHint)`
+  margin: -6px 0 14px;
+  padding-left: 9px;
+  border-left: 2px solid rgba(68, 98, 255, 0.35);
+`;
+
 /** 저장하지 않은 변경 등, 진행을 막는 사유 안내 */
 export const PanelWarn = styled.p`
   margin-top: 10px;

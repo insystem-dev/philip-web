@@ -4,7 +4,12 @@ import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { CategoryCityGrid } from "@/components/molecules/AdminGrid/CategoryCityGrid";
 import { AlertModal } from "@/components/molecules/AlertModal";
 import { Button } from "@/components/atoms/Button";
-import { CategoryCitySetting, CitySub } from "@/apis/categoryApi";
+import {
+  CategoryCitySetting,
+  CategoryIconOption,
+  CitySub,
+} from "@/apis/categoryApi";
+import { CategoryIconPicker } from "@/components/molecules/CategoryIconPicker";
 
 /** 카테고리 추가 경로 — 기존 공통 카테고리를 켜기 / 이 지역 전용으로 새로 만들기 */
 export type CategoryAddMode = "existing" | "new";
@@ -41,6 +46,9 @@ export interface AdminCategoryCityPageProps {
   onChangeExpandedRowKeys: (keys: string[]) => void;
   getSortOptions: (parentCode: string | null) => any[];
   onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
+  iconOptions: CategoryIconOption[];
+  onChangeIcon: (iconKey: string, data: any) => void;
+  onUseGlobalIcon: (data: any) => void;
   onToggleUse: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onSave: () => void;
@@ -61,6 +69,8 @@ export interface AdminCategoryCityPageProps {
   onAddExisting: (categoryCode: string) => void;
   newName: string;
   setNewName: (value: string) => void;
+  newIconKey: string;
+  setNewIconKey: (value: string) => void;
   newParentCode: string | null;
   setNewParentCode: (code: string | null) => void;
   onSubmitCreate: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -96,6 +106,9 @@ export const AdminCategoryCityPage = ({
   onChangeExpandedRowKeys,
   getSortOptions,
   onChangeName,
+  iconOptions,
+  onChangeIcon,
+  onUseGlobalIcon,
   onToggleUse,
   onChangeSort,
   onSave,
@@ -114,6 +127,8 @@ export const AdminCategoryCityPage = ({
   onAddExisting,
   newName,
   setNewName,
+  newIconKey,
+  setNewIconKey,
   newParentCode,
   setNewParentCode,
   onSubmitCreate,
@@ -182,7 +197,7 @@ export const AdminCategoryCityPage = ({
               type="button"
               role="tab"
               aria-selected={cityCode === city.oid}
-              disabled={city.disabled}
+              disabled={city.disabled || isEditMode}
               $active={cityCode === city.oid}
               onClick={() => onChangeCity(city.oid)}
             >
@@ -218,7 +233,9 @@ export const AdminCategoryCityPage = ({
                   height={32}
                   label={showCreatePanel ? "추가 닫기" : "카테고리 추가"}
                   onClick={onToggleCreatePanel}
-                  disabled={isLoading || isSaving || isResetting || isEditMode}
+                  disabled={
+                    isLoading || isSaving || isResetting || !isEditMode
+                  }
                 />
                 <Button
                   type="button"
@@ -228,15 +245,24 @@ export const AdminCategoryCityPage = ({
                   height={32}
                   label={isResetting ? "초기화 중..." : "이 지역 설정 초기화"}
                   onClick={onResetClick}
-                  disabled={isLoading || isSaving || isResetting || isEditMode}
+                  disabled={
+                    isLoading || isSaving || isResetting || !isEditMode
+                  }
                 />
               </S.BarButtons>
             </S.ActionBar>
 
+            <S.InheritanceHint>
+              지역을 활성화하는 것만으로 별도 데이터는 생성되지 않습니다. 이
+              화면에서 카테고리 설정을 수정하고 저장한 시점부터 지역별 설정이
+              기록되며, 그전에는 공통코드 설정을 그대로 따릅니다.
+            </S.InheritanceHint>
+
             {isEditMode && (
               <S.EditHint>
                 카테고리 이름은 전 지역 공통입니다. 여기서 바꾸면 다른
-                지역에서도 바뀝니다.
+                지역에서도 바뀝니다. 아이콘은 현재 지역에만 적용됩니다. 추가와
+                초기화 기능도 수정 모드에서만 사용할 수 있습니다.
               </S.EditHint>
             )}
 
@@ -285,9 +311,8 @@ export const AdminCategoryCityPage = ({
                       </S.PickList>
                     )}
                     <S.PanelHint>
-                      누르면 수정 모드로 바뀌면서 이 지역에서 노출로 바뀌고
-                      형제 카테고리의 맨 뒤에 놓입니다. 실제 반영은 우측 상단
-                      ‘저장’ 을 눌러야 됩니다.
+                      누르면 이 지역에서 노출로 바뀌고 형제 카테고리의 맨 뒤에
+                      놓입니다. 실제 반영은 우측 상단 ‘저장’ 을 눌러야 됩니다.
                     </S.PanelHint>
                   </>
                 ) : (
@@ -353,6 +378,12 @@ export const AdminCategoryCityPage = ({
                           onChange={(e) => setNewName(e.target.value)}
                         />
                       </S.NameField>
+                      <CategoryIconPicker
+                        options={iconOptions}
+                        value={newIconKey}
+                        ariaLabel="새 지역 카테고리 아이콘"
+                        onChange={setNewIconKey}
+                      />
                       <Button
                         type="submit"
                         color="primary"
@@ -396,6 +427,9 @@ export const AdminCategoryCityPage = ({
                 onChangeExpandedRowKeys={onChangeExpandedRowKeys}
                 getSortOptions={getSortOptions}
                 onChangeName={onChangeName}
+                iconOptions={iconOptions}
+                onChangeIcon={onChangeIcon}
+                onUseGlobalIcon={onUseGlobalIcon}
                 onToggleUse={onToggleUse}
                 onChangeSort={onChangeSort}
               />

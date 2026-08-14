@@ -153,7 +153,30 @@ export const TreeToolbar = styled.div`
   display: flex;
   padding-bottom: 8px;
   justify-content: flex-end;
+  align-items: center;
   gap: 6px;
+`;
+
+export const ModeState = styled.span<{ $edit: boolean }>`
+  display: inline-flex;
+  height: 26px;
+  padding: 0 10px;
+  margin-right: auto;
+  border: 1px solid
+    ${(props) =>
+      props.$edit
+        ? props.theme.colors.primary
+        : props.theme.colors.adminInputBorder};
+  border-radius: 13px;
+  color: ${(props) =>
+    props.$edit
+      ? props.theme.colors.primary
+      : props.theme.colors.adminLabelTxt};
+  background: ${(props) =>
+    props.$edit ? "rgba(68, 98, 255, 0.09)" : props.theme.colors.adminInputBg};
+  font-size: 1.15rem;
+  font-weight: 600;
+  align-items: center;
 `;
 
 export const TreeControlButton = styled.button`

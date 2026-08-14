@@ -7,11 +7,13 @@ import {
 import {
   Category,
   CategoryCitySetting,
+  CategoryIconOption,
   CitySub,
   createCategoryApi,
   getCategoryCitySettingApi,
   getCategoryTreeApi,
-  getCityListApi,
+  getCategoryIconCatalogApi,
+  getCityTreeApi,
   resetCategoryCitySettingApi,
   updateCategoryCitySettingApi,
 } from "@/apis/categoryApi";
@@ -87,14 +89,24 @@ const AdminCategoryCity = () => {
   const [showCreatePanel, setShowCreatePanel] = useState(false);
   const [createMode, setCreateMode] = useState<CategoryAddMode>("existing");
   const [newName, setNewName] = useState("");
+  const [newIconKey, setNewIconKey] = useState("plus");
   const [newParentCode, setNewParentCode] = useState<string | null>(null);
   /** 이 지역 전용 카테고리의 노출을 끄기 직전 확인을 받는 대상 */
   const [pendingHideCode, setPendingHideCode] = useState<string | null>(null);
 
   const { data: cityList } = useQuery<CitySub[]>(
-    ["getCityListApi"],
-    getCityListApi,
+    ["getCityTreeApi"],
+    getCityTreeApi,
     {
+      onError: (error: any) => handleError(error),
+    }
+  );
+
+  const { data: iconOptions = [] } = useQuery<CategoryIconOption[]>(
+    ["getCategoryIconCatalogApi"],
+    getCategoryIconCatalogApi,
+    {
+      staleTime: Infinity,
       onError: (error: any) => handleError(error),
     }
   );
@@ -150,6 +162,17 @@ const AdminCategoryCity = () => {
     [globalCategories]
   );
 
+  const globalIconByCode = useMemo(
+    () =>
+      new Map(
+        (globalCategories ?? []).map((category) => [
+          category.oid,
+          category.iconKey,
+        ])
+      ),
+    [globalCategories]
+  );
+
   /** 저장 여부 판단 기준이 되는 서버 원본(순서 재번호 적용본) */
   const baseline = useMemo(
     () => normalizeSort(settings ?? []),
@@ -169,7 +192,9 @@ const AdminCategoryCity = () => {
         !base ||
         base.sort !== row.sort ||
         base.useYn !== row.useYn ||
-        base.name !== row.name
+        base.name !== row.name ||
+        base.iconKey !== row.iconKey ||
+        base.iconOverridden !== row.iconOverridden
       );
     });
   }, [draft, baseline]);
@@ -250,7 +275,9 @@ const AdminCategoryCity = () => {
     onSuccess: () => {
       setError("");
       setNotice("이 지역 설정이 초기화되어 전역 설정으로 되돌아갔습니다.");
+      setIsEditMode(false);
       setShowResetConfirm(false);
+      setShowCreatePanel(false);
       queryClient.invalidateQueries(["getCategoryCitySettingApi", cityCode]);
       queryClient.invalidateQueries(["getCategoryNavApi"]);
       queryClient.invalidateQueries(["getCategoryTreeApi"]);
@@ -274,6 +301,7 @@ const AdminCategoryCity = () => {
       setError("");
       setNotice(`'${created.name}' 카테고리를 이 지역 전용으로 추가했습니다.`);
       setNewName("");
+      setNewIconKey("plus");
       setNewParentCode(null);
       queryClient.invalidateQueries(["getCategoryCitySettingApi", cityCode]);
       queryClient.invalidateQueries(["getCategoryNavApi"]);
@@ -290,6 +318,7 @@ const AdminCategoryCity = () => {
 
   /** 수정 — 편집 모드로 들어가면서 계층을 전부 펼쳐 하위 카테고리까지 한눈에 고치게 한다 */
   const onStartEdit = () => {
+    if (!cityCode || isLoading) return;
     setNotice("");
     setIsEditMode(true);
     setExpandedRowKeys(expandableRowKeys);
@@ -305,9 +334,15 @@ const AdminCategoryCity = () => {
     setError("");
     setNotice("");
     setPendingHideCode(null);
+    setShowResetConfirm(false);
+    setShowCreatePanel(false);
+    setNewName("");
+    setNewIconKey("plus");
+    setNewParentCode(null);
   };
 
   const onChangeCity = (code: string) => {
+    if (isEditMode) return;
     if (code === cityCode) return;
     setCityCode(code);
     // 이전 지역의 편집본이 잠깐 남아 보이지 않도록 비우고 새 조회 결과를 기다린다
@@ -319,6 +354,7 @@ const AdminCategoryCity = () => {
     setShowResetConfirm(false);
     setShowCreatePanel(false);
     setNewName("");
+    setNewIconKey("plus");
     setNewParentCode(null);
     setPendingHideCode(null);
   };
@@ -336,12 +372,40 @@ const AdminCategoryCity = () => {
     e: React.ChangeEvent<HTMLInputElement>,
     data: any
   ) => {
+    if (!isEditMode) return;
     const { value } = e.target;
     const categoryCode = data.data.categoryCode;
     setNotice("");
     setDraft((current) =>
       current.map((row) =>
         row.categoryCode === categoryCode ? { ...row, name: value } : row
+      )
+    );
+  };
+
+  const onChangeIcon = (iconKey: string, data: any) => {
+    if (!isEditMode) return;
+    const categoryCode = data.data.categoryCode;
+    setNotice("");
+    setDraft((current) =>
+      current.map((row) =>
+        row.categoryCode === categoryCode
+          ? { ...row, iconKey, iconOverridden: true }
+          : row
+      )
+    );
+  };
+
+  const onUseGlobalIcon = (data: any) => {
+    if (!isEditMode) return;
+    const categoryCode = data.data.categoryCode;
+    const iconKey = globalIconByCode.get(categoryCode) ?? "plus";
+    setNotice("");
+    setDraft((current) =>
+      current.map((row) =>
+        row.categoryCode === categoryCode
+          ? { ...row, iconKey, iconOverridden: false }
+          : row
       )
     );
   };
@@ -357,6 +421,7 @@ const AdminCategoryCity = () => {
   };
 
   const onToggleUse = (data: any) => {
+    if (!isEditMode) return;
     const categoryCode = data.data.categoryCode;
     setNotice("");
     // 전역에서 숨겨진 카테고리를 이 지역에서까지 끄면 어디에도 안 보이는 고아가 된다
@@ -368,7 +433,7 @@ const AdminCategoryCity = () => {
   };
 
   const onConfirmHide = () => {
-    if (!pendingHideCode) return;
+    if (!isEditMode || !pendingHideCode) return;
     applyToggleUse(pendingHideCode);
     setPendingHideCode(null);
   };
@@ -376,12 +441,12 @@ const AdminCategoryCity = () => {
   /**
    * 이미 있는 카테고리를 이 지역에 노출시킨다.
    * 화면 편집본만 바꾸므로 기존 전량 PUT(저장 버튼)으로 그대로 저장된다.
-   * 저장 버튼은 편집 모드에만 있으므로, 변경이 갇히지 않게 함께 편집 모드로 들어간다.
+   * 수정 모드 안에서만 호출되며 실제 반영은 저장 버튼에서 처리한다.
    */
   const onAddExisting = (categoryCode: string) => {
+    if (!isEditMode) return;
     setError("");
     setNotice("");
-    setIsEditMode(true);
     setExpandedRowKeys(expandableRowKeys);
     setShowCreatePanel(false);
     setDraft((current) => {
@@ -401,6 +466,7 @@ const AdminCategoryCity = () => {
 
   const onSubmitCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!isEditMode) return;
     // 생성 후 목록을 다시 받아오므로 저장하지 않은 편집본이 있으면 사라진다
     if (!cityCode || !newName.trim() || isDirty) return;
     setError("");
@@ -409,6 +475,7 @@ const AdminCategoryCity = () => {
       name: newName.trim(),
       parentCode: newParentCode ?? undefined,
       cityCode,
+      iconKey: newIconKey,
     });
   };
 
@@ -416,6 +483,7 @@ const AdminCategoryCity = () => {
     e: React.ChangeEvent<HTMLSelectElement>,
     data: any
   ) => {
+    if (!isEditMode) return;
     const targetIndex = Number(e.target.value);
     if (Number.isNaN(targetIndex)) return;
     setNotice("");
@@ -425,7 +493,7 @@ const AdminCategoryCity = () => {
   };
 
   const onSave = () => {
-    if (!cityCode) return;
+    if (!isEditMode || !cityCode) return;
     // 서버가 공백 이름을 400 으로 막으므로 보내기 전에 화면에서 걸러 안내한다
     if (draft.some((row) => !row.name.trim())) {
       setNotice("");
@@ -442,12 +510,13 @@ const AdminCategoryCity = () => {
         name: row.name.trim(),
         sort: row.sort,
         useYn: row.useYn,
+        ...(row.iconOverridden && { iconKey: row.iconKey }),
       })),
     });
   };
 
   const onConfirmReset = () => {
-    if (!cityCode) return;
+    if (!isEditMode || !cityCode) return;
     setError("");
     setNotice("");
     resetMutation.mutate(cityCode);
@@ -474,17 +543,26 @@ const AdminCategoryCity = () => {
       onChangeExpandedRowKeys={setExpandedRowKeys}
       getSortOptions={getSortOptions}
       onChangeName={onChangeName}
+      iconOptions={iconOptions}
+      onChangeIcon={onChangeIcon}
+      onUseGlobalIcon={onUseGlobalIcon}
       onToggleUse={onToggleUse}
       onChangeSort={onChangeSort}
       onSave={onSave}
       isSaving={saveMutation.isLoading}
-      onResetClick={() => setShowResetConfirm(true)}
+      onResetClick={() => {
+        if (!isEditMode) return;
+        setShowResetConfirm(true);
+      }}
       isResetting={resetMutation.isLoading}
       showResetConfirm={showResetConfirm}
       onConfirmReset={onConfirmReset}
       onCancelReset={() => setShowResetConfirm(false)}
       showCreatePanel={showCreatePanel}
-      onToggleCreatePanel={() => setShowCreatePanel((current) => !current)}
+      onToggleCreatePanel={() => {
+        if (!isEditMode) return;
+        setShowCreatePanel((current) => !current);
+      }}
       createMode={createMode}
       onChangeCreateMode={setCreateMode}
       hiddenItems={hiddenItems}
@@ -492,6 +570,8 @@ const AdminCategoryCity = () => {
       onAddExisting={onAddExisting}
       newName={newName}
       setNewName={setNewName}
+      newIconKey={newIconKey}
+      setNewIconKey={setNewIconKey}
       newParentCode={newParentCode}
       setNewParentCode={setNewParentCode}
       onSubmitCreate={onSubmitCreate}

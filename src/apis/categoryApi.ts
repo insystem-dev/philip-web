@@ -3,6 +3,7 @@ import axiosInstance from "./index";
 export interface Category {
   oid: string;
   name: string;
+  iconKey: string;
   sort: number;
   subCd: string;
   parentOid: string | null;
@@ -23,6 +24,12 @@ export interface CitySub {
   sort: number;
   subCd: string;
   parentOid: string | null;
+}
+
+/** 백엔드에 배포된 선택형 카테고리 아이콘 */
+export interface CategoryIconOption {
+  key: string;
+  url: string;
 }
 
 /** 공통코드(code_sub) 원본 row 형태 (백엔드 응답) */
@@ -47,6 +54,8 @@ export interface CategoryCitySettingRow {
   parentCode: string | null;
   sort: number;
   useYn: string;
+  iconKey: string | null;
+  iconOverridden: boolean;
   overridden: boolean;
 }
 
@@ -59,6 +68,10 @@ export interface CategoryCitySetting {
   sort: number;
   /** 이 지역에서의 유효 사용여부 (오버라이드가 없으면 전역값) */
   useYn: "Y" | "N";
+  /** 이 지역에서 실제로 표시할 아이콘 key (지역 설정 우선, 없으면 전역값) */
+  iconKey: string;
+  /** 지역 아이콘이 별도로 저장되었는지. false면 공통코드 아이콘을 상속한다. */
+  iconOverridden: boolean;
   /** 이 지역 전용 설정이 실제로 저장돼 있는지 (전역값과 다를 수 있음을 표시) */
   overridden: boolean;
 }
@@ -72,6 +85,7 @@ const CONTACT_KAKAO_CODE = "CONTACT-KAKAO";
 const toCategory = (row: CodeSubRow): Category => ({
   oid: row.code,
   name: row.subNm,
+  iconKey: row.mngCd2 || "plus",
   sort: row.sort,
   subCd: row.subCd,
   parentOid: row.parentCode,
@@ -98,8 +112,17 @@ const toCategoryCitySetting = (
   parentCode: row.parentCode ?? null,
   sort: Number(row.sort ?? 0),
   useYn: row.useYn === "N" ? "N" : "Y",
+  iconKey: row.iconKey || "plus",
+  iconOverridden: !!row.iconOverridden,
   overridden: !!row.overridden,
 });
+
+/** GET 백엔드에 등록된 카테고리 아이콘 선택지 */
+export async function getCategoryIconCatalogApi(): Promise<
+  CategoryIconOption[]
+> {
+  return axiosInstance.get("/code/category-icons").then((res) => res.data);
+}
 
 /**
  * cityCode 는 값이 있을 때만 실어 보낸다.
@@ -122,7 +145,7 @@ export async function getCategoryNavApi({ queryKey }: any = {}): Promise<
       params: withCityCode({ mainCd: CATEGORY_MAIN_CD }, queryKey?.[1]),
     })
     .then((res) => res.data);
-  return rows.map(toCategory);
+  return rows.map(toCategory).filter((category) => category.useYn === "Y");
 }
 
 /**
@@ -141,7 +164,7 @@ export async function getCategoryChildrenApi({
       ),
     })
     .then((res) => res.data);
-  return rows.map(toCategory);
+  return rows.map(toCategory).filter((category) => category.useYn === "Y");
 }
 
 /**
@@ -185,6 +208,7 @@ export function updateCategoryCitySettingApi(data: {
     name?: string;
     sort: number;
     useYn: "Y" | "N";
+    iconKey?: string;
   }[];
 }): Promise<CategoryCitySetting[]> {
   return axiosInstance
@@ -206,6 +230,16 @@ export async function getCityListApi(): Promise<CitySub[]> {
   const rows: CodeSubRow[] = await axiosInstance
     .get("/code/sub", { params: { mainCd: CITY_MAIN_CD } })
     .then((res) => res.data);
+  return rows
+    .map(toCity)
+    .filter((city) => !city.disabled && city.oid !== "CITY-ALL");
+}
+
+/** GET 첫 진입 지역 선택 화면용 목록 — 비활성 도시도 회색 카드로 표시한다 */
+export async function getLandingRegionListApi(): Promise<CitySub[]> {
+  const rows: CodeSubRow[] = await axiosInstance
+    .get("/code/regions")
+    .then((res) => res.data);
   return rows.map(toCity);
 }
 
@@ -226,12 +260,14 @@ export function createCategoryApi(data: {
   name: string;
   parentCode?: string;
   cityCode?: string;
+  iconKey?: string;
 }) {
   return axiosInstance
     .post("/code/sub", {
       mainCd: CATEGORY_MAIN_CD,
       name: data.name,
       parentCode: data.parentCode,
+      iconKey: data.iconKey,
       ...(data.cityCode !== undefined && { cityCode: data.cityCode }),
     })
     .then((res) => toCategory(res.data));
@@ -242,11 +278,13 @@ export function updateCategorySortApi(data: {
   oid: string;
   sort?: number;
   name?: string;
+  iconKey?: string;
 }) {
   return axiosInstance
     .patch(`/code/sub/${data.oid}`, {
       ...(data.sort !== undefined && { sort: data.sort }),
       ...(data.name !== undefined && { name: data.name }),
+      ...(data.iconKey !== undefined && { iconKey: data.iconKey }),
     })
     .then((res) => toCategory(res.data));
 }

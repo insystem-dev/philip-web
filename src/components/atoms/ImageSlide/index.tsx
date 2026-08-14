@@ -1,13 +1,98 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button, ButtonGroup } from "../Button";
 import IconArrowPrev from "public/assets/svg/icon-arrow-prev-lg.svg";
 import IconArrowNext from "public/assets/svg/icon-arrow-next-lg.svg";
 import * as S from "./imageSlide.style";
 
+const clampZoom = (value: number) => Math.min(3, Math.max(1, value));
+
 export const ImageSlide = ({ items }: any) => {
   const [selectedId, setSelectedId] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const imageFrameRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
   const hasImages = Boolean(items?.length);
+  const itemCount = items?.length ?? 0;
+
+  const viewerPrev = useCallback(() => {
+    setSelectedId((current) => (current - 1 + itemCount) % itemCount);
+  }, [itemCount]);
+
+  const viewerNext = useCallback(() => {
+    setSelectedId((current) => (current + 1) % itemCount);
+  }, [itemCount]);
+
+  const resetPan = useCallback(() => {
+    dragRef.current = null;
+    setIsDragging(false);
+    setPan({ x: 0, y: 0 });
+  }, []);
+
+  const closeViewer = useCallback(() => {
+    setViewerOpen(false);
+    setZoom(1);
+    resetPan();
+  }, [resetPan]);
+
+  useEffect(() => {
+    if (!viewerOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeViewer();
+      if (event.key === "ArrowLeft") viewerPrev();
+      if (event.key === "ArrowRight") viewerNext();
+      if (event.key === "+" || event.key === "=") {
+        setZoom((current) => clampZoom(current + 0.5));
+      }
+      if (event.key === "-") {
+        setZoom((current) => clampZoom(current - 0.5));
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [closeViewer, itemCount, viewerNext, viewerOpen, viewerPrev]);
+
+  useEffect(() => {
+    setZoom(1);
+    resetPan();
+  }, [resetPan, selectedId]);
+
+  useEffect(() => {
+    if (zoom <= 1) {
+      resetPan();
+      return;
+    }
+
+    const frame = imageFrameRef.current;
+    if (!frame) return;
+    const maxX = (frame.clientWidth * (zoom - 1)) / 2;
+    const maxY = (frame.clientHeight * (zoom - 1)) / 2;
+    setPan((current) => ({
+      x: Math.min(maxX, Math.max(-maxX, current.x)),
+      y: Math.min(maxY, Math.max(-maxY, current.y)),
+    }));
+  }, [resetPan, zoom]);
 
   if (!hasImages) {
     return (
@@ -35,7 +120,8 @@ export const ImageSlide = ({ items }: any) => {
   };
 
   return (
-    <S.ImageSlide>
+    <>
+      <S.ImageSlide>
       <S.ImageSelected>
         {/* 이미지가 없으면 빈 src 대신 렌더하지 않음 */}
         {items?.[selectedId]?.filename && (
@@ -47,6 +133,11 @@ export const ImageSlide = ({ items }: any) => {
             alt="선택된 업체 이미지"
           />
         )}
+        <S.OpenViewerButton
+          type="button"
+          aria-label="선택한 사진을 전체 화면으로 보기"
+          onClick={() => setViewerOpen(true)}
+        />
         <ButtonGroup justifyContent="space-between">
           <Button
             type="button"
@@ -76,7 +167,14 @@ export const ImageSlide = ({ items }: any) => {
       <S.ImageSlideList>
         {items?.map((item: any, idx: number) => {
           return (
-            <S.ImageSlideItem key={idx} onClick={() => onSelectImage(idx)}>
+            <S.ImageSlideItem
+              key={idx}
+              $active={selectedId === idx}
+              onClick={() => {
+                onSelectImage(idx);
+                setViewerOpen(true);
+              }}
+            >
               <Image
                 src={`${process.env.NEXT_PUBLIC_API_URL}/${item?.filename}`}
                 width={85}
@@ -88,6 +186,167 @@ export const ImageSlide = ({ items }: any) => {
           );
         })}
       </S.ImageSlideList>
-    </S.ImageSlide>
+      </S.ImageSlide>
+
+      {viewerOpen &&
+        createPortal(
+          <S.ViewerBackdrop role="dialog" aria-modal="true" aria-label="사진 전체 화면 미리보기">
+            <S.ViewerTopBar>
+              <S.ViewerCount>
+                <strong>{selectedId + 1}</strong>
+                <span>/ {items.length}</span>
+              </S.ViewerCount>
+              <S.ViewerCloseButton
+                ref={closeButtonRef}
+                type="button"
+                onClick={closeViewer}
+                aria-label="전체 화면 미리보기 닫기"
+              >
+                ×
+              </S.ViewerCloseButton>
+            </S.ViewerTopBar>
+
+            <S.ViewerStage
+              onWheel={(event) => {
+                event.preventDefault();
+                setZoom((current) =>
+                  clampZoom(current + (event.deltaY < 0 ? 0.25 : -0.25))
+                );
+              }}
+              onTouchStart={(event) => {
+                const touch = event.touches[0];
+                touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+              }}
+              onTouchEnd={(event) => {
+                if (!touchStartRef.current || zoom > 1) return;
+                const touch = event.changedTouches[0];
+                const deltaX = touch.clientX - touchStartRef.current.x;
+                const deltaY = touch.clientY - touchStartRef.current.y;
+                touchStartRef.current = null;
+                if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+                if (deltaX > 0) viewerPrev();
+                else viewerNext();
+              }}
+            >
+              {items.length > 1 && (
+                <S.ViewerNavButton
+                  type="button"
+                  $direction="prev"
+                  onClick={viewerPrev}
+                  aria-label="이전 사진"
+                >
+                  ‹
+                </S.ViewerNavButton>
+              )}
+
+              <S.ViewerImageFrame
+                ref={imageFrameRef}
+                $zoom={zoom}
+                $panX={pan.x}
+                $panY={pan.y}
+                $dragging={isDragging}
+                onPointerDown={(event) => {
+                  if (zoom <= 1) return;
+                  event.preventDefault();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  dragRef.current = {
+                    pointerId: event.pointerId,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    originX: pan.x,
+                    originY: pan.y,
+                  };
+                  setIsDragging(true);
+                }}
+                onPointerMove={(event) => {
+                  const drag = dragRef.current;
+                  if (!drag || drag.pointerId !== event.pointerId) return;
+
+                  const maxX = (event.currentTarget.clientWidth * (zoom - 1)) / 2;
+                  const maxY = (event.currentTarget.clientHeight * (zoom - 1)) / 2;
+                  const nextX = drag.originX + event.clientX - drag.startX;
+                  const nextY = drag.originY + event.clientY - drag.startY;
+
+                  setPan({
+                    x: Math.min(maxX, Math.max(-maxX, nextX)),
+                    y: Math.min(maxY, Math.max(-maxY, nextY)),
+                  });
+                }}
+                onPointerUp={(event) => {
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId);
+                  }
+                  dragRef.current = null;
+                  setIsDragging(false);
+                }}
+                onPointerCancel={() => {
+                  dragRef.current = null;
+                  setIsDragging(false);
+                }}
+                onDoubleClick={() => {
+                  if (zoom > 1) {
+                    setZoom(1);
+                    resetPan();
+                  } else {
+                    setZoom(2);
+                  }
+                }}
+              >
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/${items[selectedId].filename}`}
+                  layout="fill"
+                  objectFit="contain"
+                  sizes="100vw"
+                  priority
+                  draggable={false}
+                  alt={`업체 사진 ${selectedId + 1}`}
+                />
+              </S.ViewerImageFrame>
+
+              {items.length > 1 && (
+                <S.ViewerNavButton
+                  type="button"
+                  $direction="next"
+                  onClick={viewerNext}
+                  aria-label="다음 사진"
+                >
+                  ›
+                </S.ViewerNavButton>
+              )}
+            </S.ViewerStage>
+
+            <S.ViewerControls aria-label="사진 확대 축소">
+              <S.ViewerControlButton
+                type="button"
+                onClick={() => setZoom((current) => clampZoom(current - 0.5))}
+                disabled={zoom <= 1}
+                aria-label="축소"
+              >
+                −
+              </S.ViewerControlButton>
+              <S.ViewerZoomText>{Math.round(zoom * 100)}%</S.ViewerZoomText>
+              <S.ViewerControlButton
+                type="button"
+                onClick={() => setZoom((current) => clampZoom(current + 0.5))}
+                disabled={zoom >= 3}
+                aria-label="확대"
+              >
+                +
+              </S.ViewerControlButton>
+              <S.ViewerResetButton
+                type="button"
+                onClick={() => setZoom(1)}
+                disabled={zoom === 1}
+              >
+                원본 크기
+              </S.ViewerResetButton>
+            </S.ViewerControls>
+            <S.ViewerHelp>
+              마우스 휠·더블 클릭으로 확대 / 확대 후 드래그로 시점 이동
+            </S.ViewerHelp>
+          </S.ViewerBackdrop>,
+          document.body
+        )}
+    </>
   );
 };

@@ -8,9 +8,20 @@ import * as S from "../adminGrid.style";
 import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
+import { CategoryIconPicker } from "@/components/molecules/CategoryIconPicker";
+import { CategoryIconOption } from "@/apis/categoryApi";
 
 /** 편집모드에서 상위가 들고 있는 이름/영문명 입력값 (oid 기준) */
-export type CodeNameDraft = Record<string, { name: string; name_eng: string }>;
+export type CodeNameDraft = Record<
+  string,
+  {
+    name: string;
+    name_eng: string;
+    iconKey: string;
+    sort: number;
+    disabled: boolean;
+  }
+>;
 
 /**
  * 이름 셀 — 읽기 모드는 텍스트로만 보여주고, 편집 모드에서만 입력으로 바뀐다.
@@ -85,9 +96,12 @@ interface CodeSubGridProps {
   isLoading: boolean;
   /** CITY 그룹일 때만 사용여부/영문명 컬럼을 추가로 보여준다 */
   showCityColumns?: boolean;
+  /** CATEGORY 그룹일 때 아이콘 선택 컬럼을 보여준다 */
+  showCategoryIconColumn?: boolean;
+  iconOptions?: CategoryIconOption[];
   /** 하위 추가 컬럼 노출 여부 (CATEGORY 그룹에서만 사용) */
   allowAddChild?: boolean;
-  /** 이름·영문명 편집 모드 — 즉시 반영 컬럼(순서/사용여부/하위 추가/삭제)은 잠긴다 */
+  /** 수정 모드 — 읽기 모드에서는 모든 변경 컨트롤이 잠긴다 */
   isEditMode?: boolean;
   /** 편집 모드에서 표시할 이름/영문명 입력값 */
   nameDraft?: CodeNameDraft;
@@ -98,6 +112,7 @@ interface CodeSubGridProps {
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onToggleDisabled?: (data: any) => void;
   onChangeNameEng?: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
+  onChangeIcon?: (iconKey: string, data: any) => void;
   onDelete: (data: any) => void;
 }
 
@@ -106,6 +121,8 @@ export const CodeSubGrid = ({
   focusedRowKey,
   isLoading,
   showCityColumns,
+  showCategoryIconColumn,
+  iconOptions = [],
   allowAddChild,
   isEditMode,
   nameDraft,
@@ -115,9 +132,11 @@ export const CodeSubGrid = ({
   onChangeSort,
   onToggleDisabled,
   onChangeNameEng,
+  onChangeIcon,
   onDelete,
 }: CodeSubGridProps) => {
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const locked = !isEditMode;
   const expandableRowKeys = useMemo(
     () =>
       Array.from(
@@ -133,10 +152,11 @@ export const CodeSubGrid = ({
     () =>
       [...dataSource].sort(
         (a, b) =>
-          Number(a.sort ?? 0) - Number(b.sort ?? 0) ||
+          (nameDraft?.[a.oid]?.sort ?? Number(a.sort ?? 0)) -
+            (nameDraft?.[b.oid]?.sort ?? Number(b.sort ?? 0)) ||
           String(a.subCd ?? "").localeCompare(String(b.subCd ?? ""))
       ),
-    [dataSource]
+    [dataSource, nameDraft]
   );
 
   /**
@@ -158,6 +178,9 @@ export const CodeSubGrid = ({
   return (
     <S.AdminGrid>
       <S.TreeToolbar>
+        <S.ModeState $edit={!!isEditMode}>
+          {isEditMode ? "수정 모드" : "읽기 모드"}
+        </S.ModeState>
         <S.TreeControlButton
           type="button"
           onClick={() => setExpandedRowKeys(expandableRowKeys)}
@@ -170,6 +193,7 @@ export const CodeSubGrid = ({
       </S.TreeToolbar>
       <S.TreeListArea>
         <TreeList
+          key={isEditMode ? "edit" : "read"}
           className={"datagrid-wrap"}
           height="100%"
           dataSource={orderedDataSource}
@@ -217,7 +241,29 @@ export const CodeSubGrid = ({
             )}
           />
         )}
-        {/* 아래 컬럼들은 즉시 반영(=리패치)이라 편집 중에는 잠근다. 열어두면 draft 가 날아간다 */}
+        {showCategoryIconColumn && (
+          <Column
+            caption="아이콘"
+            width={82}
+            alignment="center"
+            cellRender={(data) => (
+              <S.AdminCellBox>
+                <CategoryIconPicker
+                  compact
+                  options={iconOptions}
+                  value={nameDraft?.[data.data.oid]?.iconKey ?? data.data.iconKey}
+                  disabled={locked}
+                  ariaLabel={`${data.data.name ?? ""} 아이콘`}
+                  onChange={(iconKey) => {
+                    if (locked) return;
+                    onChangeIcon?.(iconKey, data);
+                  }}
+                />
+              </S.AdminCellBox>
+            )}
+          />
+        )}
+        {/* 아래 컬럼도 수정 모드에서만 열고, 저장 전까지 draft 값으로 표시한다. */}
         <Column
           caption="순서"
           dataField="sort"
@@ -230,11 +276,12 @@ export const CodeSubGrid = ({
               size="sm"
               width="70px"
               themeType="admin"
-              disabled={isEditMode}
+              disabled={locked}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                if (locked) return;
                 onChangeSort(e, data);
               }}
-              value={data.data.sort}
+              value={nameDraft?.[data.data.oid]?.sort ?? data.data.sort}
             />
           )}
         />
@@ -247,11 +294,18 @@ export const CodeSubGrid = ({
               <S.AdminCellBox>
                 <InputCheckbox
                   value="1"
-                  checked={!data.data.disabled}
+                  checked={
+                    !(
+                      nameDraft?.[data.data.oid]?.disabled ?? data.data.disabled
+                    )
+                  }
                   themeType="admin"
                   layout="row"
-                  disabled={isEditMode}
-                  onChange={() => onToggleDisabled?.(data)}
+                  disabled={locked}
+                  onChange={() => {
+                    if (locked) return;
+                    onToggleDisabled?.(data);
+                  }}
                 />
               </S.AdminCellBox>
             )}
@@ -270,8 +324,11 @@ export const CodeSubGrid = ({
                 width="76px"
                 height={24}
                 label="하위 추가"
-                disabled={isEditMode}
-                onClick={() => onAddChild(data)}
+                disabled={locked}
+                onClick={() => {
+                  if (locked) return;
+                  onAddChild(data);
+                }}
               />
             )}
           />
@@ -288,8 +345,11 @@ export const CodeSubGrid = ({
               width="60px"
               height={24}
               label="삭제"
-              disabled={isEditMode}
-              onClick={() => onDelete(data)}
+              disabled={locked}
+              onClick={() => {
+                if (locked) return;
+                onDelete(data);
+              }}
             />
           )}
         />

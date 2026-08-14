@@ -8,6 +8,8 @@ import * as S from "../adminGrid.style";
 import { InputSelect } from "@/components/atoms/Input/InputSelect";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { CategoryCitySetting } from "@/apis/categoryApi";
+import { CategoryIconOption } from "@/apis/categoryApi";
+import { CategoryIconPicker } from "@/components/molecules/CategoryIconPicker";
 
 interface CategoryCityGridProps {
   dataSource: CategoryCitySetting[];
@@ -28,6 +30,9 @@ interface CategoryCityGridProps {
   getSortOptions: (parentCode: string | null) => any[];
   /** 이름 입력 — 상위 draft 갱신용 (저장은 타이틀의 저장 버튼에서) */
   onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
+  iconOptions: CategoryIconOption[];
+  onChangeIcon: (iconKey: string, data: any) => void;
+  onUseGlobalIcon: (data: any) => void;
   onToggleUse: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
 }
@@ -48,9 +53,13 @@ export const CategoryCityGrid = ({
   onChangeExpandedRowKeys,
   getSortOptions,
   onChangeName,
+  iconOptions,
+  onChangeIcon,
+  onUseGlobalIcon,
   onToggleUse,
   onChangeSort,
 }: CategoryCityGridProps) => {
+  const locked = !isEditMode;
   /** 이름은 입력 한 글자마다 바뀌므로 행 데이터가 아니라 이 맵에서 꺼내 그린다 */
   const nameByCode = useMemo(
     () => new Map(dataSource.map((item) => [item.categoryCode, item.name])),
@@ -70,7 +79,9 @@ export const CategoryCityGrid = ({
           (item) =>
             `${item.categoryCode}:${item.parentCode ?? ""}:${item.sort}:${
               item.useYn
-            }:${item.overridden ? "1" : "0"}`
+            }:${item.iconKey}:${item.iconOverridden ? "1" : "0"}:${
+              item.overridden ? "1" : "0"
+            }`
         )
         .join("|"),
     [dataSource]
@@ -108,6 +119,9 @@ export const CategoryCityGrid = ({
   return (
     <S.AdminGrid>
       <S.TreeToolbar>
+        <S.ModeState $edit={!!isEditMode}>
+          {isEditMode ? "수정 모드" : "읽기 모드"}
+        </S.ModeState>
         <S.TreeControlButton
           type="button"
           onClick={() => onChangeExpandedRowKeys(expandableRowKeys)}
@@ -123,6 +137,7 @@ export const CategoryCityGrid = ({
       </S.TreeToolbar>
       <S.TreeListArea>
         <TreeList
+          key={isEditMode ? "edit" : "read"}
           className={"datagrid-wrap"}
           height="100%"
           dataSource={orderedDataSource}
@@ -163,6 +178,32 @@ export const CategoryCityGrid = ({
               );
             }}
           />
+          <Column
+            caption="아이콘"
+            width={82}
+            alignment="center"
+            cellRender={(data) => (
+              <S.AdminCellBox>
+                <CategoryIconPicker
+                  compact
+                  options={iconOptions}
+                  value={data.data.iconKey}
+                  disabled={locked}
+                  inherited={!data.data.iconOverridden}
+                  onUseInherited={
+                    locked
+                      ? undefined
+                      : () => onUseGlobalIcon(data)
+                  }
+                  ariaLabel={`${data.data.name ?? ""} 지역 아이콘`}
+                  onChange={(iconKey) => {
+                    if (locked) return;
+                    onChangeIcon(iconKey, data);
+                  }}
+                />
+              </S.AdminCellBox>
+            )}
+          />
           {/* 아래 두 컬럼은 편집 모드에서만 연다 — 읽기 모드에서 실수로 값이 바뀌지 않게 잠근다 */}
           <Column
             caption="사용여부"
@@ -175,8 +216,11 @@ export const CategoryCityGrid = ({
                   checked={data.data.useYn === "Y"}
                   themeType="admin"
                   layout="row"
-                  disabled={!isEditMode}
-                  onChange={() => onToggleUse(data)}
+                  disabled={locked}
+                  onChange={() => {
+                    if (locked) return;
+                    onToggleUse(data);
+                  }}
                 />
               </S.AdminCellBox>
             )}
@@ -193,8 +237,9 @@ export const CategoryCityGrid = ({
                 size="sm"
                 width="70px"
                 themeType="admin"
-                disabled={!isEditMode}
+                disabled={locked}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  if (locked) return;
                   onChangeSort(e, data);
                 }}
                 // sort 0 은 falsy 라 그대로 넘기면 InputSelect 가 localStorage 의 city 로 폴백한다

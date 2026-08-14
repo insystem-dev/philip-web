@@ -83,7 +83,12 @@ export const PostListBox = ({
             </S.PostGroupTitle>
             <S.PostList>
               {group.posts.map((item: any, idx: number) => {
-                return <PostItem item={item} key={item.oid || idx} />;
+                return (
+                  <PostItem
+                    item={item}
+                    key={`${item.oid || "post"}-${idx}`}
+                  />
+                );
               })}
             </S.PostList>
           </S.PostGroupSection>
@@ -91,7 +96,9 @@ export const PostListBox = ({
       ) : (
         <S.PostList>
           {postListData?.map((item: any, idx: number) => {
-            return <PostItem item={item} key={item.oid || idx} />;
+            return (
+              <PostItem item={item} key={`${item.oid || "post"}-${idx}`} />
+            );
           })}
         </S.PostList>
       )}

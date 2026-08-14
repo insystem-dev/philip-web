@@ -7,6 +7,8 @@ import {
 } from "@/components/molecules/AdminGrid/CodeSubGrid";
 import { InputText } from "@/components/atoms/Input/InputText";
 import { Button } from "@/components/atoms/Button";
+import { CategoryIconPicker } from "@/components/molecules/CategoryIconPicker";
+import { CategoryIconOption } from "@/apis/categoryApi";
 
 export type CodeGroup = "CATEGORY" | "CITY" | "CONTACT";
 
@@ -25,6 +27,9 @@ export interface AdminCodePageProps {
   error: string;
   newName: string;
   setNewName: (value: string) => void;
+  newIconKey: string;
+  setNewIconKey: (value: string) => void;
+  iconOptions: CategoryIconOption[];
   selectedParent: any | null;
   clearSelectedParent: () => void;
   onSubmitCreate: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -43,6 +48,7 @@ export interface AdminCodePageProps {
   /** 편집 모드 이름 입력 (저장은 타이틀의 저장 버튼에서) */
   onChangeName: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
   onChangeNameEng: (e: React.ChangeEvent<HTMLInputElement>, data: any) => void;
+  onChangeIcon: (iconKey: string, data: any) => void;
   onDelete: (data: any) => void;
   contactPhone: string;
   setContactPhone: (value: string) => void;
@@ -63,6 +69,9 @@ export const AdminCodePage = ({
   error,
   newName,
   setNewName,
+  newIconKey,
+  setNewIconKey,
+  iconOptions,
   selectedParent,
   clearSelectedParent,
   onSubmitCreate,
@@ -79,6 +88,7 @@ export const AdminCodePage = ({
   onCancelEditNames,
   onChangeName,
   onChangeNameEng,
+  onChangeIcon,
   onDelete,
   contactPhone,
   setContactPhone,
@@ -148,6 +158,7 @@ export const AdminCodePage = ({
               role="tab"
               aria-selected={activeGroup === tab.key}
               $active={activeGroup === tab.key}
+              disabled={isEditMode || isSavingNames}
               onClick={() => setActiveGroup(tab.key)}
             >
               {tab.label}
@@ -217,6 +228,7 @@ export const AdminCodePage = ({
             <S.CreateBar
               onSubmit={onSubmitCreate}
               $childMode={!!selectedParent}
+              $locked={!isEditMode}
             >
               <S.CreateLabel>{groupLabel} 추가</S.CreateLabel>
 
@@ -225,6 +237,7 @@ export const AdminCodePage = ({
                   <strong>{selectedParent.name}</strong> 하위
                   <button
                     type="button"
+                    disabled={!isEditMode}
                     onClick={clearSelectedParent}
                     aria-label="최상위로 변경"
                     title="최상위로 변경"
@@ -241,9 +254,19 @@ export const AdminCodePage = ({
                   type="text"
                   placeholder={`${groupLabel}명 입력`}
                   value={newName}
+                  disabled={!isEditMode}
                   onChange={(e) => setNewName(e.target.value)}
                 />
               </S.NameField>
+              {activeGroup === "CATEGORY" && (
+                <CategoryIconPicker
+                  options={iconOptions}
+                  value={newIconKey}
+                  disabled={!isEditMode}
+                  ariaLabel="새 카테고리 아이콘"
+                  onChange={setNewIconKey}
+                />
+              )}
               <Button
                 type="submit"
                 color="primary"
@@ -251,15 +274,13 @@ export const AdminCodePage = ({
                 width="90px"
                 height={32}
                 label={isCreating ? "처리 중..." : "추가"}
-                disabled={isCreating || !newName.trim()}
+                disabled={!isEditMode || isCreating || !newName.trim()}
               />
 
               <S.BarHint>
                 {isEditMode
-                  ? "편집 중 — 값을 고친 뒤 우측 상단 ‘저장’을 눌러야 반영됩니다. 순서·사용여부·삭제는 저장 후에 변경할 수 있습니다."
-                  : activeGroup === "CATEGORY"
-                  ? "이름은 우측 상단 ‘수정’으로 편집하고, 하위 코드는 각 행의 ‘하위 추가’로 등록합니다."
-                  : "이름·영문명은 우측 상단 ‘수정’으로 편집합니다."}
+                  ? "수정 모드 — 이름·아이콘·순서·사용여부는 우측 상단 ‘저장’으로 반영됩니다. 추가·삭제는 즉시 반영됩니다."
+                  : "읽기 모드 — 값을 변경하려면 우측 상단 ‘수정’을 눌러 주세요."}
               </S.BarHint>
             </S.CreateBar>
 
@@ -271,6 +292,8 @@ export const AdminCodePage = ({
                 focusedRowKey={focusedRowKey}
                 isLoading={isLoading}
                 showCityColumns={activeGroup === "CITY"}
+                showCategoryIconColumn={activeGroup === "CATEGORY"}
+                iconOptions={iconOptions}
                 allowAddChild={activeGroup === "CATEGORY"}
                 isEditMode={isEditMode}
                 nameDraft={nameDraft}
@@ -280,6 +303,7 @@ export const AdminCodePage = ({
                 onChangeSort={onChangeSort}
                 onToggleDisabled={onToggleDisabled}
                 onChangeNameEng={onChangeNameEng}
+                onChangeIcon={onChangeIcon}
                 onDelete={onDelete}
               />
             </S.GridArea>

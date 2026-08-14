@@ -76,7 +76,8 @@ const Main = () => {
   // 전체 게시글 목록 (PostListBox에서 끌어올림)
   const { data: postListData, isLoading: isPostLoading } = useQuery(
     ["getPostsListApi", city, category, searchInput],
-    getPostsListApi
+    getPostsListApi,
+    { keepPreviousData: true }
   );
 
   // 카테고리 목록 (선택 지역의 노출 설정 반영 — 미선택이면 cityCode 없이 전역 목록)
@@ -131,11 +132,36 @@ const Main = () => {
   // Effects
   // ─────────────────────────────────────────────────────────────
 
-  // 옵션 데이터 설정
+  // 공개 옵션에는 활성 항목만 유지하고, 저장돼 있던 값이 비활성/삭제 상태면 즉시 유효값으로 보정한다.
   useEffect(() => {
-    if (categoryItem) setCategoryOptions(categoryItem);
-    if (cityItem) setCityOptions(cityItem);
-  }, [categoryItem, cityItem]);
+    if (categoryItem) {
+      const activeCategories = categoryItem.filter(
+        (item) => item.useYn === "Y"
+      );
+      setCategoryOptions(activeCategories);
+      if (
+        activeCategories.length > 0 &&
+        !activeCategories.some((item) => item.oid === category)
+      ) {
+        const fallback =
+          activeCategories.find((item) => item.oid === categoryAll) ??
+          activeCategories[0];
+        setCategoryState(fallback.oid);
+      }
+    }
+
+    if (cityItem) {
+      const activeCities = cityItem.filter((item) => !item.disabled);
+      setCityOptions(activeCities);
+      if (activeCities.length === 0) {
+        setCityState(null);
+        localStorage.removeItem("city");
+      } else if (!city || !activeCities.some((item) => item.oid === city)) {
+        setCityState(activeCities[0].oid);
+        localStorage.setItem("city", activeCities[0].oid);
+      }
+    }
+  }, [categoryItem, cityItem, category, city, setCategoryState, setCityState]);
 
   // 방문자 수 처리
   useEffect(() => {

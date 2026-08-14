@@ -24,6 +24,8 @@ export const Logo: React.FC<LogoProps> = ({ footer, main, mobile, admin }) => {
     setCategory(categoryAll);
     if (admin) {
       router.replace("/admin/store");
+    } else if (main) {
+      router.replace("/select/category");
     } else {
       router.replace("/main");
     }

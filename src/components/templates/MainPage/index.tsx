@@ -50,6 +50,17 @@ export const MainPage = ({
 }: MainPageProp) => {
   return (
     <S.MainLayout>
+      <S.FlagBackdrop aria-hidden="true">
+        <S.FlagSurface>
+          <S.FlagSun>☀</S.FlagSun>
+          <S.FlagStar $position="left">★</S.FlagStar>
+          <S.FlagStar $position="right">★</S.FlagStar>
+          <S.FlagStar $position="bottom">★</S.FlagStar>
+          <S.FlagFold $index={1} />
+          <S.FlagFold $index={2} />
+          <S.FlagFold $index={3} />
+        </S.FlagSurface>
+      </S.FlagBackdrop>
       <BannerSection adsData={adsData} categoryCode={category} cityCode={city} />
       <AsideSection
         count={count}
