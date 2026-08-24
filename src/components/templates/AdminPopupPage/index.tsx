@@ -242,8 +242,13 @@ export const AdminPopupPage = () => {
         "노출 순서는 0부터 9999 사이의 정수로 입력해 주세요."
       );
     }
-    if (draft.linkUrl && !/^https?:\/\//i.test(draft.linkUrl.trim())) {
-      return setValidation("링크 URL은 http:// 또는 https://로 시작해 주세요.");
+    if (
+      draft.linkUrl &&
+      !/^(https?:\/\/|\/(?!\/))/i.test(draft.linkUrl.trim())
+    ) {
+      return setValidation(
+        "링크 URL은 / 내부경로 또는 http://, https://로 시작해 주세요."
+      );
     }
     if (draft.startAt && draft.endAt && draft.endAt < draft.startAt) {
       return setValidation("종료 일시는 시작 일시보다 빠를 수 없습니다.");
@@ -498,14 +503,13 @@ export const AdminPopupPage = () => {
                   )}
                 </S.Field>
 
-                {/* 연결 링크 입력은 추후 재사용을 위해 데이터/API는 유지하고 관리자 화면에서만 임시 비노출한다.
                 <S.Field>
                   <label htmlFor="popupLink">연결 링크</label>
                   <input
                     id="popupLink"
-                    type="url"
+                    type="text"
                     value={draft.linkUrl}
-                    placeholder="https://example.com"
+                    placeholder="예: /self-registration 또는 https://example.com"
                     onChange={(event) =>
                       setDraft((current) => ({
                         ...current,
@@ -513,8 +517,10 @@ export const AdminPopupPage = () => {
                       }))
                     }
                   />
+                  <small>
+                    무료 등록 신청서는 <b>/self-registration</b>을 입력하세요.
+                  </small>
                 </S.Field>
-                */}
 
                 <S.FieldRow>
                   <S.Field>

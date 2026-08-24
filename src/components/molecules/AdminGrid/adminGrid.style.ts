@@ -241,6 +241,39 @@ export const AdminCellBox = styled.div`
   justify-content: center;
 `;
 
+export const StoreNameButton = styled.button`
+  overflow: hidden;
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 2px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+
+  /* 선택된 그리드 행의 공통 버튼 배경보다 업체명 링크 표현을 우선한다. */
+  &&& {
+    color: inherit;
+    background: transparent;
+  }
+
+  &&&:hover {
+    color: ${(props) => props.theme.colors.primary};
+    border-bottom-color: currentColor;
+  }
+
+  &&&:focus-visible {
+    color: ${(props) => props.theme.colors.primary};
+    outline: 2px solid rgba(68, 98, 255, 0.3);
+    outline-offset: 2px;
+  }
+`;
+
 export const GridLoading = styled.div`
   display: flex;
   width: 100%;

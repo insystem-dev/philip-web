@@ -8,6 +8,7 @@ import { Button, ButtonGroup } from "@/components/atoms/Button";
 import { InputFile } from "@/components/atoms/Input/InputFile";
 import { useRouter } from "next/router";
 import { AdminPostPageProps } from "@/components/templates/AdminPostPage";
+import { MessengerLinkFields } from "@/components/molecules/MessengerLinkFields";
 
 export const AdminPostForm = ({
   handleSubmit,
@@ -23,6 +24,9 @@ export const AdminPostForm = ({
   errors,
   categoryValue,
   onCategoryChange,
+  messengerIconKey,
+  onMessengerIconChange,
+  newMessengerImages,
 }: AdminPostPageProps) => {
   const router = useRouter();
 
@@ -136,6 +140,15 @@ export const AdminPostForm = ({
           register={register("phoneNumber")}
           errors={errors}
           name="phoneNumber"
+        />
+        <MessengerLinkFields
+          register={register}
+          errors={errors}
+          iconKey={messengerIconKey}
+          onIconChange={onMessengerIconChange}
+          onChangeImages={onChangeImages}
+          onRemoveImage={onRemoveImage}
+          newMessengerImages={newMessengerImages}
         />
         <InputTextarea
           label="요금 및 메뉴설명"

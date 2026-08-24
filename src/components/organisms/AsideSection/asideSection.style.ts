@@ -14,3 +14,12 @@ export const AsideSection = styled.section`
     grid-gap: 2px;
   }
 `;
+
+/** 모바일 메인에서는 환전 시세 카드를 노출하지 않는다. */
+export const DesktopExchangeRate = styled.div`
+  width: 100%;
+
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+`;

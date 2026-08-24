@@ -9,8 +9,9 @@ import { InputSelect } from "@/components/atoms/Input/InputSelect";
 const position = { of: ".datagrid-wrap" };
 
 interface StoreGridProps {
-  dataSource: [];
+  dataSource: any[];
   isLoading: boolean;
+  rowNumberOffset: number;
   error: string;
   promotionHandler: (data: any) => void;
   hiddenHandler: (data: any) => void;
@@ -24,6 +25,7 @@ interface StoreGridProps {
 export const StoreGrid = ({
   dataSource,
   isLoading,
+  rowNumberOffset,
   error,
   promotionHandler,
   hiddenHandler,
@@ -53,7 +55,7 @@ export const StoreGrid = ({
             visible={isLoading}
             position={position}
           />
-          {/* 업체 수가 많지 않으므로 페이지를 나누지 않고 전체 행을 내부 스크롤로 표시 */}
+          {/* 서버가 현재 페이지의 행만 내려주므로 그리드 자체 페이징은 사용하지 않는다. */}
           <Paging enabled={false} />
           <Scrolling
             mode="standard"
@@ -62,7 +64,7 @@ export const StoreGrid = ({
           />
           <Column
             caption="No."
-            cellRender={(e) => e.row.loadIndex + 1}
+            cellRender={(e) => rowNumberOffset + e.row.loadIndex + 1}
             width={40}
             alignment="center"
           />
@@ -71,6 +73,11 @@ export const StoreGrid = ({
             dataField="store_name"
             width={140}
             alignment="center"
+            cellRender={(e) => (
+              <S.StoreNameButton type="button" onClick={() => goEdit(e.data)}>
+                {e.data.store_name}
+              </S.StoreNameButton>
+            )}
           />
           <Column
             caption="업종"

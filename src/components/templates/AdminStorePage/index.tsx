@@ -3,10 +3,17 @@ import { AdminLayout } from "@/components/organisms/AdminLayout";
 import { AdminStoreBox } from "@/components/organisms/AdminStoreBox";
 
 export interface AdminStorePageProps {
-  setStoreSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
-  setPromotion: React.Dispatch<React.SetStateAction<boolean>>;
-  dataSource: [];
+  setStoreSearchKeyword: (value: string) => void;
+  setPromotion: (value: boolean) => void;
+  dataSource: any[];
   isLoading: boolean;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  rowNumberOffset: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   error: string;
   promotionHandler: (data: any) => void;
   hiddenHandler: (data: any) => void;
@@ -22,6 +29,13 @@ export const AdminStorePage = ({
   setPromotion,
   dataSource,
   isLoading,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  rowNumberOffset,
+  onPageChange,
+  onPageSizeChange,
   error,
   promotionHandler,
   hiddenHandler,
@@ -39,6 +53,13 @@ export const AdminStorePage = ({
           setPromotion={setPromotion}
           dataSource={dataSource}
           isLoading={isLoading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          rowNumberOffset={rowNumberOffset}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
           error={error}
           promotionHandler={promotionHandler}
           hiddenHandler={hiddenHandler}

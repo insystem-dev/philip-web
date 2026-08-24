@@ -37,7 +37,9 @@ export const AsideSection = ({
         getValue={getValue}
       />
       <LinkBox stacked />
-      <ExchangeRateBox />
+      <S.DesktopExchangeRate>
+        <ExchangeRateBox />
+      </S.DesktopExchangeRate>
     </S.AsideSection>
   );
 };

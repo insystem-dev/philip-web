@@ -38,6 +38,11 @@ export const AdminNavList = () => {
       path: "/admin/users",
     },
     {
+      id: 10,
+      name: "업소 등록 신청",
+      path: "/admin/business-registrations",
+    },
+    {
       id: 4,
       name: "방문자 수 관리",
       path: "/admin/visit",

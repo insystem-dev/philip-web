@@ -8,8 +8,8 @@ import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
 
 interface StoreSearchProps {
-  setStoreSearchKeyword: React.Dispatch<React.SetStateAction<string>>;
-  setPromotion: React.Dispatch<React.SetStateAction<boolean>>;
+  setStoreSearchKeyword: (value: string) => void;
+  setPromotion: (value: boolean) => void;
 }
 
 export const StoreSearch = ({

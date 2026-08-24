@@ -6,6 +6,7 @@ import {
   UseFormRegister,
   FieldErrors,
 } from "react-hook-form/dist/types";
+import { MessengerIconKey } from "@/lib/messenger";
 
 export interface AdminPostPageProps {
   handleSubmit: UseFormHandleSubmit<any>;
@@ -21,6 +22,9 @@ export interface AdminPostPageProps {
   errors: FieldErrors;
   categoryValue?: string;
   onCategoryChange: (value: string) => void;
+  messengerIconKey: MessengerIconKey;
+  onMessengerIconChange: (value: MessengerIconKey) => void;
+  newMessengerImages: any[];
 }
 
 export const AdminPostPage = ({
@@ -37,6 +41,9 @@ export const AdminPostPage = ({
   errors,
   categoryValue,
   onCategoryChange,
+  messengerIconKey,
+  onMessengerIconChange,
+  newMessengerImages,
 }: AdminPostPageProps) => {
   return (
     <AdminLayout title="업체 신규등록">
@@ -55,6 +62,9 @@ export const AdminPostPage = ({
           errors={errors}
           categoryValue={categoryValue}
           onCategoryChange={onCategoryChange}
+          messengerIconKey={messengerIconKey}
+          onMessengerIconChange={onMessengerIconChange}
+          newMessengerImages={newMessengerImages}
         />
       </S.adminPostPage>
     </AdminLayout>

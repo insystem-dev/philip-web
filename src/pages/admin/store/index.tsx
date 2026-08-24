@@ -1,12 +1,5 @@
 import { AdminStorePage } from "@/components/templates/AdminStorePage";
-import {
-  QueryCache,
-  QueryClient,
-  dehydrate,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import useApiError from "@/lib/hooks/useApiError";
 import { useRecoilValue } from "recoil";
 import { categoryState } from "@/recoil/category";
@@ -27,19 +20,56 @@ const AdminStore = () => {
   const queryClient = useQueryClient();
   const [promotion, setPromotion] = useState(false);
   const { handleError } = useApiError();
+  const [searchInput, setSearchInput] = useState("");
   const [storeSearchKeyword, setStoreSearchKeyword] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const currentCategory = useRecoilValue(categoryState);
 
-  /** 업체 목록 불러오기 */
-  const { data: dataSource, isLoading } = useQuery(
-    ["getAdminStorePosts", storeSearchKeyword, currentCategory, promotion],
+  /** 입력할 때마다 전체 조회하지 않도록 검색어를 짧게 지연해 서버에 전달한다. */
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setStoreSearchKeyword(searchInput.trim());
+      setPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [currentCategory]);
+
+  const storeQueryKey = [
+    "getAdminStorePosts",
+    storeSearchKeyword,
+    currentCategory,
+    promotion,
+    page,
+    pageSize,
+  ];
+
+  /** 업체 목록을 현재 페이지 분량만 불러오기 */
+  const { data: pageData, isLoading, isFetching } = useQuery(
+    storeQueryKey,
     getAdminStorePosts,
     {
+      keepPreviousData: true,
       onError(error: any) {
         handleError(error);
       },
     }
   );
+
+  const rows: any[] = Array.isArray(pageData?.items) ? pageData.items : [];
+  const total = Number(pageData?.total ?? 0);
+  const totalPages = Number(pageData?.totalPages ?? 0);
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   const promotionMutation = useMutation(["promotionAPI"], promotionAPI, {
     onSuccess() {
@@ -106,14 +136,7 @@ const AdminStore = () => {
       return { name: i };
     });
 
-  /** 사용자 화면 업체 노출 순서 변경 — 서버 응답을 기다리지 않고
-   *  캐시된 목록을 먼저 재배열(낙관적 업데이트)해 체감 지연을 없앤다 */
-  const storeQueryKey = [
-    "getAdminStorePosts",
-    storeSearchKeyword,
-    currentCategory,
-    promotion,
-  ];
+  /** 사용자 화면 업체 노출 순서 변경 */
   const changeSortMutation = useMutation(
     ["updatePostSortAPI"],
     updatePostSortAPI,
@@ -121,22 +144,6 @@ const AdminStore = () => {
       async onMutate(variables: { oid: string; sort: number }) {
         await queryClient.cancelQueries(["getAdminStorePosts"]);
         const previous = queryClient.getQueryData(storeQueryKey);
-        queryClient.setQueryData(storeQueryKey, (old: any) => {
-          if (!Array.isArray(old)) return old;
-          const next = [...old];
-          const fromIndex = next.findIndex(
-            (row: any) => row.oid === variables.oid
-          );
-          if (fromIndex === -1) return old;
-          const [moved] = next.splice(fromIndex, 1);
-          const toIndex = Math.max(0, Math.min(variables.sort, next.length));
-          next.splice(toIndex, 0, moved);
-          // 서버와 동일하게 0..n-1 재채번한 값으로 셀렉트 표시도 즉시 갱신
-          return next.map((row: any, index: number) => ({
-            ...row,
-            sort: index,
-          }));
-        });
         return { previous };
       },
       onError(error: any, _variables, context: any) {
@@ -171,10 +178,9 @@ const AdminStore = () => {
     });
   };
 
-  // 노출 순서 선택지: 1 ~ 전체 업체 수 (필터로 목록이 줄면 서버 sort 최대값 기준으로 보정)
-  const rows: any[] = Array.isArray(dataSource) ? dataSource : [];
+  // 노출 순서 선택지: 현재 페이지 수가 아니라 전체 업체 수를 기준으로 만든다.
   const sortTotal = Math.max(
-    rows.length,
+    total,
     ...rows.map((row) => Number(row?.sort ?? 0) + 1),
     0
   );
@@ -185,10 +191,23 @@ const AdminStore = () => {
   return (
     <>
       <AdminStorePage
-        setStoreSearchKeyword={setStoreSearchKeyword}
-        setPromotion={setPromotion}
-        dataSource={dataSource}
-        isLoading={isLoading}
+        setStoreSearchKeyword={setSearchInput}
+        setPromotion={(checked) => {
+          setPromotion(checked);
+          setPage(1);
+        }}
+        dataSource={rows}
+        isLoading={isLoading || isFetching}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        rowNumberOffset={(page - 1) * pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
         error={error}
         promotionHandler={promotionHandler}
         hiddenHandler={(data) => hiddenMutation.mutate(data.data.oid)}

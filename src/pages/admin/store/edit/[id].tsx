@@ -22,6 +22,7 @@ import {
   updatePostViewsApi,
   uploadImagesAPI,
 } from "@/apis/postsApi";
+import { isTelegramLinkInput, MessengerIconKey } from "@/lib/messenger";
 
 const AdminPost = () => {
   const router = useRouter();
@@ -44,12 +45,16 @@ const AdminPost = () => {
   const [newThumbImages, setNewThumbImages] = useState<[]>([]);
   const [newDetailImages, setNewDetailImages] = useState<[]>([]);
   const [newMenuImages, setNewMenuImages] = useState<[]>([]);
+  const [newMessengerImages, setNewMessengerImages] = useState<[]>([]);
 
   const [thumbImages, setThumbImages] = useState<string[]>(detailItem?.thumb);
   const [detailImages, setDetailImages] = useState<string[]>(
     detailItem?.detail
   );
   const [menuImages, setMenuImages] = useState<string[]>(detailItem?.menu);
+  const [messengerImages, setMessengerImages] = useState<any[]>(
+    detailItem?.messengerImage ? [detailItem.messengerImage] : []
+  );
   const [viewsMode, setViewsMode] = useState<"actual" | "manual">("actual");
   const [viewsManualCount, setViewsManualCount] = useState("0");
   const [viewsError, setViewsError] = useState("");
@@ -147,16 +152,43 @@ const AdminPost = () => {
       cityOid: yup.string().required("도시를 선택하세요"),
       ownerName: yup.string().required("대표자명을 입력해주세요"),
       remark: yup.string(),
+      messengerIconKey: yup
+        .mixed<MessengerIconKey>()
+        .oneOf(["telegram", "custom"])
+        .default("telegram"),
+      messengerLink: yup
+        .string()
+        .max(500, "단체방 주소는 500자 이하로 입력해주세요")
+        .test(
+          "telegram-link",
+          "t.me 단체방 주소, 초대 링크 또는 @아이디를 입력해주세요",
+          (value) => isTelegramLinkInput(value)
+        ),
     })
     .required();
 
-  const { handleSubmit, register, reset, setValue, watch } = useForm({
+  const {
+    handleSubmit,
+    register,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
     defaultValues: detailItem,
     resolver: yupResolver(schema),
   });
 
   /** 수정 저장  */
   const onSubmit = (data: any) => {
+    if (
+      data.messengerLink?.trim() &&
+      data.messengerIconKey === "custom" &&
+      newMessengerImages.length + messengerImages.length === 0
+    ) {
+      alert("직접 이미지를 선택한 경우 단체방 아이콘 이미지 1장을 등록해주세요.");
+      return;
+    }
     const datas = {
       files: imagePaths,
       content: data,
@@ -180,8 +212,11 @@ const AdminPost = () => {
       } else if (e.target.id === "detail") {
         setNewDetailImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
-      } else {
+      } else if (e.target.id === "menu") {
         setNewMenuImages((prev: any) => prev.concat(result));
+        setImagePaths((prev) => prev.concat(result));
+      } else if (e.target.id === "messenger") {
+        setNewMessengerImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
       }
     }).catch((err) => {
@@ -233,6 +268,19 @@ const AdminPost = () => {
     });
   }, []);
 
+  /** 저장된 단체방 아이콘 이미지 삭제 */
+  const onRemoveMessenger = useCallback((v: any, e: any) => {
+    e.preventDefault();
+    deleteImageAPI(v.oid).then(() => {
+      setMessengerImages((images) =>
+        images.filter((image: any) => image.oid !== v.oid)
+      );
+    }).catch((err) => {
+      console.error(err);
+      alert("이미지 처리 중 오류가 발생했습니다");
+    });
+  }, []);
+
   /** 새로운 이미지 추가 된후 삭제버튼 preview 이미지 삭제 */
   const onRemoveImage = useCallback((v: any, e: any) => {
     e.preventDefault();
@@ -245,11 +293,18 @@ const AdminPost = () => {
         setNewDetailImages((imges: any) => {
           return imges.filter((img: any) => img.filename !== v.filename);
         });
-      } else {
+      } else if (v.label === "menu") {
         setNewMenuImages((imges: any) => {
           return imges.filter((img: any) => img.filename !== v.filename);
         });
+      } else if (v.label === "messenger") {
+        setNewMessengerImages((images: any) =>
+          images.filter((image: any) => image.filename !== v.filename)
+        );
       }
+      setImagePaths((paths) =>
+        paths.filter((image: any) => image.filename !== v.filename)
+      );
     }).catch((err) => {
       // preview 이미지 삭제 실패 처리
       console.error(err);
@@ -262,10 +317,17 @@ const AdminPost = () => {
     setCityOptions(cityItem);
     // 상세 데이터가 로드된 경우에만 폼 초기화 (undefined로 reset 방지)
     if (detailItem) {
-      reset(detailItem);
+      reset({
+        ...detailItem,
+        messengerIconKey: detailItem.messengerIconKey || "telegram",
+        messengerLink: detailItem.messengerLink || "",
+      });
       setThumbImages(detailItem.thumb);
       setDetailImages(detailItem.detail);
       setMenuImages(detailItem.menu);
+      setMessengerImages(
+        detailItem.messengerImage ? [detailItem.messengerImage] : []
+      );
       setViewsMode(detailItem.viewsMode ?? "actual");
       setViewsManualCount(String(detailItem.viewsManualCount ?? 0));
     }
@@ -302,6 +364,15 @@ const AdminPost = () => {
       onCategoryChange={(value) =>
         setValue("categoryOid", value, { shouldValidate: true })
       }
+      errors={errors}
+      messengerIconKey={(watch("messengerIconKey") ||
+        "telegram") as MessengerIconKey}
+      onMessengerIconChange={(value) =>
+        setValue("messengerIconKey", value, { shouldValidate: true })
+      }
+      newMessengerImages={newMessengerImages}
+      messengerImages={messengerImages}
+      onRemoveMessenger={onRemoveMessenger}
     />
   );
 };

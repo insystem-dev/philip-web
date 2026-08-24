@@ -13,6 +13,8 @@ export const PostFormImgBox = styled.div`
   display: grid;
   padding: 20px;
   grid-template-columns: 120px 1fr;
+  grid-auto-rows: max-content;
+  align-content: start;
   gap: 20px 10px;
 `;
 

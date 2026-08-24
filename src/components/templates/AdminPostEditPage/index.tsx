@@ -2,9 +2,11 @@ import { AdminLayout } from "@/components/organisms/AdminLayout";
 import * as S from "./adminPostPage.style";
 import { AdminEditForm } from "@/components/molecules/AdminEditForm";
 import {
+  FieldErrors,
   UseFormHandleSubmit,
   UseFormRegister,
 } from "react-hook-form/dist/types";
+import { MessengerIconKey } from "@/lib/messenger";
 
 export interface AdminPostEditPageProps {
   handleSubmit: UseFormHandleSubmit<any>;
@@ -34,6 +36,12 @@ export interface AdminPostEditPageProps {
   actualViews: number;
   categoryValue?: string;
   onCategoryChange: (value: string) => void;
+  errors: FieldErrors;
+  messengerIconKey: MessengerIconKey;
+  onMessengerIconChange: (value: MessengerIconKey) => void;
+  newMessengerImages: any[];
+  messengerImages: any[];
+  onRemoveMessenger: (value: any, event: any) => void;
 }
 
 export const AdminPostEditPage = ({
@@ -64,6 +72,12 @@ export const AdminPostEditPage = ({
   actualViews,
   categoryValue,
   onCategoryChange,
+  errors,
+  messengerIconKey,
+  onMessengerIconChange,
+  newMessengerImages,
+  messengerImages,
+  onRemoveMessenger,
 }: AdminPostEditPageProps) => {
   return (
     <AdminLayout title="업체 정보수정">
@@ -96,6 +110,12 @@ export const AdminPostEditPage = ({
           actualViews={actualViews}
           categoryValue={categoryValue}
           onCategoryChange={onCategoryChange}
+          errors={errors}
+          messengerIconKey={messengerIconKey}
+          onMessengerIconChange={onMessengerIconChange}
+          newMessengerImages={newMessengerImages}
+          messengerImages={messengerImages}
+          onRemoveMessenger={onRemoveMessenger}
         />
       </S.adminPostPage>
     </AdminLayout>

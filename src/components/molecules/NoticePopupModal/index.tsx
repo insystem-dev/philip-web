@@ -33,6 +33,8 @@ export const NoticePopupModal = ({
   const imageUrl = popup.imageFilename
     ? `${process.env.NEXT_PUBLIC_API_URL}/${popup.imageFilename}`
     : null;
+  const isInternalLink = popup.linkUrl?.startsWith("/");
+  const isRegistrationLink = popup.linkUrl?.startsWith("/self-registration");
 
   return (
     <S.Backdrop
@@ -76,10 +78,11 @@ export const NoticePopupModal = ({
           {popup.linkUrl && (
             <S.Link
               href={popup.linkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={isInternalLink ? undefined : "_blank"}
+              rel={isInternalLink ? undefined : "noopener noreferrer"}
             >
-              자세히 보기 <span aria-hidden="true">↗</span>
+              {isRegistrationLink ? "무료 등록 신청하기" : "자세히 보기"}{" "}
+              <span aria-hidden="true">{isInternalLink ? "→" : "↗"}</span>
             </S.Link>
           )}
         </S.Content>

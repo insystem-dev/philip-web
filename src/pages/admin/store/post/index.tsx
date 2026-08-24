@@ -14,6 +14,7 @@ import {
 
 import { useRouter } from "next/router";
 import useImage from "@/lib/hooks/useImage";
+import { isTelegramLinkInput, MessengerIconKey } from "@/lib/messenger";
 
 const AdminPost = () => {
   const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
@@ -26,6 +27,8 @@ const AdminPost = () => {
   const [newThumbImages, setNewThumbImages, onRemoveThumb] = useImage([]);
   const [newDetailImages, setNewDetailImages, onRemoveDetail] = useImage([]);
   const [newMenuImages, setNewMenuImages, onRemoveMenu] = useImage([]);
+  const [newMessengerImages, setNewMessengerImages, onRemoveMessenger] =
+    useImage([]);
 
   const mutation = useMutation("addPostApi", addPostApi, {
     onSuccess() {
@@ -58,6 +61,18 @@ const AdminPost = () => {
       cityOid: yup.string().required("도시를 선택하세요"),
       ownerName: yup.string().required("대표자명을 입력해주세요"),
       remark: yup.string(),
+      messengerIconKey: yup
+        .mixed<MessengerIconKey>()
+        .oneOf(["telegram", "custom"])
+        .default("telegram"),
+      messengerLink: yup
+        .string()
+        .max(500, "단체방 주소는 500자 이하로 입력해주세요")
+        .test(
+          "telegram-link",
+          "t.me 단체방 주소, 초대 링크 또는 @아이디를 입력해주세요",
+          (value) => isTelegramLinkInput(value)
+        ),
     })
     .required();
 
@@ -68,11 +83,23 @@ const AdminPost = () => {
     reset,
     setValue,
     watch,
-  } = useForm({
+  } = useForm<any>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      messengerIconKey: "telegram",
+      messengerLink: "",
+    },
   });
 
   const onSubmit = (data: any) => {
+    if (
+      data.messengerLink?.trim() &&
+      data.messengerIconKey === "custom" &&
+      newMessengerImages.length === 0
+    ) {
+      alert("직접 이미지를 선택한 경우 단체방 아이콘 이미지 1장을 등록해주세요.");
+      return;
+    }
     //방문자수 0 초기화
     data.views = 0;
     const datas = {
@@ -99,8 +126,11 @@ const AdminPost = () => {
       } else if (e.target.id === "detail") {
         setNewDetailImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
-      } else {
+      } else if (e.target.id === "menu") {
         setNewMenuImages((prev: any) => prev.concat(result));
+        setImagePaths((prev) => prev.concat(result));
+      } else if (e.target.id === "messenger") {
+        setNewMessengerImages((prev: any) => prev.concat(result));
         setImagePaths((prev) => prev.concat(result));
       }
     }).catch((err) => {
@@ -123,13 +153,16 @@ const AdminPost = () => {
       case "menu":
         onRemoveMenu(v, e);
         break;
+      case "messenger":
+        onRemoveMessenger(v, e);
+        break;
       default:
         break;
     }
     setImagePaths((prev) => {
       return prev.filter((item: any) => item.filename !== v.filename);
     });
-  }, []);
+  }, [onRemoveDetail, onRemoveMenu, onRemoveMessenger, onRemoveThumb]);
 
   // 옵션 데이터가 로드된 경우에만 설정 (undefined 세팅 방지)
   useEffect(() => {
@@ -164,6 +197,12 @@ const AdminPost = () => {
       onCategoryChange={(value) =>
         setValue("categoryOid", value, { shouldValidate: true })
       }
+      messengerIconKey={(watch("messengerIconKey") ||
+        "telegram") as MessengerIconKey}
+      onMessengerIconChange={(value) =>
+        setValue("messengerIconKey", value, { shouldValidate: true })
+      }
+      newMessengerImages={newMessengerImages}
     />
   );
 };
