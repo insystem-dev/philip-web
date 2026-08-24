@@ -9,7 +9,8 @@ const getIconUrl = (iconKey?: string) => {
     /\/$/,
     ""
   );
-  return `${apiBase}/category-icons/${encodeURIComponent(iconKey || "plus")}.svg`;
+  // ?v= 는 아이콘 SVG 교체 시 브라우저 캐시 무효화용 — 백엔드 CATEGORY_ICON_VERSION과 함께 올린다
+  return `${apiBase}/category-icons/${encodeURIComponent(iconKey || "plus")}.svg?v=2`;
 };
 
 export const CategoryItem = ({ item, index = 0 }: any) => {

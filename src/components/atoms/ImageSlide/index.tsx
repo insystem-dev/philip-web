@@ -8,6 +8,17 @@ import * as S from "./imageSlide.style";
 
 const clampZoom = (value: number) => Math.min(3, Math.max(1, value));
 
+const getTouchDistance = (touches: React.TouchList) => {
+  const deltaX = touches[1].clientX - touches[0].clientX;
+  const deltaY = touches[1].clientY - touches[0].clientY;
+  return Math.hypot(deltaX, deltaY);
+};
+
+const getTouchMidpoint = (touches: React.TouchList) => ({
+  x: (touches[0].clientX + touches[1].clientX) / 2,
+  y: (touches[0].clientY + touches[1].clientY) / 2,
+});
+
 export const ImageSlide = ({ items }: any) => {
   const [selectedId, setSelectedId] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -17,6 +28,22 @@ export const ImageSlide = ({ items }: any) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const imageFrameRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchPanRef = useRef<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
+  const pinchRef = useRef<{
+    startDistance: number;
+    startZoom: number;
+    anchorX: number;
+    anchorY: number;
+    centerX: number;
+    centerY: number;
+  } | null>(null);
+  const zoomRef = useRef(1);
+  const panRef = useRef({ x: 0, y: 0 });
   const dragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -26,6 +53,9 @@ export const ImageSlide = ({ items }: any) => {
   } | null>(null);
   const hasImages = Boolean(items?.length);
   const itemCount = items?.length ?? 0;
+
+  zoomRef.current = zoom;
+  panRef.current = pan;
 
   const viewerPrev = useCallback(() => {
     setSelectedId((current) => (current - 1 + itemCount) % itemCount);
@@ -37,6 +67,10 @@ export const ImageSlide = ({ items }: any) => {
 
   const resetPan = useCallback(() => {
     dragRef.current = null;
+    touchPanRef.current = null;
+    pinchRef.current = null;
+    touchStartRef.current = null;
+    panRef.current = { x: 0, y: 0 };
     setIsDragging(false);
     setPan({ x: 0, y: 0 });
   }, []);
@@ -93,6 +127,124 @@ export const ImageSlide = ({ items }: any) => {
       y: Math.min(maxY, Math.max(-maxY, current.y)),
     }));
   }, [resetPan, zoom]);
+
+  const startTouchPan = (touch: React.Touch) => {
+    touchPanRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      originX: panRef.current.x,
+      originY: panRef.current.y,
+    };
+    setIsDragging(true);
+  };
+
+  const onViewerTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length >= 2) {
+      const distance = getTouchDistance(event.touches);
+      if (distance <= 0) return;
+
+      const midpoint = getTouchMidpoint(event.touches);
+      const frame = imageFrameRef.current;
+      const stageRect = frame?.parentElement?.getBoundingClientRect();
+      if (!frame || !stageRect) return;
+
+      const centerX = stageRect.left + stageRect.width / 2;
+      const centerY = stageRect.top + stageRect.height / 2;
+      const currentZoom = zoomRef.current;
+      const currentPan = panRef.current;
+
+      pinchRef.current = {
+        startDistance: distance,
+        startZoom: currentZoom,
+        anchorX: (midpoint.x - centerX - currentPan.x) / currentZoom,
+        anchorY: (midpoint.y - centerY - currentPan.y) / currentZoom,
+        centerX,
+        centerY,
+      };
+      touchPanRef.current = null;
+      touchStartRef.current = null;
+      dragRef.current = null;
+      setIsDragging(true);
+      return;
+    }
+
+    if (event.touches.length === 1 && zoomRef.current > 1) {
+      touchStartRef.current = null;
+      startTouchPan(event.touches[0]);
+    }
+  };
+
+  const onViewerTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const frame = imageFrameRef.current;
+    if (!frame) return;
+
+    if (event.touches.length >= 2 && pinchRef.current) {
+      event.preventDefault();
+      const pinch = pinchRef.current;
+      const midpoint = getTouchMidpoint(event.touches);
+      const distance = getTouchDistance(event.touches);
+      const nextZoom = clampZoom(
+        pinch.startZoom * (distance / pinch.startDistance)
+      );
+      const maxX = (frame.clientWidth * (nextZoom - 1)) / 2;
+      const maxY = (frame.clientHeight * (nextZoom - 1)) / 2;
+      const rawX = midpoint.x - pinch.centerX - pinch.anchorX * nextZoom;
+      const rawY = midpoint.y - pinch.centerY - pinch.anchorY * nextZoom;
+      const nextPan = {
+        x: Math.min(maxX, Math.max(-maxX, rawX)),
+        y: Math.min(maxY, Math.max(-maxY, rawY)),
+      };
+
+      zoomRef.current = nextZoom;
+      panRef.current = nextPan;
+      setZoom(nextZoom);
+      setPan(nextPan);
+      return;
+    }
+
+    const touchPan = touchPanRef.current;
+    if (event.touches.length === 1 && touchPan && zoomRef.current > 1) {
+      event.preventDefault();
+      const touch = event.touches[0];
+      const currentZoom = zoomRef.current;
+      const maxX = (frame.clientWidth * (currentZoom - 1)) / 2;
+      const maxY = (frame.clientHeight * (currentZoom - 1)) / 2;
+      const nextPan = {
+        x: Math.min(
+          maxX,
+          Math.max(-maxX, touchPan.originX + touch.clientX - touchPan.startX)
+        ),
+        y: Math.min(
+          maxY,
+          Math.max(-maxY, touchPan.originY + touch.clientY - touchPan.startY)
+        ),
+      };
+
+      panRef.current = nextPan;
+      setPan(nextPan);
+    }
+  };
+
+  const onViewerTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length === 1 && pinchRef.current) {
+      pinchRef.current = null;
+      if (zoomRef.current > 1) startTouchPan(event.touches[0]);
+      return;
+    }
+
+    if (event.touches.length === 0) {
+      pinchRef.current = null;
+      touchPanRef.current = null;
+      setIsDragging(false);
+    }
+  };
+
+  const onViewerTouchCancel = () => {
+    pinchRef.current = null;
+    touchPanRef.current = null;
+    touchStartRef.current = null;
+    setIsDragging(false);
+  };
 
   if (!hasImages) {
     return (
@@ -214,6 +366,10 @@ export const ImageSlide = ({ items }: any) => {
                 );
               }}
               onTouchStart={(event) => {
+                if (event.touches.length !== 1 || zoomRef.current > 1) {
+                  touchStartRef.current = null;
+                  return;
+                }
                 const touch = event.touches[0];
                 touchStartRef.current = { x: touch.clientX, y: touch.clientY };
               }}
@@ -245,8 +401,12 @@ export const ImageSlide = ({ items }: any) => {
                 $panX={pan.x}
                 $panY={pan.y}
                 $dragging={isDragging}
+                onTouchStart={onViewerTouchStart}
+                onTouchMove={onViewerTouchMove}
+                onTouchEnd={onViewerTouchEnd}
+                onTouchCancel={onViewerTouchCancel}
                 onPointerDown={(event) => {
-                  if (zoom <= 1) return;
+                  if (event.pointerType === "touch" || zoom <= 1) return;
                   event.preventDefault();
                   event.currentTarget.setPointerCapture(event.pointerId);
                   dragRef.current = {
@@ -259,6 +419,7 @@ export const ImageSlide = ({ items }: any) => {
                   setIsDragging(true);
                 }}
                 onPointerMove={(event) => {
+                  if (event.pointerType === "touch") return;
                   const drag = dragRef.current;
                   if (!drag || drag.pointerId !== event.pointerId) return;
 
@@ -273,6 +434,7 @@ export const ImageSlide = ({ items }: any) => {
                   });
                 }}
                 onPointerUp={(event) => {
+                  if (event.pointerType === "touch") return;
                   if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                     event.currentTarget.releasePointerCapture(event.pointerId);
                   }
@@ -342,7 +504,7 @@ export const ImageSlide = ({ items }: any) => {
               </S.ViewerResetButton>
             </S.ViewerControls>
             <S.ViewerHelp>
-              마우스 휠·더블 클릭으로 확대 / 확대 후 드래그로 시점 이동
+              두 손가락·마우스 휠로 확대 / 확대 후 드래그로 시점 이동
             </S.ViewerHelp>
           </S.ViewerBackdrop>,
           document.body
