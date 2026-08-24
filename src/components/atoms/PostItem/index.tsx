@@ -18,18 +18,19 @@ export const PostItem = ({ item }: any) => {
 
   /** 게시물 클릭시 해당 게시물 조회수 count api */
   const mutation = useMutation(["fetchCountViews"], fetchCountViews);
+  const loginRequired =
+    item.login_required === true || item.login_required === "true";
 
-  /** 게시물 클릭시 로그인 토큰 값(userToken) 이 없다면 알림 */
+  /** 관리자가 로그인 필요로 설정한 카테고리만 비로그인 접근을 막는다. */
   /** 관리자 토큰(admin)은 유저 로그인으로 치지 않는다 — 헤더 로그인 상태와 어긋나기 때문 */
   const goDetail = (e: any) => {
-    if (userToken) router.push(`/main/post/${item.oid}`);
+    if (userToken || !loginRequired) router.push(`/main/post/${item.oid}`);
     else setShowLoginModal(true);
-    // router.push(`/main/post/${item.oid}`);
   };
 
-  /** 게시물 클릭시 handler (로그인 상태일 때만 조회수 증가) */
+  /** 실제 상세 진입이 허용될 때 조회수 증가 */
   const countViews = () => {
-    if (userToken) mutation.mutate(item.oid);
+    if (userToken || !loginRequired) mutation.mutate(item.oid);
   };
 
   return (
@@ -60,9 +61,7 @@ export const PostItem = ({ item }: any) => {
           <div onClick={(e) => e.stopPropagation()}>
             <AlertModal
               title="로그인이 필요합니다"
-              message={
-                "로그인이 필요한 서비스 입니다.\n로그인 후 이용해주세요."
-              }
+              message={"이 카테고리는 로그인 후 이용할 수 있습니다."}
               confirmLabel="로그인하기"
               onConfirm={() => router.push("/auth/login")}
             />

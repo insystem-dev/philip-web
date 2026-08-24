@@ -10,6 +10,7 @@ import {
   CitySub,
 } from "@/apis/categoryApi";
 import { CategoryIconPicker } from "@/components/molecules/CategoryIconPicker";
+import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 
 /** 카테고리 추가 경로 — 기존 공통 카테고리를 켜기 / 이 지역 전용으로 새로 만들기 */
 export type CategoryAddMode = "existing" | "new";
@@ -50,6 +51,11 @@ export interface AdminCategoryCityPageProps {
   onChangeIcon: (iconKey: string, data: any) => void;
   onUseGlobalIcon: (data: any) => void;
   onToggleUse: (data: any) => void;
+  onToggleLoginRequired: (data: any) => void;
+  /** 지역 전체를 비로그인 허용하는 명시적 저장 상태 */
+  allCategoriesAllowed: boolean;
+  loginRequiredCount: number;
+  onAllowAllCategories: () => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   onSave: () => void;
   isSaving: boolean;
@@ -110,6 +116,10 @@ export const AdminCategoryCityPage = ({
   onChangeIcon,
   onUseGlobalIcon,
   onToggleUse,
+  onToggleLoginRequired,
+  allCategoriesAllowed,
+  loginRequiredCount,
+  onAllowAllCategories,
   onChangeSort,
   onSave,
   isSaving,
@@ -233,9 +243,7 @@ export const AdminCategoryCityPage = ({
                   height={32}
                   label={showCreatePanel ? "추가 닫기" : "카테고리 추가"}
                   onClick={onToggleCreatePanel}
-                  disabled={
-                    isLoading || isSaving || isResetting || !isEditMode
-                  }
+                  disabled={isLoading || isSaving || isResetting || !isEditMode}
                 />
                 <Button
                   type="button"
@@ -245,12 +253,41 @@ export const AdminCategoryCityPage = ({
                   height={32}
                   label={isResetting ? "초기화 중..." : "이 지역 설정 초기화"}
                   onClick={onResetClick}
-                  disabled={
-                    isLoading || isSaving || isResetting || !isEditMode
-                  }
+                  disabled={isLoading || isSaving || isResetting || !isEditMode}
                 />
               </S.BarButtons>
             </S.ActionBar>
+
+            <S.AccessPolicyCard $allAllowed={allCategoriesAllowed}>
+              <S.AccessPolicyCopy>
+                <S.AccessPolicyLabel>회원 접근 설정</S.AccessPolicyLabel>
+                <strong>
+                  {allCategoriesAllowed
+                    ? "모든 카테고리 전체 허용"
+                    : loginRequiredCount > 0
+                      ? `${loginRequiredCount}개 카테고리 로그인 필요`
+                      : "카테고리별 제한 설정 중"}
+                </strong>
+                <span>
+                  전체 허용을 켜면 모든 로그인 제한이 해제됩니다. 체크를 끈 뒤
+                  아래 목록에서 로그인 필요 카테고리를 선택할 수 있습니다.
+                </span>
+              </S.AccessPolicyCopy>
+              <S.AccessPolicyToggle $locked={!isEditMode}>
+                <InputCheckbox
+                  value="allow-all"
+                  checked={allCategoriesAllowed}
+                  displayValue="전체 허용"
+                  themeType="admin"
+                  layout="adminRow"
+                  disabled={!isEditMode}
+                  onChange={() => {
+                    if (!isEditMode) return;
+                    onAllowAllCategories();
+                  }}
+                />
+              </S.AccessPolicyToggle>
+            </S.AccessPolicyCard>
 
             <S.InheritanceHint>
               지역을 활성화하는 것만으로 별도 데이터는 생성되지 않습니다. 이
@@ -431,6 +468,7 @@ export const AdminCategoryCityPage = ({
                 onChangeIcon={onChangeIcon}
                 onUseGlobalIcon={onUseGlobalIcon}
                 onToggleUse={onToggleUse}
+                onToggleLoginRequired={onToggleLoginRequired}
                 onChangeSort={onChangeSort}
               />
             </S.GridArea>

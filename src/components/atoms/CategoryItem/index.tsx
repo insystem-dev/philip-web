@@ -1,7 +1,10 @@
 import { categoryState } from "@/recoil/category";
 import { searchState } from "@/recoil/search";
+import { userTokenState } from "@/recoil/userToken";
+import { CategoryLoginRequiredModal } from "@/components/molecules/CategoryLoginRequiredModal";
 import { useRouter } from "next/router";
-import { useRecoilState } from "recoil";
+import { useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 import * as S from "./categoryItem.style";
 
 const getIconUrl = (iconKey?: string) => {
@@ -15,10 +18,17 @@ const getIconUrl = (iconKey?: string) => {
 
 export const CategoryItem = ({ item, index = 0 }: any) => {
   const router = useRouter();
+  const userToken = useRecoilValue(userTokenState);
   const [category, setCategory] = useRecoilState(categoryState);
   const [, setSearchInput] = useRecoilState(searchState);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const onClick = () => {
+    if (item.loginRequired && !userToken) {
+      setShowLoginModal(true);
+      return;
+    }
+
     setCategory(item.oid);
     setSearchInput("");
 
@@ -40,23 +50,34 @@ export const CategoryItem = ({ item, index = 0 }: any) => {
     router.pathname !== "/select/category" && category === item.oid;
 
   return (
-    <S.CategoryItem $index={index} $active={isActive}>
-      <S.CategoryButton type="button" onClick={onClick} aria-pressed={isActive}>
-        <S.CategoryIcon>
-          <img
-            src={getIconUrl(item.iconKey)}
-            alt=""
-            aria-hidden="true"
-            onError={(event) => {
-              if (event.currentTarget.dataset.fallback === "true") return;
-              event.currentTarget.dataset.fallback = "true";
-              event.currentTarget.src = getIconUrl("plus");
-            }}
-          />
-        </S.CategoryIcon>
-        <S.CategoryName>{item.name}</S.CategoryName>
-        <S.HoverShine aria-hidden="true" />
-      </S.CategoryButton>
-    </S.CategoryItem>
+    <>
+      <S.CategoryItem $index={index} $active={isActive}>
+        <S.CategoryButton
+          type="button"
+          onClick={onClick}
+          aria-pressed={isActive}
+        >
+          <S.CategoryIcon>
+            <img
+              src={getIconUrl(item.iconKey)}
+              alt=""
+              aria-hidden="true"
+              onError={(event) => {
+                if (event.currentTarget.dataset.fallback === "true") return;
+                event.currentTarget.dataset.fallback = "true";
+                event.currentTarget.src = getIconUrl("plus");
+              }}
+            />
+          </S.CategoryIcon>
+          <S.CategoryName>{item.name}</S.CategoryName>
+          <S.HoverShine aria-hidden="true" />
+        </S.CategoryButton>
+      </S.CategoryItem>
+      <CategoryLoginRequiredModal
+        open={showLoginModal}
+        categoryName={item.name}
+        onClose={() => setShowLoginModal(false)}
+      />
+    </>
   );
 };

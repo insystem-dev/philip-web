@@ -11,18 +11,17 @@ import { AlertModal } from "@/components/molecules/AlertModal";
 
 export const Post = () => {
   const router = useRouter();
-  const [, setUserToken] = useRecoilState(userTokenState);
+  const [userToken, setUserToken] = useRecoilState(userTokenState);
   /** 선택된 지역 (배너 지역별 노출용) */
   const city = useRecoilValue(cityState);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState("");
   const queryFn = () => getOnePostInfoApi(router.query.id);
 
   /** 광고 배너 데이터 (선택 지역 전용 — 지역 미선택이면 노출할 배너가 없어 조회하지 않는다) */
-  const { data: adsData } = useQuery(
-    ["getAdsData", city || null],
-    getAdsData,
-    { enabled: !!city }
-  );
+  const { data: adsData } = useQuery(["getAdsData", city || null], getAdsData, {
+    enabled: !!city,
+  });
 
   /** 업체 상세 데이터 */
   const { data: detailItem, isError } = useQuery(
@@ -39,11 +38,18 @@ export const Post = () => {
           return;
         }
         if (err.response?.status === 401) {
+          setLoginErrorMessage(
+            userToken
+              ? "세션이 만료되어 다시 로그인해야 합니다."
+              : "이 카테고리는 로그인 후 이용할 수 있습니다."
+          );
           // 유저 토큰만 localStorage + Recoil 양쪽에서 초기화 (UI가 로그인 상태로 남는 버그 방지)
           // admin 항목은 건드리지 않는다 — 유저 화면 요청에는 admin 토큰이 실리지 않으므로
           // 유저 쪽 401로 관리자 로그인까지 날아갈 이유가 없다
-          localStorage.removeItem("kakaoSignKey");
-          setUserToken(null);
+          if (userToken) {
+            localStorage.removeItem("kakaoSignKey");
+            setUserToken(null);
+          }
           setShowSessionExpired(true);
         }
       },
@@ -56,7 +62,7 @@ export const Post = () => {
       {showSessionExpired && (
         <AlertModal
           title="로그인이 필요합니다"
-          message={`세션이 만료되어 다시 로그인해야 합니다.`}
+          message={loginErrorMessage}
           confirmLabel="로그인하기"
           onConfirm={() => router.replace("/auth/login")}
         />

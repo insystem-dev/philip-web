@@ -18,6 +18,9 @@ import { getPostsListApi, getPromtionListApi } from "@/apis/postsApi";
 import { getAdsData } from "@/apis/adsApi";
 import { checkTodayVisit, getVisitCount } from "@/apis/visitApi";
 import { searchState } from "@/recoil/search";
+import { userTokenState } from "@/recoil/userToken";
+import { CategoryLoginRequiredModal } from "@/components/molecules/CategoryLoginRequiredModal";
+import { ActiveNoticePopups } from "@/components/molecules/ActiveNoticePopups";
 import {
   Category,
   CitySub,
@@ -33,6 +36,7 @@ const Main = () => {
   const [category, setCategoryState] = useRecoilState(categoryState);
   const [city, setCityState] = useRecoilState(cityState);
   const [searchInput, setSearchInput] = useRecoilState(searchState);
+  const userToken = useRecoilValue(userTokenState);
 
   // ─────────────────────────────────────────────────────────────
   // 로컬 상태
@@ -40,16 +44,23 @@ const Main = () => {
   const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [count, setCount] = useState<number>(0);
+  const [loginRequiredCategoryName, setLoginRequiredCategoryName] = useState<
+    string | null
+  >(null);
 
   // ─────────────────────────────────────────────────────────────
   // API 쿼리
   // ─────────────────────────────────────────────────────────────
 
   // 방문자 체크 (오늘 방문 기록) - 완료 후 카운트 조회
-  const { isSuccess: visitChecked } = useQuery("checkTodayVisit", checkTodayVisit, {
-    staleTime: Infinity, // 페이지 내에서 한 번만 실행
-    retry: 1,
-  });
+  const { isSuccess: visitChecked } = useQuery(
+    "checkTodayVisit",
+    checkTodayVisit,
+    {
+      staleTime: Infinity, // 페이지 내에서 한 번만 실행
+      retry: 1,
+    }
+  );
 
   // 방문자 수 조회 (방문 체크 완료 후 실행)
   const { data: todayCount } = useQuery("getVisitCount", getVisitCount, {
@@ -58,11 +69,9 @@ const Main = () => {
 
   // 광고 데이터 (선택 지역 전용 배너만 조회)
   // 배너는 지역 전용이라 지역을 고르기 전에는 노출할 것이 없다 → 전체 목록을 헛되이 받지 않도록 막는다
-  const { data: adsData } = useQuery(
-    ["getAdsData", city || null],
-    getAdsData,
-    { enabled: !!city }
-  );
+  const { data: adsData } = useQuery(["getAdsData", city || null], getAdsData, {
+    enabled: !!city,
+  });
 
   // 프로모션 목록 (도시 선택 시에만 조회)
   const { data: postItem } = useQuery(
@@ -123,9 +132,16 @@ const Main = () => {
   /** 카테고리 선택 핸들러 */
   const getCategoryOption = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const nextCategory = categoryOptions.find(
+        (item) => item.oid === e.target.value
+      );
+      if (nextCategory?.loginRequired && !userToken) {
+        setLoginRequiredCategoryName(nextCategory.name);
+        return;
+      }
       setCategoryState(e.target.value);
     },
-    [setCategoryState]
+    [categoryOptions, setCategoryState, userToken]
   );
 
   // ─────────────────────────────────────────────────────────────
@@ -139,12 +155,16 @@ const Main = () => {
         (item) => item.useYn === "Y"
       );
       setCategoryOptions(activeCategories);
+      const currentCategory = activeCategories.find(
+        (item) => item.oid === category
+      );
       if (
         activeCategories.length > 0 &&
-        !activeCategories.some((item) => item.oid === category)
+        (!currentCategory || (!!currentCategory.loginRequired && !userToken))
       ) {
         const fallback =
           activeCategories.find((item) => item.oid === categoryAll) ??
+          activeCategories.find((item) => !item.loginRequired) ??
           activeCategories[0];
         setCategoryState(fallback.oid);
       }
@@ -161,7 +181,15 @@ const Main = () => {
         localStorage.setItem("city", activeCities[0].oid);
       }
     }
-  }, [categoryItem, cityItem, category, city, setCategoryState, setCityState]);
+  }, [
+    categoryItem,
+    cityItem,
+    category,
+    city,
+    userToken,
+    setCategoryState,
+    setCityState,
+  ]);
 
   // 방문자 수 처리
   useEffect(() => {
@@ -182,10 +210,7 @@ const Main = () => {
           name="description"
           content="필립, 필립69, PHILIP, PHILIP69에서 필리핀 지역과 카테고리별 업체를 검색해 보세요."
         />
-        <meta
-          name="keywords"
-          content="필립, 필립69, philip, philip69"
-        />
+        <meta name="keywords" content="필립, 필립69, philip, philip69" />
         <link rel="canonical" href="https://philip69.com/main" />
       </Head>
       <MainPage
@@ -211,6 +236,12 @@ const Main = () => {
         // 검색 관련
         getValue={getValue}
       />
+      <CategoryLoginRequiredModal
+        open={!!loginRequiredCategoryName}
+        categoryName={loginRequiredCategoryName ?? undefined}
+        onClose={() => setLoginRequiredCategoryName(null)}
+      />
+      <ActiveNoticePopups categoryCode={category} />
     </>
   );
 };

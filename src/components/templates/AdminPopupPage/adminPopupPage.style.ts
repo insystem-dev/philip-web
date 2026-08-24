@@ -184,6 +184,32 @@ export const Order = styled.span`
   font-size: 1.1rem;
 `;
 
+export const TargetBadge = styled.div<{ $category: boolean }>`
+  display: inline-flex;
+  max-width: 100%;
+  padding: 4px 7px;
+  margin-bottom: 7px;
+  border: 1px solid ${(props) => (props.$category ? "#cdd5ff" : "#d9dde5")};
+  border-radius: 4px;
+  color: ${(props) => (props.$category ? "#314bc9" : "#5f6979")};
+  background: ${(props) => (props.$category ? "#f1f3ff" : "#f5f6f8")};
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    overflow: hidden;
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`;
+
 export const CardTitle = styled.h3`
   overflow: hidden;
   margin: 0 0 8px;
@@ -359,6 +385,54 @@ export const FieldRow = styled.div`
   @media (max-width: 520px) {
     grid-template-columns: 1fr;
   }
+`;
+
+export const TargetMode = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+`;
+
+export const TargetOption = styled.button<{ $active: boolean }>`
+  display: flex;
+  min-height: 68px;
+  padding: 11px 12px;
+  border: 1px solid
+    ${(props) =>
+      props.$active
+        ? props.theme.colors.primary
+        : props.theme.colors.adminInputBorder};
+  border-radius: 6px;
+  color: ${(props) => props.theme.colors.adminMainTxt};
+  background: ${(props) => (props.$active ? "#f2f4ff" : "#fff")};
+  text-align: left;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+
+  strong {
+    font-size: 1.2rem;
+  }
+
+  span {
+    color: ${(props) =>
+      props.$active
+        ? props.theme.colors.primary
+        : props.theme.colors.adminLabelTxt};
+    font-size: 1.05rem;
+  }
+
+  &:hover {
+    border-color: ${(props) => props.theme.colors.primary};
+  }
+`;
+
+export const TargetHint = styled.p`
+  margin: 7px 0 0;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.08rem;
+  line-height: 1.45;
 `;
 
 export const UploadLabel = styled.label<{ $disabled: boolean }>`

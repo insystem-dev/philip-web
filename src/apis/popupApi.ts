@@ -6,6 +6,8 @@ export interface PopupItem {
   content: string | null;
   imageFilename: string | null;
   linkUrl: string | null;
+  /** null이면 카테고리 선택 화면, 값이 있으면 해당 카테고리 메인 화면 */
+  categoryCode: string | null;
   sortOrder: number;
   useYn: "Y" | "N";
   startAt: string | null;
@@ -22,9 +24,11 @@ export function getPopupsApi() {
     .then((response) => response.data);
 }
 
-export function getActivePopupsApi() {
+export function getActivePopupsApi(categoryCode?: string) {
   return axiosInstance
-    .get<PopupItem[]>("/admin/popups/active")
+    .get<PopupItem[]>("/admin/popups/active", {
+      params: categoryCode ? { categoryCode } : undefined,
+    })
     .then((response) => response.data);
 }
 

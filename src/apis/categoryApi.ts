@@ -4,6 +4,8 @@ export interface Category {
   oid: string;
   name: string;
   iconKey: string;
+  /** 이 지역에서 로그인 회원만 이용할 수 있는 카테고리인지 */
+  loginRequired: boolean;
   sort: number;
   subCd: string;
   parentOid: string | null;
@@ -45,6 +47,7 @@ export interface CodeSubRow {
   useYn: string;
   createdAt: string;
   updatedAt: string | null;
+  loginRequired?: boolean;
 }
 
 /** 지역별 카테고리 노출 설정 원본 row 형태 (백엔드 응답) */
@@ -56,6 +59,8 @@ export interface CategoryCitySettingRow {
   useYn: string;
   iconKey: string | null;
   iconOverridden: boolean;
+  loginRequired: boolean;
+  allAllowed: boolean;
   overridden: boolean;
 }
 
@@ -72,6 +77,10 @@ export interface CategoryCitySetting {
   iconKey: string;
   /** 지역 아이콘이 별도로 저장되었는지. false면 공통코드 아이콘을 상속한다. */
   iconOverridden: boolean;
+  /** true면 이 지역에서 로그인 회원만 이용할 수 있다. */
+  loginRequired: boolean;
+  /** 이 지역 전체를 비로그인 허용하는 명시적 설정 */
+  allAllowed: boolean;
   /** 이 지역 전용 설정이 실제로 저장돼 있는지 (전역값과 다를 수 있음을 표시) */
   overridden: boolean;
 }
@@ -86,6 +95,7 @@ const toCategory = (row: CodeSubRow): Category => ({
   oid: row.code,
   name: row.subNm,
   iconKey: row.mngCd2 || "plus",
+  loginRequired: !!row.loginRequired,
   sort: row.sort,
   subCd: row.subCd,
   parentOid: row.parentCode,
@@ -114,6 +124,8 @@ const toCategoryCitySetting = (
   useYn: row.useYn === "N" ? "N" : "Y",
   iconKey: row.iconKey || "plus",
   iconOverridden: !!row.iconOverridden,
+  loginRequired: !!row.loginRequired,
+  allAllowed: row.allAllowed !== false,
   overridden: !!row.overridden,
 });
 
@@ -128,10 +140,8 @@ export async function getCategoryIconCatalogApi(): Promise<
  * cityCode 는 값이 있을 때만 실어 보낸다.
  * 지역 미선택 구간에서 그대로 넘기면 `?cityCode=null` 이 나가 서버가 지역 필터를 걸어버린다.
  */
-const withCityCode = (
-  params: Record<string, any>,
-  cityCode?: string | null
-) => (cityCode ? { ...params, cityCode } : params);
+const withCityCode = (params: Record<string, any>, cityCode?: string | null) =>
+  cityCode ? { ...params, cityCode } : params;
 
 /**
  * GET nav 카테고리 목록 불러오기 (관리자 공통코드 관리 목록에서도 동일 API 재사용)
@@ -203,11 +213,13 @@ export async function getCategoryCitySettingApi({
  */
 export function updateCategoryCitySettingApi(data: {
   cityCode: string;
+  allAllowed: boolean;
   items: {
     categoryCode: string;
     name?: string;
     sort: number;
     useYn: "Y" | "N";
+    loginRequired: boolean;
     iconKey?: string;
   }[];
 }): Promise<CategoryCitySetting[]> {

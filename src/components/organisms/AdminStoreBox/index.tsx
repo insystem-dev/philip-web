@@ -14,6 +14,8 @@ export const AdminStoreBox = ({
   hiddenHandler,
   orderOptions,
   onChangeOrder,
+  sortOptions,
+  onChangeSort,
   goEdit,
 }: AdminStorePageProps) => {
   return (
@@ -30,6 +32,8 @@ export const AdminStoreBox = ({
         hiddenHandler={hiddenHandler}
         orderOptions={orderOptions}
         onChangeOrder={onChangeOrder}
+        sortOptions={sortOptions}
+        onChangeSort={onChangeSort}
         goEdit={goEdit}
       />
     </S.AdminStoreBox>

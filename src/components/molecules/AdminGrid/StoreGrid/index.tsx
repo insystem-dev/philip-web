@@ -16,6 +16,8 @@ interface StoreGridProps {
   hiddenHandler: (data: any) => void;
   orderOptions: any[];
   onChangeOrder: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
+  sortOptions: any[];
+  onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   goEdit: (e: any) => void;
 }
 
@@ -27,6 +29,8 @@ export const StoreGrid = ({
   hiddenHandler,
   orderOptions,
   onChangeOrder,
+  sortOptions,
+  onChangeSort,
   goEdit,
 }: StoreGridProps) => {
   return (
@@ -116,6 +120,26 @@ export const StoreGrid = ({
             )}
           />
           <Column
+            caption="노출순서"
+            dataField="sort"
+            width={72}
+            alignment="center"
+            cellRender={(data) => (
+              // 사용자 화면 업체 목록에 보이는 순서 (1이 맨 앞)
+              <InputSelect
+                options={sortOptions}
+                layout="column"
+                size="sm"
+                width="56px"
+                themeType="admin"
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  onChangeSort(e, data);
+                }}
+                value={Number(data.data.sort ?? 0) + 1}
+              />
+            )}
+          />
+          <Column
             caption="프로모션"
             dataField="promotion"
             width={64}
@@ -135,9 +159,9 @@ export const StoreGrid = ({
             )}
           />
           <Column
-            caption="순서"
+            caption="프로모션순서"
             dataField="order"
-            width={60}
+            width={90}
             alignment="center"
             cellRender={(data) => (
               // 스타일 분기에 존재하는 값("column")으로 오타 수정

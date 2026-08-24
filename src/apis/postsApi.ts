@@ -11,7 +11,7 @@ export function getPostsListApi({ queryKey }: any) {
 
 /** GET 게시글 클릭시 상세페이지 정보 */
 export function getOnePostInfoApi(data: any) {
-  return axiosInstance.get(`/posts/edit/${data}`).then((res) => res.data);
+  return axiosInstance.get(`/posts/${data}`).then((res) => res.data);
 }
 
 /** POST [관리자] 게시글 등록 */
@@ -98,6 +98,13 @@ export function promotionAPI(oid: string) {
 /** PATCH 관리자 업체 숨김/공개 토글 */
 export function hiddenPostAPI(oid: string) {
   return axiosInstance.patch(`/posts/hidden/${oid}`);
+}
+
+/** PATCH 관리자 업체 노출 순서 변경 (sort = 이동할 위치, 0부터) */
+export function updatePostSortAPI(data: { oid: string; sort: number }) {
+  return axiosInstance
+    .patch(`/posts/sort/${data.oid}`, { sort: data.sort })
+    .then((response) => response.data);
 }
 
 /** 프로모션 롤 체크 */

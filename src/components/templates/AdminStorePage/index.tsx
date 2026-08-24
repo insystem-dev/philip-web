@@ -12,6 +12,8 @@ export interface AdminStorePageProps {
   hiddenHandler: (data: any) => void;
   orderOptions: any[];
   onChangeOrder: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
+  sortOptions: any[];
+  onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
   goEdit: (e: any) => void;
 }
 
@@ -25,6 +27,8 @@ export const AdminStorePage = ({
   hiddenHandler,
   orderOptions,
   onChangeOrder,
+  sortOptions,
+  onChangeSort,
   goEdit,
 }: AdminStorePageProps) => {
   return (
@@ -40,6 +44,8 @@ export const AdminStorePage = ({
           hiddenHandler={hiddenHandler}
           orderOptions={orderOptions}
           onChangeOrder={onChangeOrder}
+          sortOptions={sortOptions}
+          onChangeSort={onChangeSort}
           goEdit={goEdit}
         />
       </S.AdminStorePage>

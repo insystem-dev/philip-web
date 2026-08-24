@@ -1,6 +1,7 @@
 import { CounterBox } from "@/components/molecules/CounterBox";
 import { LinkBox } from "@/components/molecules/LinkBox";
 import { SearchBox } from "@/components/molecules/SearchBox";
+import { ExchangeRateBox } from "@/components/molecules/ExchangeRateBox";
 import * as S from "./asideSection.style";
 
 interface AsideSectionProp {
@@ -36,6 +37,7 @@ export const AsideSection = ({
         getValue={getValue}
       />
       <LinkBox stacked />
+      <ExchangeRateBox />
     </S.AsideSection>
   );
 };

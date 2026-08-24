@@ -34,6 +34,7 @@ interface CategoryCityGridProps {
   onChangeIcon: (iconKey: string, data: any) => void;
   onUseGlobalIcon: (data: any) => void;
   onToggleUse: (data: any) => void;
+  onToggleLoginRequired: (data: any) => void;
   onChangeSort: (e: React.ChangeEvent<HTMLSelectElement>, data: any) => void;
 }
 
@@ -57,6 +58,7 @@ export const CategoryCityGrid = ({
   onChangeIcon,
   onUseGlobalIcon,
   onToggleUse,
+  onToggleLoginRequired,
   onChangeSort,
 }: CategoryCityGridProps) => {
   const locked = !isEditMode;
@@ -79,9 +81,9 @@ export const CategoryCityGrid = ({
           (item) =>
             `${item.categoryCode}:${item.parentCode ?? ""}:${item.sort}:${
               item.useYn
-            }:${item.iconKey}:${item.iconOverridden ? "1" : "0"}:${
-              item.overridden ? "1" : "0"
-            }`
+            }:${item.loginRequired ? "1" : "0"}:${item.iconKey}:${
+              item.iconOverridden ? "1" : "0"
+            }:${item.overridden ? "1" : "0"}`
         )
         .join("|"),
     [dataSource]
@@ -92,7 +94,9 @@ export const CategoryCityGrid = ({
       [...dataSource].sort(
         (a, b) =>
           Number(a.sort ?? 0) - Number(b.sort ?? 0) ||
-          String(a.categoryCode ?? "").localeCompare(String(b.categoryCode ?? ""))
+          String(a.categoryCode ?? "").localeCompare(
+            String(b.categoryCode ?? "")
+          )
       ),
     // 이름만 바뀐 리렌더에서는 배열을 새로 만들지 않는다 (위 structureKey 주석 참고)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,9 +195,7 @@ export const CategoryCityGrid = ({
                   disabled={locked}
                   inherited={!data.data.iconOverridden}
                   onUseInherited={
-                    locked
-                      ? undefined
-                      : () => onUseGlobalIcon(data)
+                    locked ? undefined : () => onUseGlobalIcon(data)
                   }
                   ariaLabel={`${data.data.name ?? ""} 지역 아이콘`}
                   onChange={(iconKey) => {
@@ -220,6 +222,26 @@ export const CategoryCityGrid = ({
                   onChange={() => {
                     if (locked) return;
                     onToggleUse(data);
+                  }}
+                />
+              </S.AdminCellBox>
+            )}
+          />
+          <Column
+            caption="로그인 필요"
+            width={96}
+            alignment="center"
+            cellRender={(data) => (
+              <S.AdminCellBox>
+                <InputCheckbox
+                  value="1"
+                  checked={!!data.data.loginRequired}
+                  themeType="admin"
+                  layout="row"
+                  disabled={locked || data.data.useYn !== "Y"}
+                  onChange={() => {
+                    if (locked || data.data.useYn !== "Y") return;
+                    onToggleLoginRequired(data);
                   }}
                 />
               </S.AdminCellBox>
@@ -265,19 +287,19 @@ export const CategoryCityGrid = ({
                       cityOnly
                         ? "전역 공통코드에서는 숨김이고 이 지역에서만 노출되는 카테고리입니다."
                         : globalHidden
-                        ? "전역 공통코드에서 숨김 상태라 지금은 어디에도 보이지 않습니다."
-                        : data.data.overridden
-                        ? "이 지역 전용 설정이 저장돼 있습니다."
-                        : "전역 공통코드 설정을 그대로 따릅니다."
+                          ? "전역 공통코드에서 숨김 상태라 지금은 어디에도 보이지 않습니다."
+                          : data.data.overridden
+                            ? "이 지역 전용 설정이 저장돼 있습니다."
+                            : "전역 공통코드 설정을 그대로 따릅니다."
                     }
                   >
                     {cityOnly
                       ? "이 지역 전용"
                       : globalHidden
-                      ? "전역 숨김"
-                      : data.data.overridden
-                      ? "지역 설정"
-                      : "전역"}
+                        ? "전역 숨김"
+                        : data.data.overridden
+                          ? "지역 설정"
+                          : "전역"}
                   </S.OverrideBadge>
                 </S.AdminCellBox>
               );

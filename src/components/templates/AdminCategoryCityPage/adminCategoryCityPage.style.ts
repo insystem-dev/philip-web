@@ -93,6 +93,75 @@ export const BarButtons = styled.div`
   flex: none;
 `;
 
+/** 지역의 카테고리 접근 정책 — 전체 허용과 개별 로그인 제한 관계를 한눈에 보여준다. */
+export const AccessPolicyCard = styled.section<{ $allAllowed: boolean }>`
+  display: flex;
+  min-height: 72px;
+  padding: 13px 18px;
+  margin-bottom: 16px;
+  border: 1px solid
+    ${(props) =>
+      props.$allAllowed
+        ? props.theme.colors.adminDivider
+        : "rgba(68, 98, 255, 0.42)"};
+  border-left: 3px solid
+    ${(props) =>
+      props.$allAllowed
+        ? props.theme.colors.adminInputBorder
+        : props.theme.colors.primary};
+  border-radius: 4px;
+  background: ${(props) =>
+    props.$allAllowed ? props.theme.colors.white : "rgba(68, 98, 255, 0.045)"};
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+`;
+
+export const AccessPolicyCopy = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+
+  strong {
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  span {
+    color: ${(props) => props.theme.colors.adminLabelTxt};
+    font-size: 1.12rem;
+    line-height: 1.45;
+  }
+`;
+
+export const AccessPolicyLabel = styled.span`
+  color: ${(props) => props.theme.colors.primary} !important;
+  font-size: 1.05rem !important;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+`;
+
+export const AccessPolicyToggle = styled.div<{ $locked: boolean }>`
+  display: flex;
+  min-width: 124px;
+  height: 40px;
+  padding: 0 13px;
+  border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+  border-radius: 4px;
+  background: ${(props) => props.theme.colors.adminInputBg};
+  align-items: center;
+  justify-content: center;
+  opacity: ${(props) => (props.$locked ? 0.62 : 1)};
+  flex: none;
+
+  input,
+  .displayValue {
+    cursor: ${(props) => (props.$locked ? "not-allowed" : "pointer")} !important;
+  }
+`;
+
 /**
  * 카테고리 추가 패널 — 공통코드 관리(AdminCodePage)의 추가 바와 같은 그레이 박스 규격이되,
  * 모드가 둘이라 한 줄에 담지 않고 상단 모드 탭 + 본문 구조로 편다.

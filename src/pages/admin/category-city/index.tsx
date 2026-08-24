@@ -29,8 +29,7 @@ const normalizeSort = (rows: CategoryCitySetting[]): CategoryCitySetting[] => {
   const seq = new Map<string, number>();
   return [...rows]
     .sort(
-      (a, b) =>
-        a.sort - b.sort || a.categoryCode.localeCompare(b.categoryCode)
+      (a, b) => a.sort - b.sort || a.categoryCode.localeCompare(b.categoryCode)
     )
     .map((row) => {
       const key = row.parentCode ?? "";
@@ -52,8 +51,7 @@ const moveWithinSiblings = (
   const siblings = rows
     .filter((row) => row.parentCode === target.parentCode)
     .sort(
-      (a, b) =>
-        a.sort - b.sort || a.categoryCode.localeCompare(b.categoryCode)
+      (a, b) => a.sort - b.sort || a.categoryCode.localeCompare(b.categoryCode)
     );
 
   const from = siblings.findIndex((row) => row.categoryCode === categoryCode);
@@ -80,6 +78,7 @@ const AdminCategoryCity = () => {
   const [cityCode, setCityCode] = useState("");
   /** 저장 전까지의 화면 편집본 — 저장 버튼에서 전 항목을 한 번에 전송한다 */
   const [draft, setDraft] = useState<CategoryCitySetting[]>([]);
+  const [allCategoriesAllowed, setAllCategoriesAllowed] = useState(true);
   /** 이름·노출·순서 편집 모드 — 읽기 모드에서는 그리드가 잠긴다 */
   const [isEditMode, setIsEditMode] = useState(false);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
@@ -174,16 +173,16 @@ const AdminCategoryCity = () => {
   );
 
   /** 저장 여부 판단 기준이 되는 서버 원본(순서 재번호 적용본) */
-  const baseline = useMemo(
-    () => normalizeSort(settings ?? []),
-    [settings]
-  );
+  const baseline = useMemo(() => normalizeSort(settings ?? []), [settings]);
+  const baselineAllCategoriesAllowed = baseline[0]?.allAllowed ?? true;
 
   useEffect(() => {
     setDraft(baseline);
-  }, [baseline]);
+    setAllCategoriesAllowed(baselineAllCategoriesAllowed);
+  }, [baseline, baselineAllCategoriesAllowed]);
 
   const isDirty = useMemo(() => {
+    if (allCategoriesAllowed !== baselineAllCategoriesAllowed) return true;
     if (draft.length !== baseline.length) return true;
     const baseMap = new Map(baseline.map((row) => [row.categoryCode, row]));
     return draft.some((row) => {
@@ -192,12 +191,13 @@ const AdminCategoryCity = () => {
         !base ||
         base.sort !== row.sort ||
         base.useYn !== row.useYn ||
+        base.loginRequired !== row.loginRequired ||
         base.name !== row.name ||
         base.iconKey !== row.iconKey ||
         base.iconOverridden !== row.iconOverridden
       );
     });
-  }, [draft, baseline]);
+  }, [draft, baseline, allCategoriesAllowed, baselineAllCategoriesAllowed]);
 
   /** 하위를 가진 행 key — 수정모드 진입 시 전체 펼치기에 쓴다 */
   const expandableRowKeys = useMemo(
@@ -251,7 +251,7 @@ const AdminCategoryCity = () => {
   };
 
   const pendingHideName = pendingHideCode
-    ? rowByCode.get(pendingHideCode)?.name ?? pendingHideCode
+    ? (rowByCode.get(pendingHideCode)?.name ?? pendingHideCode)
     : null;
 
   const saveMutation = useMutation(updateCategoryCitySettingApi, {
@@ -329,6 +329,7 @@ const AdminCategoryCity = () => {
   /** 취소 — 편집본을 서버 원본으로 되돌리고 읽기 모드로 돌아간다 */
   const onCancelEdit = () => {
     setDraft(baseline);
+    setAllCategoriesAllowed(baselineAllCategoriesAllowed);
     setIsEditMode(false);
     setExpandedRowKeys([]);
     setError("");
@@ -347,6 +348,7 @@ const AdminCategoryCity = () => {
     setCityCode(code);
     // 이전 지역의 편집본이 잠깐 남아 보이지 않도록 비우고 새 조회 결과를 기다린다
     setDraft([]);
+    setAllCategoriesAllowed(true);
     setIsEditMode(false);
     setExpandedRowKeys([]);
     setError("");
@@ -368,10 +370,7 @@ const AdminCategoryCity = () => {
    * 카테고리 이름 입력 — 편집본만 갱신하고 저장 버튼에서 함께 전송한다.
    * sub_nm 은 지역 오버라이드가 없는 전역값이라 저장하면 전 지역에 반영된다.
    */
-  const onChangeName = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    data: any
-  ) => {
+  const onChangeName = (e: React.ChangeEvent<HTMLInputElement>, data: any) => {
     if (!isEditMode) return;
     const { value } = e.target;
     const categoryCode = data.data.categoryCode;
@@ -414,12 +413,49 @@ const AdminCategoryCity = () => {
     setDraft((current) =>
       current.map((row) =>
         row.categoryCode === categoryCode
-          ? { ...row, useYn: row.useYn === "Y" ? "N" : "Y" }
+          ? {
+              ...row,
+              useYn: row.useYn === "Y" ? "N" : "Y",
+              ...(row.useYn === "Y" && { loginRequired: false }),
+            }
           : row
       )
     );
   };
 
+  /** 카테고리별 로그인 필요 설정 — 하나라도 켜지면 전체 허용은 자동 해제된다. */
+  const onToggleLoginRequired = (data: any) => {
+    if (!isEditMode || data.data.useYn !== "Y") return;
+    const categoryCode = data.data.categoryCode;
+    setNotice("");
+    setAllCategoriesAllowed(false);
+    setDraft((current) =>
+      current.map((row) =>
+        row.categoryCode === categoryCode
+          ? { ...row, loginRequired: !row.loginRequired }
+          : row
+      )
+    );
+  };
+
+  /** 전체 허용은 명시적으로 끌 수 있고, 다시 켤 때 모든 개별 제한을 해제한다. */
+  const onAllowAllCategories = () => {
+    if (!isEditMode) return;
+    setNotice("");
+    setAllCategoriesAllowed((current) => {
+      if (!current) {
+        setDraft((rows) =>
+          rows.map((row) => ({ ...row, loginRequired: false }))
+        );
+      }
+      return !current;
+    });
+  };
+
+  const loginRequiredCount = useMemo(
+    () => draft.filter((row) => row.loginRequired).length,
+    [draft]
+  );
   const onToggleUse = (data: any) => {
     if (!isEditMode) return;
     const categoryCode = data.data.categoryCode;
@@ -479,10 +515,7 @@ const AdminCategoryCity = () => {
     });
   };
 
-  const onChangeSort = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    data: any
-  ) => {
+  const onChangeSort = (e: React.ChangeEvent<HTMLSelectElement>, data: any) => {
     if (!isEditMode) return;
     const targetIndex = Number(e.target.value);
     if (Number.isNaN(targetIndex)) return;
@@ -505,11 +538,13 @@ const AdminCategoryCity = () => {
     // 전량 재작성 API 이므로 화면의 전 항목을 항상 함께 보낸다
     saveMutation.mutate({
       cityCode,
+      allAllowed: allCategoriesAllowed,
       items: draft.map((row) => ({
         categoryCode: row.categoryCode,
         name: row.name.trim(),
         sort: row.sort,
         useYn: row.useYn,
+        loginRequired: row.loginRequired,
         ...(row.iconOverridden && { iconKey: row.iconKey }),
       })),
     });
@@ -547,6 +582,10 @@ const AdminCategoryCity = () => {
       onChangeIcon={onChangeIcon}
       onUseGlobalIcon={onUseGlobalIcon}
       onToggleUse={onToggleUse}
+      onToggleLoginRequired={onToggleLoginRequired}
+      allCategoriesAllowed={allCategoriesAllowed}
+      loginRequiredCount={loginRequiredCount}
+      onAllowAllCategories={onAllowAllCategories}
       onChangeSort={onChangeSort}
       onSave={onSave}
       isSaving={saveMutation.isLoading}

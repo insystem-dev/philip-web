@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   createPopupApi,
@@ -11,9 +11,13 @@ import {
 import { deletePreviewImagesAPI, uploadImagesAPI } from "@/apis/postsApi";
 import useApiError from "@/lib/hooks/useApiError";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
+import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
+import { getCategoryTreeApi } from "@/apis/categoryApi";
 import * as S from "./adminPopupPage.style";
 
 interface PopupDraft {
+  target: "CATEGORY_SELECTION" | "CATEGORY";
+  categoryCode: string;
   title: string;
   content: string;
   imageFilename: string | null;
@@ -25,6 +29,8 @@ interface PopupDraft {
 }
 
 const EMPTY_DRAFT: PopupDraft = {
+  target: "CATEGORY_SELECTION",
+  categoryCode: "",
   title: "",
   content: "",
   imageFilename: null,
@@ -84,6 +90,35 @@ export const AdminPopupPage = () => {
     onError: (error: any) => handleError(error),
   });
 
+  const { data: categories = [] } = useQuery(
+    ["popupCategories"],
+    getCategoryTreeApi,
+    {
+      retry: 1,
+      onError: (error: any) => handleError(error),
+    }
+  );
+
+  const categoryByCode = useMemo(
+    () => new Map(categories.map((category) => [category.oid, category])),
+    [categories]
+  );
+
+  const getCategoryLabel = (categoryCode: string | null) => {
+    if (!categoryCode) return "카테고리 선택 화면";
+    const path: string[] = [];
+    const visited = new Set<string>();
+    let current = categoryByCode.get(categoryCode);
+    while (current && !visited.has(current.oid)) {
+      visited.add(current.oid);
+      path.unshift(current.name);
+      current = current.parentOid
+        ? categoryByCode.get(current.parentOid)
+        : undefined;
+    }
+    return path.join(" > ") || categoryCode;
+  };
+
   const resetEditor = () => {
     if (draftUpload) deletePreviewImagesAPI(draftUpload).catch(() => undefined);
     setDraftUpload(null);
@@ -139,6 +174,8 @@ export const AdminPopupPage = () => {
     setDraftUpload(null);
     setEditing(popup);
     setDraft({
+      target: popup.categoryCode ? "CATEGORY" : "CATEGORY_SELECTION",
+      categoryCode: popup.categoryCode || "",
       title: popup.title,
       content: popup.content || "",
       imageFilename: popup.imageFilename,
@@ -197,6 +234,9 @@ export const AdminPopupPage = () => {
     const title = draft.title.trim();
     const sortOrder = Number(draft.sortOrder);
     if (!title) return setValidation("팝업 제목을 입력해 주세요.");
+    if (draft.target === "CATEGORY" && !draft.categoryCode) {
+      return setValidation("팝업을 노출할 카테고리를 선택해 주세요.");
+    }
     if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
       return setValidation(
         "노출 순서는 0부터 9999 사이의 정수로 입력해 주세요."
@@ -214,6 +254,7 @@ export const AdminPopupPage = () => {
       content: draft.content.trim() || null,
       imageFilename: draft.imageFilename,
       linkUrl: draft.linkUrl.trim() || null,
+      categoryCode: draft.target === "CATEGORY" ? draft.categoryCode : null,
       sortOrder,
       useYn: draft.useYn,
       startAt: toIsoDateTime(draft.startAt),
@@ -228,8 +269,8 @@ export const AdminPopupPage = () => {
           <div>
             <S.PageTitle>카테고리 화면 팝업</S.PageTitle>
             <S.Description>
-              사용 중이며 노출 기간에 해당하는 팝업이 /select/category에서
-              순서대로 표시됩니다.
+              카테고리 선택 화면과 카테고리별 메인 화면에 노출할 팝업을
+              관리합니다.
             </S.Description>
           </div>
           <S.PrimaryButton type="button" onClick={openNew}>
@@ -280,6 +321,10 @@ export const AdminPopupPage = () => {
                           </S.Status>
                           <S.Order>순서 {popup.sortOrder}</S.Order>
                         </S.CardTop>
+                        <S.TargetBadge $category={!!popup.categoryCode}>
+                          {popup.categoryCode ? "CATEGORY" : "SELECT"}
+                          <span>{getCategoryLabel(popup.categoryCode)}</span>
+                        </S.TargetBadge>
                         <S.CardTitle>{popup.title}</S.CardTitle>
                         <S.Period>
                           {formatDate(popup.startAt)} ~{" "}
@@ -330,6 +375,65 @@ export const AdminPopupPage = () => {
                 </button>
               </S.EditorHeader>
               <S.Form onSubmit={onSubmit}>
+                <S.Field>
+                  <label>
+                    노출 위치 <em>*</em>
+                  </label>
+                  <S.TargetMode role="radiogroup" aria-label="팝업 노출 위치">
+                    <S.TargetOption
+                      type="button"
+                      role="radio"
+                      aria-checked={draft.target === "CATEGORY_SELECTION"}
+                      $active={draft.target === "CATEGORY_SELECTION"}
+                      onClick={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          target: "CATEGORY_SELECTION",
+                          categoryCode: "",
+                        }))
+                      }
+                    >
+                      <strong>카테고리 선택 화면</strong>
+                      <span>/select/category</span>
+                    </S.TargetOption>
+                    <S.TargetOption
+                      type="button"
+                      role="radio"
+                      aria-checked={draft.target === "CATEGORY"}
+                      $active={draft.target === "CATEGORY"}
+                      onClick={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          target: "CATEGORY",
+                        }))
+                      }
+                    >
+                      <strong>특정 카테고리 메인</strong>
+                      <span>/main</span>
+                    </S.TargetOption>
+                  </S.TargetMode>
+                  <S.TargetHint>
+                    {draft.target === "CATEGORY_SELECTION"
+                      ? "기존처럼 카테고리를 고르기 전 화면에서 표시됩니다."
+                      : "선택한 카테고리로 들어오거나 메뉴에서 전환할 때 표시됩니다."}
+                  </S.TargetHint>
+                </S.Field>
+
+                {draft.target === "CATEGORY" && (
+                  <AdminCategoryDrilldown
+                    categories={categories}
+                    value={draft.categoryCode || undefined}
+                    allowAll
+                    label="노출 카테고리"
+                    onChange={(categoryCode) =>
+                      setDraft((current) => ({
+                        ...current,
+                        categoryCode,
+                      }))
+                    }
+                  />
+                )}
+
                 <S.Field>
                   <label htmlFor="popupTitle">
                     제목 <em>*</em>
