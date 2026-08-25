@@ -1,6 +1,7 @@
 import { AsideSection } from "@/components/organisms/AsideSection";
 import { BannerSection } from "@/components/organisms/BannerSection";
 import { ContentSection } from "@/components/organisms/ContentSection";
+import { ExchangeRateBox } from "@/components/molecules/ExchangeRateBox";
 
 import * as S from "./mainPage.style";
 
@@ -72,6 +73,9 @@ export const MainPage = ({
         category={category}
         getValue={getValue}
       />
+      <S.MobileExchangeRate>
+        <ExchangeRateBox />
+      </S.MobileExchangeRate>
       <ContentSection
         postItem={postItem}
         postListData={postListData}

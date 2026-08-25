@@ -17,6 +17,8 @@ interface AdminAccountPageProps {
   accountModal: boolean;
   /** 선택된 계정 데이터 */
   account: any;
+  /** ADMIN 계정 생성 모달 열기 */
+  onOpenCreate: () => void;
 }
 
 export const AdminAccountPage = ({
@@ -25,9 +27,17 @@ export const AdminAccountPage = ({
   openAccountModal,
   accountModal,
   account,
+  onOpenCreate,
 }: AdminAccountPageProps) => {
   return (
-    <AdminLayout title="관리자 설정">
+    <AdminLayout
+      title="관리자 계정 관리"
+      titleActions={
+        <S.CreateButton type="button" onClick={onOpenCreate}>
+          + ADMIN 관리자 생성
+        </S.CreateButton>
+      }
+    >
       <S.AdminAccountPage>
         <AdminAccountBox
           setAdminSearchKeyword={setAdminSearchKeyword}

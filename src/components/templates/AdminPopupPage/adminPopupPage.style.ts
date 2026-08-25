@@ -387,6 +387,75 @@ export const FieldRow = styled.div`
   }
 `;
 
+export const CheckOption = styled.label`
+  display: grid;
+  padding: 12px;
+  border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+  border-radius: 6px;
+  background: ${(props) => props.theme.colors.adminInputBg};
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  > span {
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+    border-radius: 4px;
+    background: #fff;
+  }
+
+  input:checked + span {
+    border-color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.primary};
+  }
+
+  input:checked + span::after {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    content: "";
+    transform: rotate(45deg);
+  }
+
+  input:focus-visible + span {
+    outline: 2px solid rgba(64, 84, 255, 0.3);
+    outline-offset: 2px;
+  }
+
+  > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  strong {
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    font-size: 1.2rem;
+  }
+
+  small {
+    color: ${(props) => props.theme.colors.adminLabelTxt};
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+`;
+
 export const TargetMode = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;

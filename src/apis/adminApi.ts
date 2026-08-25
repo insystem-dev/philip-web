@@ -12,6 +12,30 @@ export function signUpAPI(data: {
     .then((response) => response.data);
 }
 
+export interface CreateAdminAccountPayload {
+  adminId: string;
+  name: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+/** SUPER 관리자 전용 ADMIN 계정 생성 */
+export function createAdminAccountAPI(data: CreateAdminAccountPayload) {
+  return axiosInstance
+    .post("/admin/accounts", data)
+    .then((response) => response.data);
+}
+
+/** SUPER 관리자 전용 ADMIN 비밀번호 변경 */
+export function changeAdminPasswordAPI(
+  oid: string,
+  data: { password: string; passwordConfirm: string }
+) {
+  return axiosInstance
+    .put(`/admin/accounts/${oid}/password`, data)
+    .then((response) => response.data);
+}
+
 /** POST 로그인 */
 export function logInAPI(data: { adminId: string; password: string }) {
   return axiosInstance

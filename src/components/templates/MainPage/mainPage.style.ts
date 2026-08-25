@@ -71,10 +71,22 @@ export const MainLayout = styled.div`
     grid-template-areas:
       "BN"
       "AS"
+      "EX"
       "CT";
     grid-template-columns: 1fr;
-    grid-template-rows: max-content max-content max-content;
+    grid-template-rows: repeat(4, max-content);
     padding: 0 16px;
     gap: 16px;
+  }
+`;
+
+export const MobileExchangeRate = styled.div`
+  display: none;
+  grid-area: EX;
+
+  @media screen and (max-width: 768px) {
+    display: block;
+    width: calc(100vw - 32px);
+    justify-self: center;
   }
 `;

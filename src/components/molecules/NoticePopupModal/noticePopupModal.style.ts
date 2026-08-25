@@ -265,4 +265,9 @@ export const CloseButton = styled.button`
   &:hover {
     background: linear-gradient(145deg, #ffe69b, #d7ad48);
   }
+
+  &:only-child {
+    grid-column: 1 / -1;
+    border-left: 0;
+  }
 `;

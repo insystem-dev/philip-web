@@ -51,22 +51,22 @@ export const Label = styled.div`
 
 export const IconOptions = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 `;
 
 export const IconOption = styled.button<{ $active: boolean }>`
   display: grid;
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
   color: #2a3d49;
   background: white;
   border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
   border-radius: 8px;
-  grid-template-columns: 38px 1fr 18px;
+  grid-template-columns: 34px minmax(0, 1fr) 16px;
   text-align: left;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   transition: border-color 140ms ease, box-shadow 140ms ease,
     transform 140ms ease;
@@ -91,7 +91,7 @@ export const IconOption = styled.button<{ $active: boolean }>`
   }
 
   strong {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   small {

@@ -11,6 +11,7 @@ const shimmer = keyframes`
 
 export const ExchangeCard = styled.section`
   position: relative;
+  box-sizing: border-box;
   overflow: hidden;
   width: 100%;
   padding: 18px 18px 15px;
@@ -33,8 +34,13 @@ export const ExchangeCard = styled.section`
   }
 
   @media screen and (max-width: 768px) {
-    padding: 17px 16px 14px;
-    border-radius: 10px;
+    padding: 12px 14px 10px;
+    border-radius: 8px;
+
+    &::before {
+      right: 14px;
+      left: 14px;
+    }
   }
 `;
 
@@ -43,6 +49,10 @@ export const CardHeader = styled.header`
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+
+  @media screen and (max-width: 768px) {
+    align-items: center;
+  }
 `;
 
 export const Eyebrow = styled.p`
@@ -51,6 +61,12 @@ export const Eyebrow = styled.p`
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1rem;
   letter-spacing: 0.17em;
+
+  @media screen and (max-width: 768px) {
+    margin-bottom: 1px;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+  }
 `;
 
 export const Title = styled.h2`
@@ -58,6 +74,11 @@ export const Title = styled.h2`
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: -0.04em;
+
+  @media screen and (max-width: 768px) {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
 `;
 
 export const RefreshButton = styled.button<{ $loading: boolean }>`
@@ -95,6 +116,12 @@ export const RefreshButton = styled.button<{ $loading: boolean }>`
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+
+  @media screen and (max-width: 768px) {
+    width: 26px;
+    height: 26px;
+    font-size: 1.7rem;
+  }
 `;
 
 export const RateMeta = styled.div`
@@ -106,6 +133,12 @@ export const RateMeta = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+
+  @media screen and (max-width: 768px) {
+    min-height: 18px;
+    margin-top: 5px;
+    font-size: 0.95rem;
+  }
 `;
 
 export const StaleBadge = styled.span`
@@ -115,12 +148,21 @@ export const StaleBadge = styled.span`
   border: 1px solid rgba(230, 207, 140, 0.22);
   border-radius: 999px;
   font-size: 1rem;
+
+  @media screen and (max-width: 768px) {
+    padding: 2px 6px;
+    font-size: 0.9rem;
+  }
 `;
 
 export const RateList = styled.ul`
   display: flex;
   margin-top: 7px;
   flex-direction: column;
+
+  @media screen and (max-width: 768px) {
+    margin-top: 3px;
+  }
 `;
 
 export const RateRow = styled.li`
@@ -136,7 +178,9 @@ export const RateRow = styled.li`
   }
 
   @media screen and (max-width: 768px) {
-    min-height: 54px;
+    min-height: 42px;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    gap: 7px;
   }
 `;
 
@@ -170,6 +214,12 @@ export const CurrencyMark = styled.span<{
   font-size: 1.65rem;
   font-weight: 700;
   place-items: center;
+
+  @media screen and (max-width: 768px) {
+    width: 26px;
+    height: 26px;
+    font-size: 1.35rem;
+  }
 `;
 
 export const CurrencyName = styled.div`
@@ -188,6 +238,18 @@ export const CurrencyName = styled.div`
     color: rgba(255, 255, 255, 0.38);
     font-size: 1rem;
     letter-spacing: 0.05em;
+  }
+
+  @media screen and (max-width: 768px) {
+    gap: 0;
+
+    strong {
+      font-size: 1.15rem;
+    }
+
+    span {
+      font-size: 0.85rem;
+    }
   }
 `;
 
@@ -210,6 +272,18 @@ export const RateValue = styled.div`
     color: rgba(255, 255, 255, 0.46);
     font-size: 1.05rem;
   }
+
+  @media screen and (max-width: 768px) {
+    gap: 3px;
+
+    strong {
+      font-size: 1.45rem;
+    }
+
+    span {
+      font-size: 0.9rem;
+    }
+  }
 `;
 
 export const SourceNote = styled.p`
@@ -220,6 +294,12 @@ export const SourceNote = styled.p`
   line-height: 1.45;
   flex-direction: column;
   gap: 1px;
+
+  @media screen and (max-width: 768px) {
+    margin-top: 5px;
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
 `;
 
 export const SkeletonRow = styled.li`
@@ -251,6 +331,16 @@ export const SkeletonRow = styled.li`
       border-radius: 50%;
     }
   }
+
+  @media screen and (max-width: 768px) {
+    min-height: 42px;
+    grid-template-columns: 26px 1fr 68px;
+    gap: 7px;
+
+    span:first-child {
+      height: 26px;
+    }
+  }
 `;
 
 export const ErrorState = styled.div`
@@ -263,6 +353,10 @@ export const ErrorState = styled.div`
   justify-content: center;
   flex-direction: column;
   gap: 5px;
+
+  @media screen and (max-width: 768px) {
+    min-height: 118px;
+  }
 
   strong {
     color: rgba(255, 255, 255, 0.82);

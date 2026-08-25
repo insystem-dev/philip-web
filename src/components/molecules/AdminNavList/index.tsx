@@ -47,15 +47,15 @@ export const AdminNavList = () => {
       name: "방문자 수 관리",
       path: "/admin/visit",
     },
-    {
-      id: 5,
-      name: "관리자 설정",
-      path: "/admin/account",
-    },
   ];
 
   // SUPER 관리자 전용 메뉴
   if (admin?.role === "SUPER") {
+    menus.push({
+      id: 5,
+      name: "관리자 계정 관리",
+      path: "/admin/account",
+    });
     menus.push({
       id: 7,
       name: "환경설정",

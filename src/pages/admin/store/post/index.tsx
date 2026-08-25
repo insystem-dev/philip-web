@@ -14,7 +14,7 @@ import {
 
 import { useRouter } from "next/router";
 import useImage from "@/lib/hooks/useImage";
-import { isTelegramLinkInput, MessengerIconKey } from "@/lib/messenger";
+import { isMessengerLinkInput, MessengerIconKey } from "@/lib/messenger";
 
 const AdminPost = () => {
   const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
@@ -63,15 +63,20 @@ const AdminPost = () => {
       remark: yup.string(),
       messengerIconKey: yup
         .mixed<MessengerIconKey>()
-        .oneOf(["telegram", "custom"])
+        .oneOf(["telegram", "discord", "custom"])
         .default("telegram"),
       messengerLink: yup
         .string()
-        .max(500, "단체방 주소는 500자 이하로 입력해주세요")
+        .max(500, "메신저 주소는 500자 이하로 입력해주세요")
         .test(
-          "telegram-link",
-          "t.me 단체방 주소, 초대 링크 또는 @아이디를 입력해주세요",
-          (value) => isTelegramLinkInput(value)
+          "messenger-link",
+          "선택한 메신저 형식에 맞는 주소를 입력해주세요",
+          function (value) {
+            return isMessengerLinkInput(
+              value,
+              this.parent.messengerIconKey as MessengerIconKey
+            );
+          }
         ),
     })
     .required();
@@ -97,7 +102,7 @@ const AdminPost = () => {
       data.messengerIconKey === "custom" &&
       newMessengerImages.length === 0
     ) {
-      alert("직접 이미지를 선택한 경우 단체방 아이콘 이미지 1장을 등록해주세요.");
+      alert("직접 이미지를 선택한 경우 메신저 배너 이미지 1장을 등록해주세요.");
       return;
     }
     //방문자수 0 초기화

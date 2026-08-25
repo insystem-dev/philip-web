@@ -3,6 +3,7 @@ import { CopyButton } from "@/components/atoms/Button/CopyButton";
 import * as S from "./storeInfoBox.style";
 import IconPhone from "public/assets/svg/icon-phone.svg";
 import IconTelegram from "public/assets/svg/icon-telegram.svg";
+import IconDiscord from "public/assets/svg/icon-discord.svg";
 import Image from "next/image";
 // 조회수 임시 미노출로 아이콘도 함께 주석처리 (복구 시 아래 StoreViewBox 블록과 같이 해제)
 // import IconView from "public/assets/svg/icon-view.svg";
@@ -10,9 +11,15 @@ import Image from "next/image";
 export const StoreInfoBox = ({ post }: any) => {
   const messengerHref =
     typeof post?.messengerLink === "string" &&
-    /^https:\/\/t\.me\//i.test(post.messengerLink)
+    /^https:\/\/(?:t\.me|discord\.gg)\//i.test(post.messengerLink)
       ? post.messengerLink
       : null;
+  const messengerType =
+    post?.messengerIconKey === "discord" ||
+    /^https:\/\/discord\.gg\//i.test(messengerHref || "")
+      ? "discord"
+      : "telegram";
+  const messengerLabel = messengerType === "discord" ? "디스코드" : "텔레그램";
   const messengerImage = Array.isArray(post?.messengerImage)
     ? post.messengerImage[0]
     : post?.messengerImage;
@@ -51,7 +58,7 @@ export const StoreInfoBox = ({ post }: any) => {
             href={messengerHref}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            aria-label={`${post?.storeName || "업체"} 텔레그램 열기`}
+            aria-label={`${post?.storeName || "업체"} ${messengerLabel} 열기`}
             $hasBackgroundImage={hasMessengerBanner}
           >
             {hasMessengerBanner && (
@@ -65,13 +72,17 @@ export const StoreInfoBox = ({ post }: any) => {
               </S.MessengerBackground>
             )}
             {!hasMessengerBanner && (
-              <S.MessengerIcon>
-                <IconTelegram width={42} height={42} viewBox="0 0 24 24" />
+              <S.MessengerIcon $variant={messengerType}>
+                {messengerType === "discord" ? (
+                  <IconDiscord width={42} height={42} viewBox="0 0 24 24" />
+                ) : (
+                  <IconTelegram width={42} height={42} viewBox="0 0 24 24" />
+                )}
               </S.MessengerIcon>
             )}
             <S.MessengerCopy>
               <small>OFFICIAL GROUP CHAT</small>
-              <strong>텔레그램</strong>
+              <strong>{messengerLabel}</strong>
               <span>앱에서 바로 열기</span>
             </S.MessengerCopy>
             <S.MessengerArrow aria-hidden="true">↗</S.MessengerArrow>

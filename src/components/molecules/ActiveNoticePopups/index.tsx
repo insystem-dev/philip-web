@@ -44,6 +44,7 @@ export const ActiveNoticePopups = ({
     const today = getToday();
     const visible = (activePopups || []).filter(
       (popup) =>
+        popup.showTodayHideYn === "N" ||
         localStorage.getItem(`philip:popup:hidden:${popup.oid}`) !== today
     );
     setPopupQueue(visible);

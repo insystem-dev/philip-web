@@ -61,7 +61,7 @@ export const Shell = styled.div`
 
 export const Hero = styled.header`
   position: relative;
-  min-height: 380px;
+  min-height: 450px;
   overflow: hidden;
   padding: 44px 42px;
   color: #fff8df;
@@ -83,7 +83,7 @@ export const Hero = styled.header`
   }
 
   @media (max-width: 640px) {
-    min-height: 348px;
+    min-height: 440px;
     padding: 34px 24px 40px;
   }
 `;
@@ -103,13 +103,17 @@ export const Deadline = styled.span`
   z-index: 2;
   top: 38px;
   right: 36px;
-  padding: 8px 12px;
+  display: flex;
+  padding: 7px 12px;
   border: 1px solid rgba(255, 223, 93, 0.34);
   border-radius: 999px;
   color: #fff0ae;
   background: rgba(255, 222, 88, 0.08);
   font-size: 1.2rem;
   font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  flex-direction: column;
 
   @media (max-width: 640px) {
     top: 28px;
@@ -127,6 +131,18 @@ export const HeroTitle = styled.h1`
   line-height: 0.98;
   letter-spacing: -0.07em;
   text-shadow: 0 8px 34px rgba(0, 0, 0, 0.34);
+`;
+
+export const HeroEnglishTitle = styled.span`
+  display: block;
+  max-width: 440px;
+  margin-top: 12px;
+  color: rgba(255, 248, 223, 0.62);
+  font-family: "Roboto", "Noto Sans KR", sans-serif;
+  font-size: clamp(1.4rem, 3.4vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
 `;
 
 export const HeroCopy = styled.p`
@@ -147,6 +163,7 @@ export const HeroNote = styled.p`
   bottom: 28px;
   color: rgba(255, 255, 255, 0.46);
   font-size: 1.12rem;
+  line-height: 1.4;
 
   @media (max-width: 640px) {
     left: 24px;
@@ -312,11 +329,18 @@ export const CheckLabel = styled.label`
   cursor: pointer;
 
   input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-  > span { position: relative; width: 22px; height: 22px; flex: none; border: 1px solid #b7b3aa; border-radius: 6px; background: #fff; }
+  input + span { position: relative; width: 22px; height: 22px; flex: none; border: 1px solid #b7b3aa; border-radius: 6px; background: #fff; }
   input:checked + span { border-color: #173f74; background: #173f74; }
   input:checked + span::after { content: ""; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
   input:focus-visible + span { outline: 3px solid rgba(23, 63, 116, 0.18); outline-offset: 2px; }
   b { color: #a7213f; }
+`;
+
+export const CheckCopy = styled.span`
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
 `;
 
 export const Consent = styled.div`
@@ -341,6 +365,8 @@ export const FormError = styled.div`
   background: #fff0f3;
   font-size: 1.25rem;
   font-weight: 700;
+  line-height: 1.5;
+  white-space: pre-line;
 `;
 
 export const SubmitDock = styled.div`
@@ -362,7 +388,7 @@ export const SubmitDock = styled.div`
 export const SubmitButton = styled.button`
   display: flex;
   width: 100%;
-  height: 58px;
+  min-height: 66px;
   padding: 0 12px 0 20px;
   border: 0;
   border-radius: 12px;
@@ -378,6 +404,13 @@ export const SubmitButton = styled.button`
   i { display: grid; width: 38px; height: 38px; border-radius: 10px; color: #112944; background: #f4d54d; font-style: normal; font-size: 2rem; place-items: center; }
   &:hover { background: linear-gradient(110deg, #22528c, #0b2340); }
   &:disabled { opacity: 0.65; cursor: wait; }
+`;
+
+export const SubmitLabel = styled.span`
+  display: flex;
+  min-width: 0;
+  text-align: left;
+  flex-direction: column;
 `;
 
 export const SuccessBackdrop = styled.div`
@@ -443,7 +476,7 @@ export const Receipt = styled.div`
 
 export const KakaoButton = styled.button`
   width: 100%;
-  min-height: 50px;
+  min-height: 60px;
   border: 0;
   border-radius: 11px;
   color: #201c00;
@@ -456,10 +489,34 @@ export const KakaoButton = styled.button`
 export const DoneButton = styled.button`
   margin-top: 8px;
   width: 100%;
-  min-height: 44px;
+  min-height: 52px;
   border: 0;
   color: rgba(255, 255, 255, 0.66);
   background: transparent;
   font-size: 1.25rem;
   cursor: pointer;
+`;
+
+export const ButtonLabel = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+`;
+
+/** 모든 한글 문구 바로 아래에 배치하는 영어 보조 문구 */
+export const EnglishLine = styled.span`
+  && {
+    display: block;
+    margin-top: 2px;
+    color: inherit;
+    font-family: "Roboto", "Noto Sans KR", sans-serif;
+    font-size: 0.78em;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    opacity: 0.72;
+    word-break: keep-all;
+  }
 `;

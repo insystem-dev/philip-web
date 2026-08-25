@@ -88,9 +88,11 @@ export const NoticePopupModal = ({
         </S.Content>
 
         <S.Actions>
-          <S.TodayButton type="button" onClick={onHideToday}>
-            오늘 하루 보지 않기
-          </S.TodayButton>
+          {popup.showTodayHideYn !== "N" && (
+            <S.TodayButton type="button" onClick={onHideToday}>
+              오늘 하루 보지 않기
+            </S.TodayButton>
+          )}
           <S.CloseButton type="button" onClick={onClose}>
             닫기
           </S.CloseButton>

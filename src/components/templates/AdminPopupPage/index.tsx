@@ -24,6 +24,7 @@ interface PopupDraft {
   linkUrl: string;
   sortOrder: string;
   useYn: "Y" | "N";
+  showTodayHideYn: "Y" | "N";
   startAt: string;
   endAt: string;
 }
@@ -37,6 +38,7 @@ const EMPTY_DRAFT: PopupDraft = {
   linkUrl: "",
   sortOrder: "0",
   useYn: "Y",
+  showTodayHideYn: "Y",
   startAt: "",
   endAt: "",
 };
@@ -182,6 +184,7 @@ export const AdminPopupPage = () => {
       linkUrl: popup.linkUrl || "",
       sortOrder: String(popup.sortOrder),
       useYn: popup.useYn,
+      showTodayHideYn: popup.showTodayHideYn === "N" ? "N" : "Y",
       startAt: toLocalDateTime(popup.startAt),
       endAt: toLocalDateTime(popup.endAt),
     });
@@ -262,6 +265,7 @@ export const AdminPopupPage = () => {
       categoryCode: draft.target === "CATEGORY" ? draft.categoryCode : null,
       sortOrder,
       useYn: draft.useYn,
+      showTodayHideYn: draft.showTodayHideYn,
       startAt: toIsoDateTime(draft.startAt),
       endAt: toIsoDateTime(draft.endAt),
     });
@@ -556,6 +560,28 @@ export const AdminPopupPage = () => {
                     </select>
                   </S.Field>
                 </S.FieldRow>
+
+                <S.CheckOption>
+                  <input
+                    id="popupShowTodayHide"
+                    type="checkbox"
+                    checked={draft.showTodayHideYn === "Y"}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        showTodayHideYn: event.target.checked ? "Y" : "N",
+                      }))
+                    }
+                  />
+                  <span aria-hidden="true" />
+                  <div>
+                    <strong>‘오늘 하루 보지 않기’ 버튼 표시</strong>
+                    <small>
+                      기본으로 표시됩니다. 체크를 해제하면 팝업에는 ‘닫기’
+                      버튼만 보입니다.
+                    </small>
+                  </div>
+                </S.CheckOption>
 
                 <S.FieldRow>
                   <S.Field>

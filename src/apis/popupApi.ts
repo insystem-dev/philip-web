@@ -10,6 +10,8 @@ export interface PopupItem {
   categoryCode: string | null;
   sortOrder: number;
   useYn: "Y" | "N";
+  /** 사용자 팝업에 '오늘 하루 보지 않기' 버튼을 표시할지 여부 */
+  showTodayHideYn: "Y" | "N";
   startAt: string | null;
   endAt: string | null;
   createdAt: string;
