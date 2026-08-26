@@ -350,6 +350,113 @@ export const DetailSectionTitle = styled.h3`
   b { display: grid; width: 26px; height: 26px; border-radius: 7px; color: #193c68; background: #f0d65b; font-family: inherit; font-size: 1rem; place-items: center; }
 `;
 
+export const DetailPhotoTotal = styled.span`
+  display: inline-flex;
+  height: 22px;
+  padding: 0 8px;
+  margin-left: auto;
+  border-radius: 11px;
+  color: #385273;
+  background: #edf2f8;
+  font-size: 1rem;
+  font-weight: 800;
+  align-items: center;
+`;
+
+export const AdminPhotoGroups = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const AdminPhotoGroup = styled.div`
+  padding: 12px;
+  border: 1px solid #e5e7ec;
+  border-radius: 7px;
+  background: #f8f9fb;
+`;
+
+export const AdminPhotoGroupHead = styled.div`
+  display: flex;
+  min-height: 22px;
+  margin-bottom: 9px;
+  color: #555d6d;
+  align-items: center;
+  justify-content: space-between;
+
+  strong {
+    font-size: 1.15rem;
+  }
+
+  span {
+    color: #8b909b;
+    font-size: 1rem;
+  }
+`;
+
+export const AdminPhotoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+
+  button {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid #d9dde5;
+    border-radius: 6px;
+    background: #e8ebf0;
+    cursor: zoom-in;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.18s ease;
+  }
+
+  button > span {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 5px 3px;
+    color: #fff;
+    background: linear-gradient(transparent, rgba(7, 20, 37, 0.82));
+    font-size: 0.9rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+  }
+
+  button:hover img,
+  button:focus-visible img {
+    transform: scale(1.04);
+  }
+
+  button:hover > span,
+  button:focus-visible > span {
+    opacity: 1;
+  }
+
+  button:focus-visible {
+    outline: 3px solid rgba(68, 98, 255, 0.22);
+    outline-offset: 2px;
+  }
+`;
+
+export const AdminPhotoEmpty = styled.div`
+  display: grid;
+  min-height: 54px;
+  border: 1px dashed #d9dde5;
+  border-radius: 6px;
+  color: #9a9faa;
+  background: #fff;
+  font-size: 1.05rem;
+  place-items: center;
+`;
+
 export const EditGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -306,6 +306,179 @@ export const PhotoItem = styled.div`
   p { margin-top: 4px; color: #8a8479; font-size: 1.15rem; }
 `;
 
+export const PhotoUploadList = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const PhotoUploadGroup = styled.div`
+  padding: 15px;
+  border: 1px solid #e0dbd1;
+  border-radius: 13px;
+  background: #f7f4ed;
+
+  @media (max-width: 560px) {
+    padding: 13px;
+  }
+`;
+
+export const PhotoUploadHead = styled.div`
+  display: grid;
+  margin-bottom: 12px;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+
+  > span:first-child {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    color: #fff;
+    background: #173f74;
+    font-size: 1.05rem;
+    font-weight: 800;
+    place-items: center;
+  }
+
+  strong {
+    color: #353b4b;
+    font-size: 1.22rem;
+    line-height: 1.35;
+  }
+
+  p {
+    margin-top: 3px;
+    color: #858177;
+    font-size: 1.08rem;
+    line-height: 1.35;
+  }
+`;
+
+export const PhotoCount = styled.span<{ $full: boolean }>`
+  && {
+    display: inline-flex;
+    min-width: 38px;
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid
+      ${(props) => (props.$full ? "rgba(23, 63, 116, 0.2)" : "#ddd5c5")};
+    border-radius: 999px;
+    color: ${(props) => (props.$full ? "#173f74" : "#858177")};
+    background: ${(props) => (props.$full ? "#edf2f9" : "#fffdf8")};
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+export const PhotoPreviewGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+`;
+
+export const PhotoPreview = styled.figure`
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid #d6d0c5;
+  border-radius: 10px;
+  background: #e8e4dc;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+export const PhotoRemoveButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  padding: 0 0 2px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(16, 25, 39, 0.78);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  font-size: 1.8rem;
+  line-height: 1;
+  place-items: center;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid rgba(244, 213, 77, 0.7);
+    outline-offset: 1px;
+  }
+`;
+
+export const PhotoAddLabel = styled.label`
+  display: flex;
+  min-height: 92px;
+  aspect-ratio: 1;
+  border: 1px dashed #b8af9d;
+  border-radius: 10px;
+  color: #5e6470;
+  background: #fffdf8;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  b {
+    color: #173f74;
+    font-size: 2.2rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  > span {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  &:hover,
+  &:focus-within {
+    border-color: #173f74;
+    color: #173f74;
+    background: #f5f8fc;
+  }
+
+  &:focus-within {
+    box-shadow: 0 0 0 3px rgba(23, 63, 116, 0.1);
+  }
+`;
+
+export const PhotoUploadHint = styled.p`
+  margin: 11px 2px 0;
+  color: #7f7a71;
+  font-size: 1.08rem;
+  line-height: 1.5;
+`;
+
 export const Caution = styled.div`
   display: grid;
   margin: 12px 0;

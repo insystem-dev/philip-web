@@ -1,6 +1,14 @@
-import { FormEvent, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useMutation, useQuery } from "react-query";
 import {
+  BusinessRegistrationPhotoFiles,
   BusinessRegistrationPayload,
   BusinessRegistrationReceipt,
   createBusinessRegistrationApi,
@@ -15,14 +23,75 @@ const EMPTY_FORM: BusinessRegistrationPayload = {
   holiday: "",
   phone: "",
   kakaoId: "",
+  facebookId: "",
   location: "",
   oneLineIntro: "",
   servicesPrices: "",
   promotion: "",
-  photoDeliveryAgreed: false,
   privacyAgreed: false,
   website: "",
 };
+
+type PhotoField = keyof BusinessRegistrationPhotoFiles;
+
+interface SelectedPhoto {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
+
+const EMPTY_PHOTOS: Record<PhotoField, SelectedPhoto[]> = {
+  exteriorPhotos: [],
+  interiorPhotos: [],
+  menuPhotos: [],
+};
+
+const PHOTO_CONFIGS: Array<{
+  field: PhotoField;
+  title: string;
+  englishTitle: string;
+  description: string;
+  englishDescription: string;
+  limit: number;
+}> = [
+  {
+    field: "exteriorPhotos",
+    title: "업소 간판/외부 사진",
+    englishTitle: "Store Sign or Exterior",
+    description: "대표로 보일 사진",
+    englishDescription: "Main business photo",
+    limit: 1,
+  },
+  {
+    field: "interiorPhotos",
+    title: "내부 전경 사진",
+    englishTitle: "Interior Photos",
+    description: "공간과 분위기를 보여주세요",
+    englishDescription: "Show your space and atmosphere",
+    limit: 5,
+  },
+  {
+    field: "menuPhotos",
+    title: "선명한 메뉴판 사진",
+    englishTitle: "Clear Menu Photos",
+    description: "가격이 잘 보이는 사진",
+    englishDescription: "Make sure prices are readable",
+    limit: 5,
+  },
+];
+
+const MAX_PHOTO_SIZE = 16 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+]);
+const ALLOWED_PHOTO_EXTENSION = /\.(jpe?g|png|heic|heif)$/i;
+
+const isAllowedPhotoFile = (file: File) =>
+  ALLOWED_PHOTO_TYPES.has(file.type.toLowerCase()) ||
+  ALLOWED_PHOTO_EXTENSION.test(file.name);
 
 const getErrorMessage = (error: any) => {
   const responseMessage = error?.response?.data?.message;
@@ -35,10 +104,13 @@ const getErrorMessage = (error: any) => {
 
 export const SelfRegistrationPage = () => {
   const [form, setForm] = useState<BusinessRegistrationPayload>(EMPTY_FORM);
+  const [photoFiles, setPhotoFiles] =
+    useState<Record<PhotoField, SelectedPhoto[]>>(EMPTY_PHOTOS);
   const [receipt, setReceipt] = useState<BusinessRegistrationReceipt | null>(
     null
   );
   const [validation, setValidation] = useState("");
+  const previewUrlsRef = useRef(new Set<string>());
   const { data: contactKakaoId = "philip69" } = useQuery(
     ["getContactKakaoApi"],
     getContactKakaoApi,
@@ -62,6 +134,74 @@ export const SelfRegistrationPage = () => {
     value: BusinessRegistrationPayload[K]
   ) => setForm((current) => ({ ...current, [key]: value }));
 
+  useEffect(
+    () => () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.clear();
+    },
+    []
+  );
+
+  const clearPhotos = () => {
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrlsRef.current.clear();
+    setPhotoFiles(EMPTY_PHOTOS);
+  };
+
+  const addPhotos = (
+    field: PhotoField,
+    limit: number,
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (selectedFiles.length === 0) return;
+
+    const available = limit - photoFiles[field].length;
+    if (selectedFiles.length > available) {
+      setValidation(
+        `사진은 이 항목에 최대 ${limit}장까지 등록할 수 있습니다.\nYou can upload up to ${limit} photo${limit > 1 ? "s" : ""} in this section.`
+      );
+      return;
+    }
+    if (selectedFiles.some((file) => !isAllowedPhotoFile(file))) {
+      setValidation(
+        "JPG, PNG, HEIC 또는 HEIF 형식의 사진만 등록할 수 있습니다.\nOnly JPG, PNG, HEIC, or HEIF images can be uploaded."
+      );
+      return;
+    }
+    if (selectedFiles.some((file) => file.size > MAX_PHOTO_SIZE)) {
+      setValidation(
+        "사진 한 장의 용량은 16MB를 넘을 수 없습니다.\nEach photo must be 16MB or smaller."
+      );
+      return;
+    }
+
+    const nextPhotos = selectedFiles.map((file) => {
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.add(previewUrl);
+      return {
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+        file,
+        previewUrl,
+      };
+    });
+    setPhotoFiles((current) => ({
+      ...current,
+      [field]: [...current[field], ...nextPhotos],
+    }));
+    setValidation("");
+  };
+
+  const removePhoto = (field: PhotoField, photo: SelectedPhoto) => {
+    URL.revokeObjectURL(photo.previewUrl);
+    previewUrlsRef.current.delete(photo.previewUrl);
+    setPhotoFiles((current) => ({
+      ...current,
+      [field]: current[field].filter((item) => item.id !== photo.id),
+    }));
+  };
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setValidation("");
@@ -70,8 +210,7 @@ export const SelfRegistrationPage = () => {
       {
         id: "businessName",
         value: form.businessName,
-        message:
-          "업소명을 입력해 주세요.\nPlease enter the store name.",
+        message: "업소명을 입력해 주세요.\nPlease enter the store name.",
       },
       {
         id: "category",
@@ -82,8 +221,7 @@ export const SelfRegistrationPage = () => {
       {
         id: "businessHours",
         value: form.businessHours,
-        message:
-          "영업 시간을 입력해 주세요.\nPlease enter the business hours.",
+        message: "영업 시간을 입력해 주세요.\nPlease enter the business hours.",
       },
       {
         id: "location",
@@ -121,12 +259,6 @@ export const SelfRegistrationPage = () => {
       });
       return;
     }
-    if (!form.photoDeliveryAgreed) {
-      setValidation(
-        "사진 자료 전송 안내를 확인해 주세요.\nPlease confirm the photo submission instructions."
-      );
-      return;
-    }
     if (!form.privacyAgreed) {
       setValidation(
         "개인정보 수집 및 이용에 동의해 주세요.\nPlease agree to the collection and use of personal information."
@@ -135,17 +267,25 @@ export const SelfRegistrationPage = () => {
     }
 
     mutation.mutate({
-      ...form,
-      businessName: form.businessName.trim(),
-      category: form.category.trim(),
-      businessHours: form.businessHours.trim(),
-      holiday: form.holiday?.trim(),
-      phone: form.phone?.trim(),
-      kakaoId: form.kakaoId?.trim(),
-      location: form.location.trim(),
-      oneLineIntro: form.oneLineIntro.trim(),
-      servicesPrices: form.servicesPrices.trim(),
-      promotion: form.promotion?.trim(),
+      data: {
+        ...form,
+        businessName: form.businessName.trim(),
+        category: form.category.trim(),
+        businessHours: form.businessHours.trim(),
+        holiday: form.holiday?.trim(),
+        phone: form.phone?.trim(),
+        kakaoId: form.kakaoId?.trim(),
+        facebookId: form.facebookId?.trim(),
+        location: form.location.trim(),
+        oneLineIntro: form.oneLineIntro.trim(),
+        servicesPrices: form.servicesPrices.trim(),
+        promotion: form.promotion?.trim(),
+      },
+      photos: {
+        exteriorPhotos: photoFiles.exteriorPhotos.map((photo) => photo.file),
+        interiorPhotos: photoFiles.interiorPhotos.map((photo) => photo.file),
+        menuPhotos: photoFiles.menuPhotos.map((photo) => photo.file),
+      },
     });
   };
 
@@ -344,6 +484,22 @@ export const SelfRegistrationPage = () => {
                   onChange={(event) => setValue("kakaoId", event.target.value)}
                 />
               </S.Field>
+              <S.Field>
+                <label htmlFor="facebookId">
+                  페이스북 ID
+                  <S.EnglishLine>Facebook ID</S.EnglishLine>
+                </label>
+                <input
+                  id="facebookId"
+                  maxLength={100}
+                  autoComplete="off"
+                  placeholder="선택 입력 / Optional Facebook ID"
+                  value={form.facebookId}
+                  onChange={(event) =>
+                    setValue("facebookId", event.target.value)
+                  }
+                />
+              </S.Field>
               <S.Field $wide>
                 <label htmlFor="location">
                   구글맵 위치 또는 주소 <b>*</b>
@@ -398,14 +554,18 @@ export const SelfRegistrationPage = () => {
               <S.Field $wide>
                 <label htmlFor="servicesPrices">
                   주요 메뉴/서비스 및 가격 <b>*</b>
-                  <S.EnglishLine>Main Menu, Services &amp; Prices *</S.EnglishLine>
+                  <S.EnglishLine>
+                    Main Menu, Services &amp; Prices *
+                  </S.EnglishLine>
                 </label>
                 <textarea
                   id="servicesPrices"
                   required
                   maxLength={3000}
                   rows={5}
-                  placeholder={"대표 메뉴와 가격을 줄바꿈으로 적어주세요. / List each main item and price on a new line.\n예 / e.g. 삼겹살 1인분 / Pork belly, 1 serving ₱450"}
+                  placeholder={
+                    "대표 메뉴와 가격을 줄바꿈으로 적어주세요. / List each main item and price on a new line.\n예 / e.g. 삼겹살 1인분 / Pork belly, 1 serving ₱450"
+                  }
                   value={form.servicesPrices}
                   onChange={(event) =>
                     setValue("servicesPrices", event.target.value)
@@ -436,59 +596,87 @@ export const SelfRegistrationPage = () => {
               <S.Step>04</S.Step>
               <div>
                 <h2>
-                  사진 자료 전송
-                  <S.EnglishLine>Photo Submission</S.EnglishLine>
+                  사진 자료 등록
+                  <S.EnglishLine>Photo Upload</S.EnglishLine>
                 </h2>
                 <p>
-                  신청 완료 후 필립69 카카오 채팅방으로 보내주세요.
+                  사진을 선택하면 신청서와 함께 바로 등록됩니다.
                   <S.EnglishLine>
-                    After submitting, send the photos through the Philip69
-                    KakaoTalk chat.
+                    Selected photos will be uploaded with your application.
                   </S.EnglishLine>
                 </p>
               </div>
             </S.SectionHead>
-            <S.PhotoGuide>
-              <S.PhotoItem>
-                <span>1</span>
-                <div>
-                  <strong>
-                    업소 간판/외부 사진
-                    <S.EnglishLine>Store Sign or Exterior</S.EnglishLine>
-                  </strong>
-                  <p>
-                    1장
-                    <S.EnglishLine>1 photo</S.EnglishLine>
-                  </p>
-                </div>
-              </S.PhotoItem>
-              <S.PhotoItem>
-                <span>2</span>
-                <div>
-                  <strong>
-                    내부 전경 사진
-                    <S.EnglishLine>Interior</S.EnglishLine>
-                  </strong>
-                  <p>
-                    최대 5장
-                    <S.EnglishLine>Up to 5 photos</S.EnglishLine>
-                  </p>
-                </div>
-              </S.PhotoItem>
-              <S.PhotoItem>
-                <span>3</span>
-                <div>
-                  <strong>
-                    선명한 메뉴판 사진
-                    <S.EnglishLine>Clear Menu Photos</S.EnglishLine>
-                  </strong>
-                  <p>
-                    최대 5장
-                    <S.EnglishLine>Up to 5 photos</S.EnglishLine>
-                  </p>
-                </div>
-              </S.PhotoItem>
-            </S.PhotoGuide>
+            <S.PhotoUploadList>
+              {PHOTO_CONFIGS.map((config, index) => {
+                const selectedPhotos = photoFiles[config.field];
+                const canAdd = selectedPhotos.length < config.limit;
+                return (
+                  <S.PhotoUploadGroup key={config.field}>
+                    <S.PhotoUploadHead>
+                      <span>{index + 1}</span>
+                      <div>
+                        <strong>
+                          {config.title}
+                          <S.EnglishLine>{config.englishTitle}</S.EnglishLine>
+                        </strong>
+                        <p>
+                          {config.description}
+                          <S.EnglishLine>
+                            {config.englishDescription}
+                          </S.EnglishLine>
+                        </p>
+                      </div>
+                      <S.PhotoCount $full={!canAdd}>
+                        {selectedPhotos.length}/{config.limit}
+                      </S.PhotoCount>
+                    </S.PhotoUploadHead>
+                    <S.PhotoPreviewGrid>
+                      {selectedPhotos.map((photo) => (
+                        <S.PhotoPreview key={photo.id}>
+                          {/* 로컬 object URL 미리보기는 Next Image 최적화 대상이 아니다. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={photo.previewUrl} alt={photo.file.name} />
+                          <S.PhotoRemoveButton
+                            type="button"
+                            aria-label={`${photo.file.name} 삭제`}
+                            onClick={() => removePhoto(config.field, photo)}
+                          >
+                            ×
+                          </S.PhotoRemoveButton>
+                        </S.PhotoPreview>
+                      ))}
+                      {canAdd && (
+                        <S.PhotoAddLabel>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif"
+                            multiple={config.limit > 1}
+                            aria-label={`${config.title} 추가`}
+                            onChange={(event) =>
+                              addPhotos(config.field, config.limit, event)
+                            }
+                          />
+                          <b aria-hidden="true">+</b>
+                          <span>
+                            사진 추가
+                            <S.EnglishLine>Add Photo</S.EnglishLine>
+                          </span>
+                        </S.PhotoAddLabel>
+                      )}
+                    </S.PhotoPreviewGrid>
+                  </S.PhotoUploadGroup>
+                );
+              })}
+            </S.PhotoUploadList>
+            <S.PhotoUploadHint>
+              JPG·PNG·HEIC·HEIF 파일을 지원하며 사진 한 장당 최대 16MB입니다.
+              아이폰 사진은 등록 시 자동으로 변환·압축됩니다.
+              <S.EnglishLine>
+                JPG, PNG, HEIC, and HEIF are supported, up to 16MB each. iPhone
+                photos are automatically converted and compressed when uploaded.
+              </S.EnglishLine>
+            </S.PhotoUploadHint>
             <S.Caution>
               <strong>
                 촬영이 필요하신가요?
@@ -501,23 +689,6 @@ export const SelfRegistrationPage = () => {
                 </S.EnglishLine>
               </span>
             </S.Caution>
-            <S.CheckLabel>
-              <input
-                type="checkbox"
-                checked={form.photoDeliveryAgreed}
-                onChange={(event) =>
-                  setValue("photoDeliveryAgreed", event.target.checked)
-                }
-              />
-              <span aria-hidden="true" />
-              <S.CheckCopy>
-                신청 후 사진 자료를 카카오 채팅방으로 별도 전송하겠습니다.
-                <S.EnglishLine>
-                  I will send the photos separately through the KakaoTalk chat
-                  after submitting this form.
-                </S.EnglishLine>
-              </S.CheckCopy>
-            </S.CheckLabel>
           </S.Section>
 
           <S.Consent>
@@ -542,12 +713,12 @@ export const SelfRegistrationPage = () => {
               </S.CheckCopy>
             </S.CheckLabel>
             <p>
-              수집 항목: 업소 정보, 전화번호, 카카오톡 ID, 위치 · 이용 목적:
-              업소 등록 검토 및 연락
+              수집 항목: 업소 정보, 연락처, 카카오톡·페이스북 ID, 위치, 등록
+              사진 · 이용 목적: 업소 등록 검토 및 연락
               <S.EnglishLine>
-                Collected information: business details, phone number,
-                KakaoTalk ID and location · Purpose: registration review and
-                contact
+                Collected information: business details, contact information,
+                KakaoTalk and Facebook IDs, location and uploaded photos ·
+                Purpose: registration review and contact
               </S.EnglishLine>
             </p>
           </S.Consent>
@@ -595,7 +766,11 @@ export const SelfRegistrationPage = () => {
 
       {receipt && (
         <S.SuccessBackdrop role="presentation">
-          <S.SuccessModal role="dialog" aria-modal="true" aria-labelledby="success-title">
+          <S.SuccessModal
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="success-title"
+          >
             <S.SuccessMark aria-hidden="true">✓</S.SuccessMark>
             <S.SuccessKicker>APPLICATION RECEIVED</S.SuccessKicker>
             <h2 id="success-title">
@@ -603,11 +778,10 @@ export const SelfRegistrationPage = () => {
               <S.EnglishLine>Your application has been received!</S.EnglishLine>
             </h2>
             <p>
-              보내주신 내용을 확인해 48시간 이내에 연락드리겠습니다. 이제 사진
-              자료를 카카오 채팅방으로 보내주세요.
+              신청 내용과 등록한 사진을 확인해 48시간 이내에 연락드리겠습니다.
               <S.EnglishLine>
-                We will review your application and contact you within 48
-                hours. Please send your photos through the KakaoTalk chat.
+                We will review your application and uploaded photos, then
+                contact you within 48 hours.
               </S.EnglishLine>
             </p>
             <S.Receipt>
@@ -630,6 +804,7 @@ export const SelfRegistrationPage = () => {
               onClick={() => {
                 setReceipt(null);
                 setForm(EMPTY_FORM);
+                clearPhotos();
               }}
             >
               <S.ButtonLabel>

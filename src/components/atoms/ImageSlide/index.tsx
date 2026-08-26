@@ -19,9 +19,21 @@ const getTouchMidpoint = (touches: React.TouchList) => ({
   y: (touches[0].clientY + touches[1].clientY) / 2,
 });
 
-export const ImageSlide = ({ items }: any) => {
-  const [selectedId, setSelectedId] = useState(0);
-  const [viewerOpen, setViewerOpen] = useState(false);
+interface ImageSlideProps {
+  items: any[];
+  viewerOnly?: boolean;
+  initialIndex?: number;
+  onViewerClose?: () => void;
+}
+
+export const ImageSlide = ({
+  items,
+  viewerOnly = false,
+  initialIndex = 0,
+  onViewerClose,
+}: ImageSlideProps) => {
+  const [selectedId, setSelectedId] = useState(initialIndex);
+  const [viewerOpen, setViewerOpen] = useState(viewerOnly);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -79,7 +91,8 @@ export const ImageSlide = ({ items }: any) => {
     setViewerOpen(false);
     setZoom(1);
     resetPan();
-  }, [resetPan]);
+    onViewerClose?.();
+  }, [onViewerClose, resetPan]);
 
   useEffect(() => {
     if (!viewerOpen) return;
@@ -273,76 +286,82 @@ export const ImageSlide = ({ items }: any) => {
 
   return (
     <>
-      <S.ImageSlide>
-      <S.ImageSelected>
-        {/* 이미지가 없으면 빈 src 대신 렌더하지 않음 */}
-        {items?.[selectedId]?.filename && (
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}/${items[selectedId].filename}`}
-            layout="fill"
-            sizes="(max-width: 768px) 100vw, 505px"
-            priority={selectedId === 0}
-            alt="선택된 업체 이미지"
-          />
-        )}
-        <S.OpenViewerButton
-          type="button"
-          aria-label="선택한 사진을 전체 화면으로 보기"
-          onClick={() => setViewerOpen(true)}
-        />
-        <ButtonGroup justifyContent="space-between">
-          <Button
-            type="button"
-            width="30px"
-            height={50}
-            color="func"
-            layout="function"
-            onClick={onPrevImage}
-            disabled={selectedId === 0 ? true : false}
-          >
-            <IconArrowPrev />
-          </Button>
-          <Button
-            type="button"
-            width="30px"
-            height={50}
-            color="func"
-            layout="function"
-            onClick={onNextImage}
-            disabled={selectedId === items?.length - 1 ? true : false}
-          >
-            <IconArrowNext />
-          </Button>
-        </ButtonGroup>
-      </S.ImageSelected>
-
-      <S.ImageSlideList>
-        {items?.map((item: any, idx: number) => {
-          return (
-            <S.ImageSlideItem
-              key={idx}
-              $active={selectedId === idx}
-              onClick={() => {
-                onSelectImage(idx);
-                setViewerOpen(true);
-              }}
-            >
+      {!viewerOnly && (
+        <S.ImageSlide>
+          <S.ImageSelected>
+            {/* 이미지가 없으면 빈 src 대신 렌더하지 않음 */}
+            {items?.[selectedId]?.filename && (
               <Image
-                src={`${process.env.NEXT_PUBLIC_API_URL}/${item?.filename}`}
-                width={85}
-                height={62}
-                sizes="85px"
-                alt="업체 이미지"
+                src={`${process.env.NEXT_PUBLIC_API_URL}/${items[selectedId].filename}`}
+                layout="fill"
+                sizes="(max-width: 768px) 100vw, 505px"
+                priority={selectedId === 0}
+                alt="선택된 업체 이미지"
               />
-            </S.ImageSlideItem>
-          );
-        })}
-      </S.ImageSlideList>
-      </S.ImageSlide>
+            )}
+            <S.OpenViewerButton
+              type="button"
+              aria-label="선택한 사진을 전체 화면으로 보기"
+              onClick={() => setViewerOpen(true)}
+            />
+            <ButtonGroup justifyContent="space-between">
+              <Button
+                type="button"
+                width="30px"
+                height={50}
+                color="func"
+                layout="function"
+                onClick={onPrevImage}
+                disabled={selectedId === 0 ? true : false}
+              >
+                <IconArrowPrev />
+              </Button>
+              <Button
+                type="button"
+                width="30px"
+                height={50}
+                color="func"
+                layout="function"
+                onClick={onNextImage}
+                disabled={selectedId === items?.length - 1 ? true : false}
+              >
+                <IconArrowNext />
+              </Button>
+            </ButtonGroup>
+          </S.ImageSelected>
+
+          <S.ImageSlideList>
+            {items?.map((item: any, idx: number) => {
+              return (
+                <S.ImageSlideItem
+                  key={idx}
+                  $active={selectedId === idx}
+                  onClick={() => {
+                    onSelectImage(idx);
+                    setViewerOpen(true);
+                  }}
+                >
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/${item?.filename}`}
+                    width={85}
+                    height={62}
+                    sizes="85px"
+                    alt="업체 이미지"
+                  />
+                </S.ImageSlideItem>
+              );
+            })}
+          </S.ImageSlideList>
+        </S.ImageSlide>
+      )}
 
       {viewerOpen &&
         createPortal(
-          <S.ViewerBackdrop role="dialog" aria-modal="true" aria-label="사진 전체 화면 미리보기">
+          <S.ViewerBackdrop
+            role="dialog"
+            aria-modal="true"
+            aria-label="사진 전체 화면 미리보기"
+          >
             <S.ViewerTopBar>
               <S.ViewerCount>
                 <strong>{selectedId + 1}</strong>
@@ -379,7 +398,11 @@ export const ImageSlide = ({ items }: any) => {
                 const deltaX = touch.clientX - touchStartRef.current.x;
                 const deltaY = touch.clientY - touchStartRef.current.y;
                 touchStartRef.current = null;
-                if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+                if (
+                  Math.abs(deltaX) < 45 ||
+                  Math.abs(deltaX) < Math.abs(deltaY)
+                )
+                  return;
                 if (deltaX > 0) viewerPrev();
                 else viewerNext();
               }}
@@ -423,8 +446,10 @@ export const ImageSlide = ({ items }: any) => {
                   const drag = dragRef.current;
                   if (!drag || drag.pointerId !== event.pointerId) return;
 
-                  const maxX = (event.currentTarget.clientWidth * (zoom - 1)) / 2;
-                  const maxY = (event.currentTarget.clientHeight * (zoom - 1)) / 2;
+                  const maxX =
+                    (event.currentTarget.clientWidth * (zoom - 1)) / 2;
+                  const maxY =
+                    (event.currentTarget.clientHeight * (zoom - 1)) / 2;
                   const nextX = drag.originX + event.clientX - drag.startX;
                   const nextY = drag.originY + event.clientY - drag.startY;
 

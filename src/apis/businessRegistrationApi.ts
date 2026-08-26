@@ -12,13 +12,24 @@ export interface BusinessRegistrationPayload {
   holiday?: string;
   phone?: string;
   kakaoId?: string;
+  facebookId?: string;
   location: string;
   oneLineIntro: string;
   servicesPrices: string;
   promotion?: string;
-  photoDeliveryAgreed: boolean;
   privacyAgreed: boolean;
   website?: string;
+}
+
+export interface BusinessRegistrationPhotoFiles {
+  exteriorPhotos: File[];
+  interiorPhotos: File[];
+  menuPhotos: File[];
+}
+
+export interface BusinessRegistrationSubmission {
+  data: BusinessRegistrationPayload;
+  photos: BusinessRegistrationPhotoFiles;
 }
 
 export interface BusinessRegistrationReceipt {
@@ -35,10 +46,12 @@ export interface BusinessRegistrationItem {
   holiday: string | null;
   phone: string | null;
   kakaoId: string | null;
+  facebookId: string | null;
   location: string;
   oneLineIntro: string;
   servicesPrices: string;
   promotion: string | null;
+  photos: BusinessRegistrationPhoto[];
   photosReceivedYn: boolean;
   status: BusinessRegistrationStatus;
   adminMemo: string | null;
@@ -51,6 +64,17 @@ export interface BusinessRegistrationItem {
   updatedBy: string | null;
 }
 
+export type BusinessRegistrationPhotoType = "EXTERIOR" | "INTERIOR" | "MENU";
+
+export interface BusinessRegistrationPhoto {
+  type: BusinessRegistrationPhotoType;
+  filename: string;
+  originalName: string;
+  mimetype: string;
+  size: number;
+  fileExtension: string;
+}
+
 export type BusinessRegistrationUpdate = Pick<
   BusinessRegistrationItem,
   | "businessName"
@@ -59,6 +83,7 @@ export type BusinessRegistrationUpdate = Pick<
   | "holiday"
   | "phone"
   | "kakaoId"
+  | "facebookId"
   | "location"
   | "oneLineIntro"
   | "servicesPrices"
@@ -67,11 +92,27 @@ export type BusinessRegistrationUpdate = Pick<
   | "adminMemo"
 >;
 
-export function createBusinessRegistrationApi(
-  data: BusinessRegistrationPayload
-) {
+export function createBusinessRegistrationApi({
+  data,
+  photos,
+}: BusinessRegistrationSubmission) {
+  const formData = new FormData();
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    formData.append(key, typeof value === "boolean" ? String(value) : value);
+  });
+  photos.exteriorPhotos.forEach((file) =>
+    formData.append("exteriorPhotos", file)
+  );
+  photos.interiorPhotos.forEach((file) =>
+    formData.append("interiorPhotos", file)
+  );
+  photos.menuPhotos.forEach((file) => formData.append("menuPhotos", file));
+
   return axiosInstance
-    .post<BusinessRegistrationReceipt>("/business-registrations", data)
+    .post<BusinessRegistrationReceipt>("/business-registrations", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
     .then((response) => response.data);
 }
 

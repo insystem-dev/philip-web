@@ -1,8 +1,9 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   BusinessRegistrationItem,
   BusinessRegistrationListStatus,
+  BusinessRegistrationPhotoType,
   BusinessRegistrationUpdate,
   getBusinessRegistrationsApi,
   registerBusinessRegistrationApi,
@@ -14,6 +15,7 @@ import {
   getCityListApi,
 } from "@/apis/categoryApi";
 import { AdminCategoryDrilldown } from "@/components/molecules/AdminCategoryDrilldown";
+import { ImageSlide } from "@/components/atoms/ImageSlide";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
 import * as S from "./adminBusinessRegistrationPage.style";
 
@@ -30,6 +32,23 @@ const FILTER_OPTIONS: Array<{
   { value: "COMPLETED", label: "등록 완료만 보기" },
   { value: "ALL", label: "전체 보기" },
 ];
+
+const PHOTO_GROUPS: Array<{
+  type: BusinessRegistrationPhotoType;
+  label: string;
+}> = [
+  { type: "EXTERIOR", label: "업소 간판/외부" },
+  { type: "INTERIOR", label: "내부 전경" },
+  { type: "MENU", label: "메뉴판" },
+];
+
+const getPhotoUrl = (filename: string) => {
+  const apiBase = String(process.env.NEXT_PUBLIC_API_URL ?? "").replace(
+    /\/$/,
+    ""
+  );
+  return `${apiBase}/${encodeURIComponent(filename)}`;
+};
 
 const formatDate = (value?: string | null) =>
   value
@@ -51,6 +70,7 @@ const toDraft = (
   holiday: item.holiday || "",
   phone: item.phone || "",
   kakaoId: item.kakaoId || "",
+  facebookId: item.facebookId || "",
   location: item.location,
   oneLineIntro: item.oneLineIntro,
   servicesPrices: item.servicesPrices,
@@ -68,14 +88,15 @@ export const AdminBusinessRegistrationPage = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] =
     useState<BusinessRegistrationListStatus>("RECEIVED");
-  const [selected, setSelected] =
-    useState<BusinessRegistrationItem | null>(null);
-  const [draft, setDraft] =
-    useState<BusinessRegistrationUpdate | null>(null);
+  const [selected, setSelected] = useState<BusinessRegistrationItem | null>(
+    null
+  );
+  const [draft, setDraft] = useState<BusinessRegistrationUpdate | null>(null);
   const [targetCityOid, setTargetCityOid] = useState("");
   const [targetCategoryOid, setTargetCategoryOid] = useState("");
   const [validation, setValidation] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [photoViewerIndex, setPhotoViewerIndex] = useState<number | null>(null);
 
   const {
     data = [],
@@ -115,6 +136,14 @@ export const AdminBusinessRegistrationPage = () => {
     [allItems]
   );
   const isCompleted = selected?.status === "COMPLETED";
+  const uploadedPhotoCount = selected?.photos?.length ?? 0;
+  const hasUploadedPhotos = uploadedPhotoCount > 0;
+  const viewerPhotos = selected?.photos ?? [];
+
+  const closeDetail = useCallback(() => {
+    setPhotoViewerIndex(null);
+    setSelected(null);
+  }, []);
 
   const refreshLists = () => {
     queryClient.invalidateQueries(["businessRegistrations"]);
@@ -164,7 +193,7 @@ export const AdminBusinessRegistrationPage = () => {
   useEffect(() => {
     if (!selected) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelected(null);
+      if (event.key === "Escape" && photoViewerIndex === null) closeDetail();
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", closeOnEscape);
@@ -172,7 +201,7 @@ export const AdminBusinessRegistrationPage = () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [selected]);
+  }, [closeDetail, photoViewerIndex, selected]);
 
   useEffect(() => {
     if (!selected || isCompleted || targetCityOid || cityOptions.length === 0) {
@@ -202,6 +231,7 @@ export const AdminBusinessRegistrationPage = () => {
   }, [draft?.category, targetCategoryOid, visibleCategories]);
 
   const openDetail = (item: BusinessRegistrationItem) => {
+    setPhotoViewerIndex(null);
     setSelected(item);
     setDraft(toDraft(item));
     setTargetCityOid("");
@@ -216,9 +246,7 @@ export const AdminBusinessRegistrationPage = () => {
     key: K,
     value: BusinessRegistrationUpdate[K]
   ) =>
-    setDraft((current) =>
-      current ? { ...current, [key]: value } : current
-    );
+    setDraft((current) => (current ? { ...current, [key]: value } : current));
 
   const validateDraft = () => {
     if (!draft) return "신청 정보를 불러오지 못했습니다.";
@@ -281,7 +309,8 @@ export const AdminBusinessRegistrationPage = () => {
     }
 
     const cityName =
-      cityOptions.find((city) => city.oid === targetCityOid)?.name || "선택 지역";
+      cityOptions.find((city) => city.oid === targetCityOid)?.name ||
+      "선택 지역";
     const categoryName =
       visibleCategories.find((category) => category.oid === targetCategoryOid)
         ?.name || "선택 카테고리";
@@ -329,7 +358,9 @@ export const AdminBusinessRegistrationPage = () => {
           <S.Campaign>
             <span>APPLICATION → STORE</span>
             <strong>검토 후 한 번에 업체 등록</strong>
-            <p>신청 내용을 다듬고 지역·카테고리만 선택하면 업체로 전환됩니다.</p>
+            <p>
+              신청 내용을 다듬고 지역·카테고리만 선택하면 업체로 전환됩니다.
+            </p>
           </S.Campaign>
         </S.Summary>
 
@@ -383,8 +414,8 @@ export const AdminBusinessRegistrationPage = () => {
               {status === "RECEIVED"
                 ? "처리할 신청 목록"
                 : status === "COMPLETED"
-                ? "등록 완료 목록"
-                : "전체 신청 목록"}
+                  ? "등록 완료 목록"
+                  : "전체 신청 목록"}
             </strong>
             <span>최신 신청 순</span>
           </S.TableHead>
@@ -416,10 +447,21 @@ export const AdminBusinessRegistrationPage = () => {
                         <S.BusinessName>{item.businessName}</S.BusinessName>
                       </td>
                       <td>{item.category}</td>
-                      <td>{item.phone || item.kakaoId || "-"}</td>
                       <td>
-                        <S.PhotoBadge $received={item.photosReceivedYn}>
-                          {item.photosReceivedYn ? "수신 완료" : "수신 대기"}
+                        {item.phone || item.kakaoId || item.facebookId || "-"}
+                      </td>
+                      <td>
+                        <S.PhotoBadge
+                          $received={
+                            (item.photos?.length ?? 0) > 0 ||
+                            item.photosReceivedYn
+                          }
+                        >
+                          {(item.photos?.length ?? 0) > 0
+                            ? `${item.photos.length}장 업로드`
+                            : item.photosReceivedYn
+                              ? "별도 수신"
+                              : "미등록"}
                         </S.PhotoBadge>
                       </td>
                       <td>
@@ -448,7 +490,7 @@ export const AdminBusinessRegistrationPage = () => {
         <S.Backdrop
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setSelected(null);
+            if (event.target === event.currentTarget) closeDetail();
           }}
         >
           <S.DetailPanel
@@ -467,7 +509,7 @@ export const AdminBusinessRegistrationPage = () => {
               <button
                 type="button"
                 aria-label="상세 닫기"
-                onClick={() => setSelected(null)}
+                onClick={closeDetail}
               >
                 ×
               </button>
@@ -479,21 +521,25 @@ export const AdminBusinessRegistrationPage = () => {
                   <span>{isCompleted ? "✓" : "01"}</span>
                   <div>
                     <small>처리 상태</small>
-                    <strong>{isCompleted ? "업체 등록 완료" : "신청 접수"}</strong>
+                    <strong>
+                      {isCompleted ? "업체 등록 완료" : "신청 접수"}
+                    </strong>
                   </div>
                 </S.ReadonlyStatus>
                 <S.PhotoCheck>
                   <input
                     id="photosReceived"
                     type="checkbox"
-                    checked={draft.photosReceivedYn}
-                    disabled={isCompleted}
+                    checked={hasUploadedPhotos || draft.photosReceivedYn}
+                    disabled={isCompleted || hasUploadedPhotos}
                     onChange={(event) =>
                       setValue("photosReceivedYn", event.target.checked)
                     }
                   />
                   <label htmlFor="photosReceived">
-                    사진 자료를 카카오톡으로 받았습니다
+                    {hasUploadedPhotos
+                      ? `신청자가 사진 ${uploadedPhotoCount}장을 직접 등록했습니다`
+                      : "사진 자료를 카카오톡 등으로 별도 수신했습니다"}
                   </label>
                 </S.PhotoCheck>
               </S.AdminStateRow>
@@ -592,6 +638,17 @@ export const AdminBusinessRegistrationPage = () => {
                       }
                     />
                   </S.EditField>
+                  <S.EditField>
+                    <label htmlFor="adminFacebook">페이스북 ID</label>
+                    <input
+                      id="adminFacebook"
+                      disabled={isCompleted}
+                      value={draft.facebookId || ""}
+                      onChange={(event) =>
+                        setValue("facebookId", event.target.value)
+                      }
+                    />
+                  </S.EditField>
                   <S.EditField $wide>
                     <label htmlFor="adminLocation">
                       구글맵 위치 또는 주소 *
@@ -654,10 +711,65 @@ export const AdminBusinessRegistrationPage = () => {
                 </S.EditGrid>
               </S.DetailSection>
 
+              <S.DetailSection>
+                <S.DetailSectionTitle>
+                  <b>04</b> 신청 사진
+                  <S.DetailPhotoTotal>
+                    {uploadedPhotoCount}장
+                  </S.DetailPhotoTotal>
+                </S.DetailSectionTitle>
+                <S.AdminPhotoGroups>
+                  {PHOTO_GROUPS.map((group) => {
+                    const photos = (selected.photos ?? []).filter(
+                      (photo) => photo.type === group.type
+                    );
+                    return (
+                      <S.AdminPhotoGroup key={group.type}>
+                        <S.AdminPhotoGroupHead>
+                          <strong>{group.label}</strong>
+                          <span>{photos.length}장</span>
+                        </S.AdminPhotoGroupHead>
+                        {photos.length === 0 ? (
+                          <S.AdminPhotoEmpty>
+                            등록된 사진 없음
+                          </S.AdminPhotoEmpty>
+                        ) : (
+                          <S.AdminPhotoGrid>
+                            {photos.map((photo) => (
+                              <button
+                                key={photo.filename}
+                                type="button"
+                                title={`${photo.originalName} 전체 화면으로 보기`}
+                                aria-label={`${photo.originalName || group.label} 전체 화면으로 보기`}
+                                onClick={() =>
+                                  setPhotoViewerIndex(
+                                    viewerPhotos.findIndex(
+                                      (item) => item.filename === photo.filename
+                                    )
+                                  )
+                                }
+                              >
+                                {/* 운영 API의 동적 업로드 파일은 원본 비율 그대로 확인한다. */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={getPhotoUrl(photo.filename)}
+                                  alt={photo.originalName || group.label}
+                                />
+                                <span>확대 보기</span>
+                              </button>
+                            ))}
+                          </S.AdminPhotoGrid>
+                        )}
+                      </S.AdminPhotoGroup>
+                    );
+                  })}
+                </S.AdminPhotoGroups>
+              </S.DetailSection>
+
               {!isCompleted && (
                 <S.DetailSection $accent>
                   <S.DetailSectionTitle>
-                    <b>04</b> 실제 업체 등록 대상
+                    <b>05</b> 실제 업체 등록 대상
                   </S.DetailSectionTitle>
                   <S.TargetGuide>
                     <span>
@@ -699,9 +811,9 @@ export const AdminBusinessRegistrationPage = () => {
                   <S.TransferPreview>
                     <span>자동 입력</span>
                     <p>
-                      상호명, 주소, 연락처, 영업시간, 메뉴·가격, 프로모션이
-                      업체 정보로 전달됩니다. 사진은 등록 후 업체 수정 화면에서
-                      추가할 수 있습니다.
+                      상호명, 주소, 연락처, 영업시간, 메뉴·가격, 프로모션이 업체
+                      정보로 전달됩니다. 신청자가 직접 등록한 사진도
+                      대표·상세·메뉴 이미지로 자동 연결됩니다.
                     </p>
                   </S.TransferPreview>
                 </S.DetailSection>
@@ -709,7 +821,7 @@ export const AdminBusinessRegistrationPage = () => {
 
               <S.DetailSection>
                 <S.DetailSectionTitle>
-                  <b>{isCompleted ? "04" : "05"}</b> 관리자 메모
+                  <b>{isCompleted ? "05" : "06"}</b> 관리자 메모
                 </S.DetailSectionTitle>
                 <S.EditField>
                   <label htmlFor="adminMemo">내부 확인사항</label>
@@ -741,7 +853,7 @@ export const AdminBusinessRegistrationPage = () => {
               )}
 
               <S.DetailActions>
-                <button type="button" onClick={() => setSelected(null)}>
+                <button type="button" onClick={closeDetail}>
                   닫기
                 </button>
                 {!isCompleted && (
@@ -773,6 +885,15 @@ export const AdminBusinessRegistrationPage = () => {
               </S.DetailActions>
             </S.DetailForm>
           </S.DetailPanel>
+
+          {photoViewerIndex !== null && photoViewerIndex >= 0 && (
+            <ImageSlide
+              items={viewerPhotos}
+              viewerOnly
+              initialIndex={photoViewerIndex}
+              onViewerClose={() => setPhotoViewerIndex(null)}
+            />
+          )}
         </S.Backdrop>
       )}
     </AdminLayout>
