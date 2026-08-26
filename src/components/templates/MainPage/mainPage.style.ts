@@ -76,7 +76,7 @@ export const MainLayout = styled.div`
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, max-content);
     padding: 0 16px;
-    gap: 16px;
+    gap: 10px;
   }
 `;
 

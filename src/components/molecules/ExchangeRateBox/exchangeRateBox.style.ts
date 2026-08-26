@@ -34,12 +34,13 @@ export const ExchangeCard = styled.section`
   }
 
   @media screen and (max-width: 768px) {
-    padding: 12px 14px 10px;
-    border-radius: 8px;
+    padding: 8px 10px 7px;
+    border-radius: 7px;
+    box-shadow: 0 9px 22px rgba(0, 0, 0, 0.2);
 
     &::before {
-      right: 14px;
-      left: 14px;
+      right: 10px;
+      left: 10px;
     }
   }
 `;
@@ -52,6 +53,7 @@ export const CardHeader = styled.header`
 
   @media screen and (max-width: 768px) {
     align-items: center;
+    gap: 8px;
   }
 `;
 
@@ -63,9 +65,7 @@ export const Eyebrow = styled.p`
   letter-spacing: 0.17em;
 
   @media screen and (max-width: 768px) {
-    margin-bottom: 1px;
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
+    display: none;
   }
 `;
 
@@ -76,8 +76,9 @@ export const Title = styled.h2`
   letter-spacing: -0.04em;
 
   @media screen and (max-width: 768px) {
-    font-size: 1.5rem;
-    line-height: 1.2;
+    font-size: 1.3rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
   }
 `;
 
@@ -118,9 +119,10 @@ export const RefreshButton = styled.button<{ $loading: boolean }>`
   }
 
   @media screen and (max-width: 768px) {
-    width: 26px;
-    height: 26px;
-    font-size: 1.7rem;
+    width: 22px;
+    height: 22px;
+    padding-bottom: 1px;
+    font-size: 1.45rem;
   }
 `;
 
@@ -135,9 +137,10 @@ export const RateMeta = styled.div`
   gap: 8px;
 
   @media screen and (max-width: 768px) {
-    min-height: 18px;
-    margin-top: 5px;
-    font-size: 0.95rem;
+    min-height: 12px;
+    margin-top: 1px;
+    font-size: 0.82rem;
+    line-height: 1.2;
   }
 `;
 
@@ -150,8 +153,8 @@ export const StaleBadge = styled.span`
   font-size: 1rem;
 
   @media screen and (max-width: 768px) {
-    padding: 2px 6px;
-    font-size: 0.9rem;
+    padding: 1px 5px;
+    font-size: 0.78rem;
   }
 `;
 
@@ -161,7 +164,9 @@ export const RateList = styled.ul`
   flex-direction: column;
 
   @media screen and (max-width: 768px) {
-    margin-top: 3px;
+    display: grid;
+    margin-top: 4px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 `;
 
@@ -178,9 +183,24 @@ export const RateRow = styled.li`
   }
 
   @media screen and (max-width: 768px) {
-    min-height: 42px;
-    grid-template-columns: 30px minmax(0, 1fr) auto;
-    gap: 7px;
+    min-width: 0;
+    min-height: 38px;
+    padding: 1px 7px;
+    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-rows: 16px 18px;
+    align-content: center;
+    gap: 0 5px;
+    border-right: 1px solid rgba(255, 255, 255, 0.075);
+    border-bottom: 0;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
   }
 `;
 
@@ -216,9 +236,10 @@ export const CurrencyMark = styled.span<{
   place-items: center;
 
   @media screen and (max-width: 768px) {
-    width: 26px;
-    height: 26px;
-    font-size: 1.35rem;
+    width: 20px;
+    height: 20px;
+    grid-row: 1 / 3;
+    font-size: 1.1rem;
   }
 `;
 
@@ -244,11 +265,15 @@ export const CurrencyName = styled.div`
     gap: 0;
 
     strong {
-      font-size: 1.15rem;
+      overflow: hidden;
+      font-size: 1rem;
+      line-height: 16px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     span {
-      font-size: 0.85rem;
+      display: none;
     }
   }
 `;
@@ -274,14 +299,21 @@ export const RateValue = styled.div`
   }
 
   @media screen and (max-width: 768px) {
-    gap: 3px;
+    grid-column: 2;
+    justify-content: flex-start;
+    gap: 2px;
+    line-height: 18px;
 
     strong {
-      font-size: 1.45rem;
+      overflow: hidden;
+      max-width: 100%;
+      font-size: 1.18rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     span {
-      font-size: 0.9rem;
+      font-size: 0.75rem;
     }
   }
 `;
@@ -296,9 +328,7 @@ export const SourceNote = styled.p`
   gap: 1px;
 
   @media screen and (max-width: 768px) {
-    margin-top: 5px;
-    font-size: 0.85rem;
-    line-height: 1.3;
+    display: none;
   }
 `;
 
@@ -333,12 +363,32 @@ export const SkeletonRow = styled.li`
   }
 
   @media screen and (max-width: 768px) {
-    min-height: 42px;
-    grid-template-columns: 26px 1fr 68px;
-    gap: 7px;
+    min-width: 0;
+    min-height: 38px;
+    padding: 1px 7px;
+    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-rows: repeat(2, 9px);
+    align-content: center;
+    gap: 4px 5px;
+    border-right: 1px solid rgba(255, 255, 255, 0.075);
+    border-bottom: 0;
 
     span:first-child {
-      height: 26px;
+      height: 20px;
+      grid-row: 1 / 3;
+    }
+
+    span:last-child {
+      grid-column: 2;
+    }
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+      border-right: 0;
     }
   }
 `;
@@ -355,12 +405,17 @@ export const ErrorState = styled.div`
   gap: 5px;
 
   @media screen and (max-width: 768px) {
-    min-height: 118px;
+    min-height: 64px;
+    font-size: 0.95rem;
   }
 
   strong {
     color: rgba(255, 255, 255, 0.82);
     font-size: 1.3rem;
+
+    @media screen and (max-width: 768px) {
+      font-size: 1.1rem;
+    }
   }
 `;
 
