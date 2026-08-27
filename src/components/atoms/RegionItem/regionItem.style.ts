@@ -187,7 +187,7 @@ export const ItemTitBox = styled.div`
   }
 `;
 
-export const ItemKR = styled.div`
+export const ItemPrimary = styled.div`
   font-size: 4rem;
   font-weight: bold;
   letter-spacing: -0.1rem;
@@ -199,9 +199,10 @@ export const ItemKR = styled.div`
   }
 `;
 
-export const ItemEN = styled.div`
+export const ItemSecondary = styled.div`
   font-size: 2.4rem;
   letter-spacing: -0.1rem;
+  opacity: 0.82;
 
   //모바일 화면 설정
   @media screen and (max-width: 768px) {

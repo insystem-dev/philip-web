@@ -1,7 +1,9 @@
 import { ImageSlide } from "@/components/atoms/ImageSlide";
 import * as S from "./priceInfoBox.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const PriceInfoBox = ({ post, title }: any) => {
+  const { message } = usePhilipLocale();
   const hasContents = Boolean(post?.contents?.trim());
 
   return (
@@ -20,7 +22,7 @@ export const PriceInfoBox = ({ post, title }: any) => {
             </S.InfoLine>
           ))
         ) : (
-          <S.PriceEmpty>등록된 요금 및 메뉴 안내가 없습니다.</S.PriceEmpty>
+          <S.PriceEmpty>{message.detail.noPriceInfo}</S.PriceEmpty>
         )}
       </S.PriceInfo>
     </S.PriceInfoBox>

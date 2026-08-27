@@ -1,5 +1,6 @@
 import Image from "next/image";
 import * as S from "./banner.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface BannerProps {
   order: string;
@@ -23,6 +24,7 @@ export const Banner: React.FC<BannerProps> = ({
   scopeLabel,
   onAdClick,
 }) => {
+  const { message } = usePhilipLocale();
   /** 연결 대상과 핸들러가 모두 있을 때만 클릭 가능 */
   const clickable = !!onAdClick && !!(ads?.adLinkPostOid || ads?.adLinkUrl);
 
@@ -41,7 +43,7 @@ export const Banner: React.FC<BannerProps> = ({
         <Image
           src={`${process.env.NEXT_PUBLIC_API_URL}/${ads.filename}`}
           layout="fill"
-          alt="광고"
+          alt={message.common.advertisementAlt}
         />
       )}
       {loading && (

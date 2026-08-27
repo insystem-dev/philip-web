@@ -5,6 +5,7 @@ import { Button, ButtonGroup } from "../Button";
 import IconArrowPrev from "public/assets/svg/icon-arrow-prev-lg.svg";
 import IconArrowNext from "public/assets/svg/icon-arrow-next-lg.svg";
 import * as S from "./imageSlide.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const clampZoom = (value: number) => Math.min(3, Math.max(1, value));
 
@@ -32,6 +33,7 @@ export const ImageSlide = ({
   initialIndex = 0,
   onViewerClose,
 }: ImageSlideProps) => {
+  const { message } = usePhilipLocale();
   const [selectedId, setSelectedId] = useState(initialIndex);
   const [viewerOpen, setViewerOpen] = useState(viewerOnly);
   const [zoom, setZoom] = useState(1);
@@ -262,7 +264,7 @@ export const ImageSlide = ({
   if (!hasImages) {
     return (
       <S.ImageSlide>
-        <S.ImageEmpty>등록된 이미지가 없습니다.</S.ImageEmpty>
+        <S.ImageEmpty>{message.detail.noImage}</S.ImageEmpty>
       </S.ImageSlide>
     );
   }
@@ -296,12 +298,12 @@ export const ImageSlide = ({
                 layout="fill"
                 sizes="(max-width: 768px) 100vw, 505px"
                 priority={selectedId === 0}
-                alt="선택된 업체 이미지"
+                alt={message.detail.selectedImage}
               />
             )}
             <S.OpenViewerButton
               type="button"
-              aria-label="선택한 사진을 전체 화면으로 보기"
+              aria-label={message.detail.openFullscreen}
               onClick={() => setViewerOpen(true)}
             />
             <ButtonGroup justifyContent="space-between">
@@ -346,7 +348,7 @@ export const ImageSlide = ({
                     width={85}
                     height={62}
                     sizes="85px"
-                    alt="업체 이미지"
+                    alt={message.detail.businessImage}
                   />
                 </S.ImageSlideItem>
               );
@@ -360,7 +362,7 @@ export const ImageSlide = ({
           <S.ViewerBackdrop
             role="dialog"
             aria-modal="true"
-            aria-label="사진 전체 화면 미리보기"
+            aria-label={message.detail.fullscreenPreview}
           >
             <S.ViewerTopBar>
               <S.ViewerCount>
@@ -371,7 +373,7 @@ export const ImageSlide = ({
                 ref={closeButtonRef}
                 type="button"
                 onClick={closeViewer}
-                aria-label="전체 화면 미리보기 닫기"
+                aria-label={message.detail.closeFullscreen}
               >
                 ×
               </S.ViewerCloseButton>
@@ -412,7 +414,7 @@ export const ImageSlide = ({
                   type="button"
                   $direction="prev"
                   onClick={viewerPrev}
-                  aria-label="이전 사진"
+                  aria-label={message.detail.previousImage}
                 >
                   ‹
                 </S.ViewerNavButton>
@@ -486,7 +488,7 @@ export const ImageSlide = ({
                   sizes="100vw"
                   priority
                   draggable={false}
-                  alt={`업체 사진 ${selectedId + 1}`}
+                  alt={`${message.detail.businessImage} ${selectedId + 1}`}
                 />
               </S.ViewerImageFrame>
 
@@ -495,19 +497,19 @@ export const ImageSlide = ({
                   type="button"
                   $direction="next"
                   onClick={viewerNext}
-                  aria-label="다음 사진"
+                  aria-label={message.detail.nextImage}
                 >
                   ›
                 </S.ViewerNavButton>
               )}
             </S.ViewerStage>
 
-            <S.ViewerControls aria-label="사진 확대 축소">
+            <S.ViewerControls aria-label={message.detail.zoomControls}>
               <S.ViewerControlButton
                 type="button"
                 onClick={() => setZoom((current) => clampZoom(current - 0.5))}
                 disabled={zoom <= 1}
-                aria-label="축소"
+                aria-label={message.detail.zoomOut}
               >
                 −
               </S.ViewerControlButton>
@@ -516,7 +518,7 @@ export const ImageSlide = ({
                 type="button"
                 onClick={() => setZoom((current) => clampZoom(current + 0.5))}
                 disabled={zoom >= 3}
-                aria-label="확대"
+                aria-label={message.detail.zoomIn}
               >
                 +
               </S.ViewerControlButton>
@@ -525,11 +527,11 @@ export const ImageSlide = ({
                 onClick={() => setZoom(1)}
                 disabled={zoom === 1}
               >
-                원본 크기
+                {message.detail.originalSize}
               </S.ViewerResetButton>
             </S.ViewerControls>
             <S.ViewerHelp>
-              두 손가락·마우스 휠로 확대 / 확대 후 드래그로 시점 이동
+              {message.detail.viewerHelp}
             </S.ViewerHelp>
           </S.ViewerBackdrop>,
           document.body

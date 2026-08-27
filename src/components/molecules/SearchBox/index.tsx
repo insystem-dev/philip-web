@@ -5,6 +5,7 @@ import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import { Button } from "@/components/atoms/Button";
 import * as S from "./searchBox.style";
 import React, { useEffect, useState } from "react";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface SearchBox {
   cityOptions: any[];
@@ -26,6 +27,7 @@ export const SearchBox = ({
   getValue,
 }: SearchBox) => {
   const isWindowWidth = useWindowWidth();
+  const { message } = usePhilipLocale();
 
   return (
     <S.SearchBox>
@@ -52,11 +54,15 @@ export const SearchBox = ({
           </S.SearchMobileInput>
         )}
         <InputText
-          label={isWindowWidth < 769 ? "" : "키워드 검색"}
+          label={isWindowWidth < 769 ? "" : message.main.searchLabel}
           layout={isWindowWidth < 769 ? "row" : "column"}
           size={isWindowWidth < 769 ? "xlg" : "md"}
           width="100%"
-          placeholder={isWindowWidth < 769 ? "키워드 검색..." : "입력..."}
+          placeholder={
+            isWindowWidth < 769
+              ? message.main.searchPlaceholder
+              : message.main.inputPlaceholder
+          }
           onChange={getValue}
         />
         {/* <InputText
@@ -76,7 +82,7 @@ export const SearchBox = ({
           height={40}
           color="search"
           layout="solid"
-          label="검색"
+          label={message.main.search}
         />
       )}
     </S.SearchBox>

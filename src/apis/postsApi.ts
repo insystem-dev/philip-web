@@ -3,15 +3,22 @@ import axiosInstance from "./index";
 /** GET 메인화면 전체게시글, 복수쿼리( 검색, 카테고리 )  */
 export function getPostsListApi({ queryKey }: any) {
   return axiosInstance
-    .get(
-      `/posts?city=${queryKey[1]}&category=${queryKey[2]}&search=${queryKey[3]}`
-    )
+    .get("/posts", {
+      params: {
+        city: queryKey[1],
+        category: queryKey[2],
+        search: queryKey[3],
+        locale: queryKey[4] ?? "ko",
+      },
+    })
     .then((res) => res.data);
 }
 
 /** GET 게시글 클릭시 상세페이지 정보 */
-export function getOnePostInfoApi(data: any) {
-  return axiosInstance.get(`/posts/${data}`).then((res) => res.data);
+export function getOnePostInfoApi(data: any, locale = "ko") {
+  return axiosInstance
+    .get(`/posts/${data}`, { params: { locale } })
+    .then((res) => res.data);
 }
 
 /** POST [관리자] 게시글 등록 */
@@ -27,7 +34,13 @@ export function fetchCountViews(oid: string) {
 /** GET 프로모션 리스트  */
 export function getPromtionListApi({ queryKey }: any) {
   return axiosInstance
-    .get(`/posts/promotion?city=${queryKey[1]}&category=${queryKey[2]}`)
+    .get("/posts/promotion", {
+      params: {
+        city: queryKey[1],
+        category: queryKey[2],
+        locale: queryKey[3] ?? "ko",
+      },
+    })
     .then((response) => response.data);
 }
 

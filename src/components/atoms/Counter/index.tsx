@@ -1,6 +1,8 @@
 import * as S from "./counter.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 //check
 export const Counter = ({ count }: any) => {
+  const { message } = usePhilipLocale();
   // count 미전달/짧은 값에도 크래시 없도록 문자열로 정규화 후 6자리로 패딩
   const digits = String(count ?? 0).padStart(6, "0");
 
@@ -16,7 +18,7 @@ export const Counter = ({ count }: any) => {
       <S.CounterNumSpan>{digits[digits.length - 2]}</S.CounterNumSpan>
       <S.CounterNumSpan>{digits[digits.length - 1]}</S.CounterNumSpan>
 
-      <S.CounterTxtSpan>명</S.CounterTxtSpan>
+      <S.CounterTxtSpan>{message.main.peopleUnit}</S.CounterTxtSpan>
     </S.Counter>
   );
 };

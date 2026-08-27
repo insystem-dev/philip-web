@@ -7,9 +7,11 @@ import { Button } from "@/components/atoms/Button";
 import Logo from "@/components/atoms/Logo";
 import { useRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const MobileHeader = () => {
   const router = useRouter();
+  const { message } = usePhilipLocale();
   const isCategorySelect = router.pathname === "/select/category";
   /** 사용자 로그인 체크 */
   const [userToken, setUserToken] = useRecoilState(userTokenState);
@@ -82,7 +84,7 @@ export const MobileHeader = () => {
               role="menuitem"
               onClick={handleLogout}
             >
-              로그아웃
+              {message.common.logout}
             </S.UserMenuItem>
           </S.UserMenuPanel>
         </S.UserMenu>

@@ -8,15 +8,17 @@ import { userTokenState } from "@/recoil/userToken";
 import { cityState } from "@/recoil/city";
 import { useState } from "react";
 import { AlertModal } from "@/components/molecules/AlertModal";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const Post = () => {
   const router = useRouter();
+  const { locale, message } = usePhilipLocale();
   const [userToken, setUserToken] = useRecoilState(userTokenState);
   /** 선택된 지역 (배너 지역별 노출용) */
   const city = useRecoilValue(cityState);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState("");
-  const queryFn = () => getOnePostInfoApi(router.query.id);
+  const queryFn = () => getOnePostInfoApi(router.query.id, locale);
 
   /** 광고 배너 데이터 (선택 지역 전용 — 지역 미선택이면 노출할 배너가 없어 조회하지 않는다) */
   const { data: adsData } = useQuery(["getAdsData", city || null], getAdsData, {
@@ -25,7 +27,7 @@ export const Post = () => {
 
   /** 업체 상세 데이터 */
   const { data: detailItem, isError } = useQuery(
-    ["detailItem", router.query.id],
+    ["detailItem", router.query.id, locale],
     queryFn,
     {
       retry: 0,
@@ -34,14 +36,12 @@ export const Post = () => {
       onError(err: any) {
         // 응답이 없는 네트워크 에러 방어
         if (!err.response) {
-          alert("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          alert(message.detail.networkError);
           return;
         }
         if (err.response?.status === 401) {
           setLoginErrorMessage(
-            userToken
-              ? "세션이 만료되어 다시 로그인해야 합니다."
-              : "이 카테고리는 로그인 후 이용할 수 있습니다."
+            userToken ? message.auth.sessionExpired : message.auth.required
           );
           // 유저 토큰만 localStorage + Recoil 양쪽에서 초기화 (UI가 로그인 상태로 남는 버그 방지)
           // admin 항목은 건드리지 않는다 — 유저 화면 요청에는 admin 토큰이 실리지 않으므로
@@ -61,9 +61,9 @@ export const Post = () => {
       <PostPage detailItem={detailItem} adsData={adsData} cityCode={city} />
       {showSessionExpired && (
         <AlertModal
-          title="로그인이 필요합니다"
+          title={message.auth.loginRequired}
           message={loginErrorMessage}
-          confirmLabel="로그인하기"
+          confirmLabel={message.auth.signIn}
           onConfirm={() => router.replace("/auth/login")}
         />
       )}

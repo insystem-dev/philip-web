@@ -1,5 +1,6 @@
 import { Button } from "@/components/atoms/Button";
 import * as S from "./alertModal.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface AlertModalProps {
   title: string;
@@ -17,12 +18,14 @@ interface AlertModalProps {
 export const AlertModal = ({
   title,
   message,
-  confirmLabel = "확인",
+  confirmLabel,
   onConfirm,
-  cancelLabel = "취소",
+  cancelLabel,
   onCancel,
   onBackdropClick,
 }: AlertModalProps) => {
+  const { message: localeMessage } = usePhilipLocale();
+
   return (
     <S.AlertModalBg role="presentation" onClick={onBackdropClick}>
       <S.AlertModal
@@ -41,7 +44,7 @@ export const AlertModal = ({
               height={48}
               color="func"
               layout="solid"
-              label={cancelLabel}
+              label={cancelLabel ?? localeMessage.common.cancel}
               onClick={onCancel}
             />
           )}
@@ -51,7 +54,7 @@ export const AlertModal = ({
             height={48}
             color="primary"
             layout="solid"
-            label={confirmLabel}
+            label={confirmLabel ?? localeMessage.common.confirm}
             onClick={onConfirm}
           />
         </S.AlertModalBtns>

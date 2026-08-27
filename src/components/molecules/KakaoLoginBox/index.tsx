@@ -1,14 +1,18 @@
 import * as S from "./kakaoLoginBox.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const KakaoLoginBox = () => {
+  const { message } = usePhilipLocale();
+  const [firstLine, secondLine] = message.auth.kakaoProcessingDescription.split("\n");
+
   return (
     <S.KakaoLoginBox role="status" aria-live="polite">
       <S.Spinner aria-hidden="true" />
-      <S.KakaoLoginTit>로그인 중입니다</S.KakaoLoginTit>
+      <S.KakaoLoginTit>{message.auth.kakaoProcessing}</S.KakaoLoginTit>
       <S.KakaoLoginDesc>
-        카카오 인증을 확인하고 있어요.
+        {firstLine}
         <br />
-        잠시만 기다려 주세요.
+        {secondLine}
       </S.KakaoLoginDesc>
     </S.KakaoLoginBox>
   );

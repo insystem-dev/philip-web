@@ -2,6 +2,7 @@ import { GoogleMap, LoadScriptNext, MarkerF } from "@react-google-maps/api";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import GeoCode from "@/lib/Google-geocode";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const Wrapper = styled.div`
   .map-container {
@@ -19,6 +20,7 @@ interface LocationProps {
 const DEFAULT_CENTER: LocationProps = { lat: 37.5665, lng: 126.978 };
 
 const Map = ({ address }: { address?: string }) => {
+  const { message } = usePhilipLocale();
   const [location, setLocation] = useState<LocationProps>(DEFAULT_CENTER);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,7 +64,7 @@ const Map = ({ address }: { address?: string }) => {
             background: "#f0f0f0",
           }}
         >
-          <p>Google Maps API 키가 설정되지 않았습니다.</p>
+          <p>{message.common.mapKeyMissing}</p>
         </div>
       </Wrapper>
     );

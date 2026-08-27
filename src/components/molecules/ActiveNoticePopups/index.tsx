@@ -3,6 +3,7 @@ import { NoticePopupModal } from "@/components/molecules/NoticePopupModal";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "react-query";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface ActiveNoticePopupsProps {
   /** 미지정하면 /select/category용 팝업, 지정하면 해당 카테고리용 팝업 */
@@ -22,24 +23,26 @@ export const ActiveNoticePopups = ({
   categoryCode,
 }: ActiveNoticePopupsProps) => {
   const scope = categoryCode || "CATEGORY_SELECTION";
+  const { locale } = usePhilipLocale();
   const [popupQueue, setPopupQueue] = useState<PopupItem[]>([]);
   const [popupTotal, setPopupTotal] = useState(0);
   const initializedScopes = useRef(new Set<string>());
 
   const { data: activePopups, isSuccess } = useQuery(
-    ["activePopups", scope],
-    () => getActivePopupsApi(categoryCode),
+    ["activePopups", scope, locale],
+    () => getActivePopupsApi(categoryCode, locale),
     { staleTime: 60_000 }
   );
 
   useEffect(() => {
     setPopupQueue([]);
     setPopupTotal(0);
-  }, [scope]);
+  }, [scope, locale]);
 
   useEffect(() => {
-    if (!isSuccess || initializedScopes.current.has(scope)) return;
-    initializedScopes.current.add(scope);
+    const localizedScope = `${scope}:${locale}`;
+    if (!isSuccess || initializedScopes.current.has(localizedScope)) return;
+    initializedScopes.current.add(localizedScope);
 
     const today = getToday();
     const visible = (activePopups || []).filter(
@@ -49,7 +52,7 @@ export const ActiveNoticePopups = ({
     );
     setPopupQueue(visible);
     setPopupTotal(visible.length);
-  }, [activePopups, isSuccess, scope]);
+  }, [activePopups, isSuccess, locale, scope]);
 
   const closeCurrentPopup = useCallback(() => {
     setPopupQueue((current) => current.slice(1));

@@ -28,8 +28,10 @@ import {
   getCategoryNavApi,
   getCityListApi,
 } from "@/apis/categoryApi";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const Main = () => {
+  const { locale, message } = usePhilipLocale();
   // ─────────────────────────────────────────────────────────────
   // Recoil 전역 상태
   // ─────────────────────────────────────────────────────────────
@@ -75,7 +77,7 @@ const Main = () => {
 
   // 프로모션 목록 (도시 선택 시에만 조회)
   const { data: postItem } = useQuery(
-    ["getPromtionListApi", city, category],
+    ["getPromtionListApi", city, category, locale],
     getPromtionListApi,
     {
       enabled: !!city,
@@ -84,20 +86,20 @@ const Main = () => {
 
   // 전체 게시글 목록 (PostListBox에서 끌어올림)
   const { data: postListData, isLoading: isPostLoading } = useQuery(
-    ["getPostsListApi", city, category, searchInput],
+    ["getPostsListApi", city, category, searchInput, locale],
     getPostsListApi,
     { keepPreviousData: true }
   );
 
   // 카테고리 목록 (선택 지역의 노출 설정 반영 — 미선택이면 cityCode 없이 전역 목록)
   const { data: categoryItem } = useQuery(
-    ["getCategoryNavApi", city ?? null],
+    ["getCategoryNavApi", city ?? null, locale],
     getCategoryNavApi
   );
 
   // 선택 카테고리의 직계 하위 카테고리 — 있으면 목록을 하위 카테고리별 섹션으로 나눠 보여준다
   const { data: categoryChildren } = useQuery<Category[]>(
-    ["getCategoryChildrenApi", category, city ?? null],
+    ["getCategoryChildrenApi", category, city ?? null, locale],
     getCategoryChildrenApi,
     {
       enabled: !!category && category !== categoryAll,
@@ -105,7 +107,10 @@ const Main = () => {
   );
 
   // 도시 목록
-  const { data: cityItem } = useQuery("getCityListApi", getCityListApi);
+  const { data: cityItem } = useQuery(
+    ["getCityListApi", locale],
+    getCityListApi
+  );
 
   // ─────────────────────────────────────────────────────────────
   // 이벤트 핸들러
@@ -205,13 +210,16 @@ const Main = () => {
   return (
     <>
       <Head>
-        <title>필립69 PHILIP69 | 필리핀 업체 검색</title>
-        <meta
-          name="description"
-          content="필립, 필립69, PHILIP, PHILIP69에서 필리핀 지역과 카테고리별 업체를 검색해 보세요."
-        />
-        <meta name="keywords" content="필립, 필립69, philip, philip69" />
+        <title>{message.main.title}</title>
+        <meta name="description" content={message.main.description} />
+        <meta name="keywords" content={message.main.keywords} />
         <link rel="canonical" href="https://philip69.com/main" />
+        <link rel="alternate" hrefLang="ko" href="https://philip69.com/main" />
+        <link
+          rel="alternate"
+          hrefLang="en"
+          href="https://philip69.com/en/main"
+        />
       </Head>
       <MainPage
         // 프로모션 데이터

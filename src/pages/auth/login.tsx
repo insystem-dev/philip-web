@@ -4,15 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useSetRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const Login = () => {
   const router = useRouter();
+  const { locale, message } = usePhilipLocale();
   const setUserToken = useSetRecoilState(userTokenState);
   const [isLoading, setIsLoading] = useState(false);
   const kakaoLogin = () => {
     // 카카오 SDK 미로드 상태 방어
     if (!window.Kakao) {
-      alert("카카오 로그인 준비 중입니다. 잠시 후 다시 시도해주세요.");
+      alert(message.auth.kakaoPreparing);
       return;
     }
     window.Kakao.Auth.authorize({
@@ -28,7 +30,11 @@ export const Login = () => {
       setUserToken(data.accessToken);
       router.replace("/main");
     } catch (error: any) {
-      alert(error?.response?.data?.message || "로그인에 실패했습니다.");
+      alert(
+        locale === "ko"
+          ? error?.response?.data?.message || message.auth.loginFailed
+          : message.auth.loginFailed
+      );
     } finally { setIsLoading(false); }
   };
 

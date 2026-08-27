@@ -340,6 +340,7 @@ const AdminPost = () => {
 
   return (
     <AdminPostEditPage
+      postOid={typeof router.query.id === "string" ? router.query.id : ""}
       handleSubmit={handleSubmit}
       onSubmit={onSubmit}
       onChangeImages={onChangeImages}

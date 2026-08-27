@@ -4,20 +4,14 @@ import {
   getExchangeRatesApi,
 } from "@/apis/exchangeRateApi";
 import * as S from "./exchangeRateBox.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
-const RATE_ITEMS = [
-  { code: "USD" as const, name: "달러", symbol: "$", tone: "usd" as const },
-  { code: "PHP" as const, name: "페소", symbol: "₱", tone: "php" as const },
-  {
-    code: "USDT" as const,
-    name: "테더",
-    symbol: "₮",
-    tone: "usdt" as const,
-  },
-];
-
-const formatRate = (code: keyof ExchangeRateSnapshot["rates"], value: number) =>
-  new Intl.NumberFormat("ko-KR", {
+const formatRate = (
+  code: keyof ExchangeRateSnapshot["rates"],
+  value: number,
+  locale: string
+) =>
+  new Intl.NumberFormat(locale === "en" ? "en-US" : "ko-KR", {
     minimumFractionDigits: code === "PHP" ? 2 : 0,
     maximumFractionDigits: code === "PHP" ? 2 : 0,
   }).format(value);
@@ -40,35 +34,60 @@ const formatUpdatedTime = (date: string) => {
 };
 
 export const ExchangeRateBox = () => {
+  const { locale, message } = usePhilipLocale();
+  const rateItems = [
+    {
+      code: "USD" as const,
+      name: message.exchange.usd,
+      symbol: "$",
+      tone: "usd" as const,
+    },
+    {
+      code: "PHP" as const,
+      name: message.exchange.php,
+      symbol: "₱",
+      tone: "php" as const,
+    },
+    {
+      code: "USDT" as const,
+      name: message.exchange.usdt,
+      symbol: "₮",
+      tone: "usdt" as const,
+    },
+  ];
   const { data, isLoading, isError, isFetching, refetch } =
-    useQuery<ExchangeRateSnapshot>(["getExchangeRatesApi"], getExchangeRatesApi, {
-      staleTime: 2 * 60 * 1000,
-      refetchInterval: 5 * 60 * 1000,
-      retry: 1,
-    });
+    useQuery<ExchangeRateSnapshot>(
+      ["getExchangeRatesApi"],
+      getExchangeRatesApi,
+      {
+        staleTime: 2 * 60 * 1000,
+        refetchInterval: 5 * 60 * 1000,
+        retry: 1,
+      }
+    );
 
   return (
     <S.ExchangeCard aria-labelledby="exchange-rate-title" aria-live="polite">
       <S.CardHeader>
         <div>
           <S.Eyebrow>DAILY MARKET</S.Eyebrow>
-          <S.Title id="exchange-rate-title">오늘의 환전시세</S.Title>
+          <S.Title id="exchange-rate-title">{message.exchange.title}</S.Title>
         </div>
         <S.RefreshButton
           type="button"
           $loading={isFetching}
           onClick={() => refetch()}
           disabled={isFetching}
-          aria-label="환전시세 새로고침"
-          title="새로고침"
+          aria-label={message.exchange.refresh}
+          title={message.exchange.refreshShort}
         >
           ↻
         </S.RefreshButton>
       </S.CardHeader>
 
       {isLoading ? (
-        <S.RateList aria-label="환율 정보를 불러오는 중">
-          {RATE_ITEMS.map((item) => (
+        <S.RateList aria-label={message.exchange.loading}>
+          {rateItems.map((item) => (
             <S.SkeletonRow key={item.code}>
               <span />
               <span />
@@ -78,20 +97,24 @@ export const ExchangeRateBox = () => {
         </S.RateList>
       ) : isError || !data ? (
         <S.ErrorState>
-          <strong>시세를 불러오지 못했습니다.</strong>
-          <span>잠시 후 다시 확인해 주세요.</span>
+          <strong>{message.exchange.error}</strong>
+          <span>{message.exchange.retryHint}</span>
           <S.RetryButton type="button" onClick={() => refetch()}>
-            다시 불러오기
+            {message.exchange.retry}
           </S.RetryButton>
         </S.ErrorState>
       ) : (
         <>
           <S.RateMeta>
-            <span>KRW 기준 · {formatRateDate(data.date)}</span>
-            {data.stale && <S.StaleBadge>최근 시세</S.StaleBadge>}
+            <span>
+              {message.exchange.krwBase} · {formatRateDate(data.date)}
+            </span>
+            {data.stale && (
+              <S.StaleBadge>{message.exchange.recent}</S.StaleBadge>
+            )}
           </S.RateMeta>
           <S.RateList>
-            {RATE_ITEMS.map((item) => (
+            {rateItems.map((item) => (
               <S.RateRow key={item.code}>
                 <S.CurrencyMark $tone={item.tone} aria-hidden="true">
                   {item.symbol}
@@ -101,18 +124,22 @@ export const ExchangeRateBox = () => {
                   <span>1 {item.code}</span>
                 </S.CurrencyName>
                 <S.RateValue>
-                  <strong>{formatRate(item.code, data.rates[item.code])}</strong>
-                  <span>원</span>
+                  <strong>
+                    {formatRate(item.code, data.rates[item.code], locale)}
+                  </strong>
+                  <span>{message.exchange.won}</span>
                 </S.RateValue>
               </S.RateRow>
             ))}
           </S.RateList>
           <S.SourceNote>
             <span>
-              외환 {formatUpdatedTime(data.sourceUpdatedAt.fiat)} · 테더{" "}
-              {formatUpdatedTime(data.sourceUpdatedAt.usdt)} 갱신
+              {message.exchange.updated(
+                formatUpdatedTime(data.sourceUpdatedAt.fiat),
+                formatUpdatedTime(data.sourceUpdatedAt.usdt)
+              )}
             </span>
-            <span>참고용 · 실제 환전소 시세와 다를 수 있어요</span>
+            <span>{message.exchange.disclaimer}</span>
           </S.SourceNote>
         </>
       )}

@@ -145,14 +145,17 @@ const withCityCode = (params: Record<string, any>, cityCode?: string | null) =>
 
 /**
  * GET nav 카테고리 목록 불러오기 (관리자 공통코드 관리 목록에서도 동일 API 재사용)
- * queryKey: ["getCategoryNavApi", cityCode?] — cityCode 를 주면 그 지역의 노출 설정(숨김 제외 + 지역 순서)이 적용된다.
+ * queryKey: ["getCategoryNavApi", cityCode?, locale?]
  */
 export async function getCategoryNavApi({ queryKey }: any = {}): Promise<
   Category[]
 > {
   const rows: CodeSubRow[] = await axiosInstance
     .get("/code/sub", {
-      params: withCityCode({ mainCd: CATEGORY_MAIN_CD }, queryKey?.[1]),
+      params: withCityCode(
+        { mainCd: CATEGORY_MAIN_CD, locale: queryKey?.[2] ?? "ko" },
+        queryKey?.[1]
+      ),
     })
     .then((res) => res.data);
   return rows.map(toCategory).filter((category) => category.useYn === "Y");
@@ -161,7 +164,7 @@ export async function getCategoryNavApi({ queryKey }: any = {}): Promise<
 /**
  * GET 특정 카테고리의 직계 하위 카테고리 목록 (공개)
  * 메인 화면에서 상위 카테고리 선택 시 하위 카테고리별 섹션을 구성할 때 사용한다.
- * queryKey: ["getCategoryChildrenApi", parentCode, cityCode?]
+ * queryKey: ["getCategoryChildrenApi", parentCode, cityCode?, locale?]
  */
 export async function getCategoryChildrenApi({
   queryKey,
@@ -169,7 +172,11 @@ export async function getCategoryChildrenApi({
   const rows: CodeSubRow[] = await axiosInstance
     .get("/code/sub", {
       params: withCityCode(
-        { mainCd: CATEGORY_MAIN_CD, parentCode: queryKey[1] },
+        {
+          mainCd: CATEGORY_MAIN_CD,
+          parentCode: queryKey[1],
+          locale: queryKey?.[3] ?? "ko",
+        },
         queryKey?.[2]
       ),
     })
@@ -238,9 +245,11 @@ export function resetCategoryCitySettingApi(cityCode: string) {
 }
 
 /** GET City 목록 불러오기 */
-export async function getCityListApi(): Promise<CitySub[]> {
+export async function getCityListApi({ queryKey }: any = {}): Promise<CitySub[]> {
   const rows: CodeSubRow[] = await axiosInstance
-    .get("/code/sub", { params: { mainCd: CITY_MAIN_CD } })
+    .get("/code/sub", {
+      params: { mainCd: CITY_MAIN_CD, locale: queryKey?.[1] ?? "ko" },
+    })
     .then((res) => res.data);
   return rows
     .map(toCity)

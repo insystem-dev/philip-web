@@ -1,8 +1,10 @@
 import { CopyButton } from "@/components/atoms/Button/CopyButton";
 import * as S from "./locationBox.style";
 import Map from "../../atoms/Map";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const LocationBox = ({ post, title }: any) => {
+  const { message } = usePhilipLocale();
   const hasAddress = Boolean(post?.address?.trim());
 
   return (
@@ -15,11 +17,11 @@ export const LocationBox = ({ post, title }: any) => {
           </S.LocationMap>
           <S.LocationInfo>
             {post.address}
-            <CopyButton label="주소복사" text={post.address} />
+            <CopyButton label={message.detail.copyAddress} text={post.address} />
           </S.LocationInfo>
         </>
       ) : (
-        <S.LocationEmpty>등록된 주소 정보가 없습니다.</S.LocationEmpty>
+        <S.LocationEmpty>{message.detail.noAddress}</S.LocationEmpty>
       )}
     </S.LocationBox>
   );

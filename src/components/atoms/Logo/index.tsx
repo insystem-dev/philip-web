@@ -8,6 +8,7 @@ import { useRecoilState } from "recoil";
 import { categoryState } from "@/recoil/category";
 import { categoryAll } from "@/recoil/category";
 import { useRouter } from "next/router";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface LogoProps {
   main?: boolean;
@@ -19,6 +20,7 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ footer, main, mobile, admin }) => {
   const [category, setCategory] = useRecoilState(categoryState);
   const router = useRouter();
+  const { message } = usePhilipLocale();
   /** 메인로고 클릭시 카테고리 상태 전체로 변경*/
   const onClick = () => {
     setCategory(categoryAll);
@@ -34,7 +36,7 @@ export const Logo: React.FC<LogoProps> = ({ footer, main, mobile, admin }) => {
     <S.Logo main={main} mobile={mobile} admin={admin} onClick={onClick}>
       <Image
         src={main ? LogoMain : footer ? LogoMain : admin ? LogoAdmin : LogoSub}
-        alt="메인로고"
+        alt={message.common.logoAlt}
         width={mobile ? 70 : main ? 120 : 90}
         height={mobile ? 24 : main ? 40 : 30}
       />

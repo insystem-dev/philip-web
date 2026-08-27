@@ -1,5 +1,7 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
 import { ServerStyleSheet } from "styled-components";
+import { messages } from "@/i18n/messages";
+import { normalizeLocale } from "@/i18n/config";
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx: any) {
@@ -29,17 +31,17 @@ export default class MyDocument extends Document {
   }
 
   render() {
+    const locale = normalizeLocale(this.props.__NEXT_DATA__.locale);
+    const message = messages[locale];
+
     return (
-      <Html lang="ko">
+      <Html lang={locale}>
         <Head>
           <meta charSet="utf-8" />
           <meta name="msapplication-TileColor" content="#ffffff" />
           <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
           <meta name="theme-color" content="#ffffff" />
-          <meta
-            name="description"
-            content="필리핀 익사이팅의 모든 것, PHILIP"
-          />
+          <meta name="description" content={message.home.description} />
           {/* viewport 메타는 _app.tsx <Head>에서 관리 (오타 veiwport 메타 제거) */}
           <link rel="shortcut icon" href="/favicon.ico" />
           <link

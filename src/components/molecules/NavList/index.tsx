@@ -8,15 +8,17 @@ import { useQuery } from "react-query";
 import { useRecoilValue } from "recoil";
 import { getCategoryNavApi } from "@/apis/categoryApi";
 import { cityState } from "@/recoil/city";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const NavList = () => {
   const MENU_PER_SLIDE = 12;
 
   /** 선택된 지역 — 미선택이면 cityCode 없이 호출해 전역 목록으로 폴백한다 */
   const city = useRecoilValue(cityState);
+  const { locale } = usePhilipLocale();
 
   const { data: categoryItem } = useQuery(
-    ["getCategoryNavApi", city ?? null],
+    ["getCategoryNavApi", city ?? null, locale],
     getCategoryNavApi
   );
 

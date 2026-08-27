@@ -9,15 +9,20 @@ import { cityState } from "@/recoil/city";
 import { userTokenState } from "@/recoil/userToken";
 import * as S from "./headerMenu.style";
 import IconUser from "public/assets/svg/icon-user.svg";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const HeaderMenu = () => {
+  const { locale, message } = usePhilipLocale();
   /** 유저 로그인 체크 */
   const [userToken, setUserToken] = useRecoilState(userTokenState);
   const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
   const [city, setCityState] = useRecoilState<any>(cityState);
 
   /** 시티 select 목록 불러오기 */
-  const { data: cityItem } = useQuery("getCityListApi", getCityListApi);
+  const { data: cityItem } = useQuery(
+    ["getCityListApi", locale],
+    getCityListApi
+  );
 
   const router = useRouter();
 
@@ -60,7 +65,7 @@ export const HeaderMenu = () => {
             color="clear"
             layout="icon"
             size="sm"
-            label="로그아웃"
+            label={message.common.logout}
             onClick={() => {
               onLogout();
             }}
@@ -75,7 +80,7 @@ export const HeaderMenu = () => {
             color="clear"
             layout="icon"
             size="sm"
-            label="로그인/회원가입"
+            label={message.common.login}
             onClick={() => {
               router.replace("/auth");
             }}
@@ -87,7 +92,7 @@ export const HeaderMenu = () => {
 
       {router.pathname.includes("main") || router.pathname.includes("auth") ? (
         <InputSelect
-          label="지역선택"
+          label={message.common.regionSelect}
           options={cityOptions}
           layout="row"
           size="sm"

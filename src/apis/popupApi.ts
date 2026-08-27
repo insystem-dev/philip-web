@@ -26,10 +26,10 @@ export function getPopupsApi() {
     .then((response) => response.data);
 }
 
-export function getActivePopupsApi(categoryCode?: string) {
+export function getActivePopupsApi(categoryCode?: string, locale = "ko") {
   return axiosInstance
     .get<PopupItem[]>("/admin/popups/active", {
-      params: categoryCode ? { categoryCode } : undefined,
+      params: { ...(categoryCode && { categoryCode }), locale },
     })
     .then((response) => response.data);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -7,35 +7,51 @@ import { useMutation } from "react-query";
 import { checkUserIdAPI, localSignupAPI } from "@/apis/kakaoApi";
 import { UserSignupPage } from "@/components/templates/UserSignupPage";
 import { AlertModal } from "@/components/molecules/AlertModal";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 /** 서버 DTO(LocalSignupDto)와 동일한 검증 규칙 */
-const schema = yup
+interface SignupValidationMessages {
+  userIdRequired: string;
+  userIdFormat: string;
+  userIdLength: string;
+  passwordRequired: string;
+  passwordLength: string;
+  passwordConfirmRequired: string;
+  passwordMismatch: string;
+  nameRequired: string;
+  phoneRequired: string;
+  phoneInvalid: string;
+  emailInvalid: string;
+  termsRequired: string;
+}
+
+const createSignupSchema = (validation: SignupValidationMessages) => yup
   .object({
     userId: yup
       .string()
-      .required("아이디를 입력해주세요")
-      .matches(/^[a-zA-Z0-9_]+$/, "영문, 숫자, 밑줄(_)만 사용할 수 있습니다")
-      .min(4, "아이디는 4~30자로 입력해주세요")
-      .max(30, "아이디는 4~30자로 입력해주세요"),
+      .required(validation.userIdRequired)
+      .matches(/^[a-zA-Z0-9_]+$/, validation.userIdFormat)
+      .min(4, validation.userIdLength)
+      .max(30, validation.userIdLength),
     password: yup
       .string()
-      .required("비밀번호를 입력해주세요")
-      .min(8, "비밀번호는 8~50자로 입력해주세요")
-      .max(50, "비밀번호는 8~50자로 입력해주세요"),
+      .required(validation.passwordRequired)
+      .min(8, validation.passwordLength)
+      .max(50, validation.passwordLength),
     passwordCheck: yup
       .string()
-      .required("비밀번호를 다시 입력해주세요")
-      .oneOf([yup.ref("password")], "비밀번호가 일치하지 않습니다"),
-    name: yup.string().required("이름을 입력해주세요"),
+      .required(validation.passwordConfirmRequired)
+      .oneOf([yup.ref("password")], validation.passwordMismatch),
+    name: yup.string().required(validation.nameRequired),
     phoneNumber: yup
       .string()
-      .required("휴대폰 번호를 입력해주세요")
-      .matches(/^01\d-\d{3,4}-\d{4}$/, "올바른 휴대폰 번호를 입력해주세요"),
+      .required(validation.phoneRequired)
+      .matches(/^01\d-\d{3,4}-\d{4}$/, validation.phoneInvalid),
     // 이메일은 선택 입력 — 비워두면 검증하지 않고 서버로도 보내지 않는다
-    email: yup.string().email("올바른 이메일 형식이 아닙니다"),
+    email: yup.string().email(validation.emailInvalid),
     termsAgreed: yup
       .boolean()
-      .oneOf([true], "개인정보 수집 및 이용에 동의해 주세요"),
+      .oneOf([true], validation.termsRequired),
   })
   .required();
 
@@ -52,6 +68,11 @@ const formatPhoneNumber = (value: string) => {
 
 const UserSignup = () => {
   const router = useRouter();
+  const { locale, message } = usePhilipLocale();
+  const schema = useMemo(
+    () => createSignupSchema(message.signup.validation),
+    [message.signup.validation]
+  );
   const [alertModal, setAlertModal] = useState<{
     title: string;
     message: string;
@@ -111,7 +132,9 @@ const UserSignup = () => {
       setError("userId", {
         type: "duplicate",
         message:
-          error?.response?.data?.message || "이미 사용 중인 아이디입니다.",
+          locale === "ko"
+            ? error?.response?.data?.message || message.signup.duplicateUserId
+            : message.signup.duplicateUserId,
       });
     },
   });
@@ -127,44 +150,63 @@ const UserSignup = () => {
   const signupMutation = useMutation(localSignupAPI, {
     onSuccess() {
       setAlertModal({
-        title: "회원가입 완료",
-        message: "가입이 완료되었습니다.\n로그인 후 이용해 주세요.",
-        confirmLabel: "로그인하기",
+        title: message.signup.successTitle,
+        message: message.signup.successMessage,
+        confirmLabel: message.auth.signIn,
         onConfirm: () => router.replace("/auth/login"),
       });
     },
     onError: (error: any) => {
       const status = error?.response?.status;
-      const message =
-        error?.response?.data?.message || "회원가입에 실패했습니다.";
+      const serverMessage = error?.response?.data?.message;
 
       // 중복 값(409)은 해당 필드 아래에 노출
       if (status === 409) {
-        const isIdDuplicated = /아이디/.test(message);
-        const isPhoneDuplicated = /휴대폰|전화|phone/i.test(message);
+        const isIdDuplicated = /아이디|user\s?id/i.test(serverMessage || "");
+        const isPhoneDuplicated = /휴대폰|전화|phone|mobile/i.test(
+          serverMessage || ""
+        );
 
         // 동시 가입 경합 시 서버가 "아이디 또는 휴대폰" 으로 응답 — 어느 쪽인지 알 수 없어 모달로 안내
         if (isIdDuplicated && isPhoneDuplicated) {
           setIsIdChecked(false);
           setAlertModal({
-            title: "회원가입 실패",
-            message,
+            title: message.signup.failureTitle,
+            message:
+              locale === "ko" && serverMessage
+                ? serverMessage
+                : message.signup.duplicateAccount,
             onConfirm: () => setAlertModal(null),
           });
           return;
         }
         if (isPhoneDuplicated) {
-          setError("phoneNumber", { type: "duplicate", message });
+          setError("phoneNumber", {
+            type: "duplicate",
+            message:
+              locale === "ko" && serverMessage
+                ? serverMessage
+                : message.signup.duplicatePhone,
+          });
         } else {
           setIsIdChecked(false);
-          setError("userId", { type: "duplicate", message });
+          setError("userId", {
+            type: "duplicate",
+            message:
+              locale === "ko" && serverMessage
+                ? serverMessage
+                : message.signup.duplicateUserId,
+          });
         }
         return;
       }
 
       setAlertModal({
-        title: "회원가입 실패",
-        message,
+        title: message.signup.failureTitle,
+        message:
+          locale === "ko" && serverMessage
+            ? serverMessage
+            : message.signup.failureMessage,
         onConfirm: () => setAlertModal(null),
       });
     },
@@ -175,7 +217,7 @@ const UserSignup = () => {
     if (!isIdChecked) {
       setError("userId", {
         type: "required",
-        message: "아이디 중복확인을 해주세요",
+        message: message.signup.checkUserIdFirst,
       });
       return;
     }

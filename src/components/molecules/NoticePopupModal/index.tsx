@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { PopupItem } from "@/apis/popupApi";
 import * as S from "./noticePopupModal.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface NoticePopupModalProps {
   popup: PopupItem;
@@ -17,6 +18,7 @@ export const NoticePopupModal = ({
   onClose,
   onHideToday,
 }: NoticePopupModalProps) => {
+  const { message } = usePhilipLocale();
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -59,7 +61,11 @@ export const NoticePopupModal = ({
               </S.Counter>
             )}
           </S.TopMeta>
-          <S.IconClose type="button" aria-label="팝업 닫기" onClick={onClose}>
+          <S.IconClose
+            type="button"
+            aria-label={message.popup.closeAria}
+            onClick={onClose}
+          >
             <span aria-hidden="true">×</span>
           </S.IconClose>
         </S.TopBar>
@@ -81,7 +87,9 @@ export const NoticePopupModal = ({
               target={isInternalLink ? undefined : "_blank"}
               rel={isInternalLink ? undefined : "noopener noreferrer"}
             >
-              {isRegistrationLink ? "무료 등록 신청하기" : "자세히 보기"}{" "}
+              {isRegistrationLink
+                ? message.popup.selfRegistration
+                : message.popup.details}{" "}
               <span aria-hidden="true">{isInternalLink ? "→" : "↗"}</span>
             </S.Link>
           )}
@@ -90,11 +98,11 @@ export const NoticePopupModal = ({
         <S.Actions>
           {popup.showTodayHideYn !== "N" && (
             <S.TodayButton type="button" onClick={onHideToday}>
-              오늘 하루 보지 않기
+              {message.popup.hideToday}
             </S.TodayButton>
           )}
           <S.CloseButton type="button" onClick={onClose}>
-            닫기
+            {message.popup.close}
           </S.CloseButton>
         </S.Actions>
       </S.Modal>

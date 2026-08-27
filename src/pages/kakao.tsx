@@ -5,11 +5,13 @@ import { useMutation } from "react-query";
 import { useRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
 import { KakaoLoginPage } from "@/components/templates/KakaoLoginPage";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const Kakao = () => {
   const router = useRouter();
   const { code: authCode, error: kakaoServerError } = router.query;
   const [, setUserToken] = useRecoilState(userTokenState);
+  const { message } = usePhilipLocale();
 
   // 중복 호출 방지
   const isCalledRef = useRef(false);
@@ -24,7 +26,7 @@ const Kakao = () => {
     onError: (error: any) => {
       console.error("카카오 로그인 실패:", error);
       isCalledRef.current = false; // 에러 시 재시도 가능하게
-      alert("로그인에 실패했습니다. 다시 시도해주세요.");
+      alert(message.auth.kakaoLoginFailed);
       router.push("/");
     },
   });
@@ -39,7 +41,7 @@ const Kakao = () => {
       mutation.mutate(authCode);
     } else if (kakaoServerError) {
       // 카카오 서버에서 에러가 온 경우
-      alert(`카카오 로그인 오류: ${kakaoServerError}`);
+      alert(message.auth.kakaoLoginError(String(kakaoServerError)));
       router.push("/");
     }
   }, [router.isReady, authCode, kakaoServerError]);

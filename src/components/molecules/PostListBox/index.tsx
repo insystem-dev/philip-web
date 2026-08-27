@@ -11,6 +11,7 @@
 import { useMemo } from "react";
 import { PostItem } from "@/components/atoms/PostItem";
 import * as S from "./postListBox.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface PostListBoxProps {
   /** 게시글 목록 데이터 */
@@ -26,6 +27,7 @@ export const PostListBox = ({
   isLoading,
   categoryChildren,
 }: PostListBoxProps) => {
+  const { message } = usePhilipLocale();
   /**
    * 하위 카테고리별 섹션 구성.
    * 코드가 계층 접두사 구조(부모 CATEGORY-01 → 자식 CATEGORY-01-01)라서
@@ -54,40 +56,39 @@ export const PostListBox = ({
     if (leftover.length) {
       sections.push({
         key: "__leftover__",
-        title: leftover[0].category || "기타",
+        title: leftover[0].category || message.main.other,
         posts: leftover,
       });
     }
 
     return sections.filter((section) => section.posts.length > 0);
-  }, [postListData, categoryChildren]);
+  }, [postListData, categoryChildren, message.main.other]);
 
   if (isLoading) {
     return (
       <S.PostListBox>
-        <S.PostCountSpan>로딩 중...</S.PostCountSpan>
+        <S.PostCountSpan>{message.main.loading}</S.PostCountSpan>
       </S.PostListBox>
     );
   }
 
   return (
     <S.PostListBox>
-      <S.PostCountSpan>검색결과 총 {postListData?.length ?? 0}건</S.PostCountSpan>
+      <S.PostCountSpan>
+        {message.main.searchResults(postListData?.length ?? 0)}
+      </S.PostCountSpan>
 
       {groups ? (
         groups.map((group) => (
           <S.PostGroupSection key={group.key}>
             <S.PostGroupTitle>
               {group.title}
-              <em>{group.posts.length}곳</em>
+              <em>{message.main.places(group.posts.length)}</em>
             </S.PostGroupTitle>
             <S.PostList>
               {group.posts.map((item: any, idx: number) => {
                 return (
-                  <PostItem
-                    item={item}
-                    key={`${item.oid || "post"}-${idx}`}
-                  />
+                  <PostItem item={item} key={`${item.oid || "post"}-${idx}`} />
                 );
               })}
             </S.PostList>

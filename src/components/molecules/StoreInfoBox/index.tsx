@@ -5,10 +5,12 @@ import IconPhone from "public/assets/svg/icon-phone.svg";
 import IconTelegram from "public/assets/svg/icon-telegram.svg";
 import IconDiscord from "public/assets/svg/icon-discord.svg";
 import Image from "next/image";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 // 조회수 임시 미노출로 아이콘도 함께 주석처리 (복구 시 아래 StoreViewBox 블록과 같이 해제)
 // import IconView from "public/assets/svg/icon-view.svg";
 
 export const StoreInfoBox = ({ post }: any) => {
+  const { message } = usePhilipLocale();
   const messengerHref =
     typeof post?.messengerLink === "string" &&
     /^https:\/\/(?:t\.me|discord\.gg)\//i.test(post.messengerLink)
@@ -19,7 +21,10 @@ export const StoreInfoBox = ({ post }: any) => {
     /^https:\/\/discord\.gg\//i.test(messengerHref || "")
       ? "discord"
       : "telegram";
-  const messengerLabel = messengerType === "discord" ? "디스코드" : "텔레그램";
+  const messengerLabel =
+    messengerType === "discord"
+      ? message.detail.discord
+      : message.detail.telegram;
   const messengerImage = Array.isArray(post?.messengerImage)
     ? post.messengerImage[0]
     : post?.messengerImage;
@@ -51,14 +56,14 @@ export const StoreInfoBox = ({ post }: any) => {
             <IconPhone />
             {post?.phoneNumber}
           </span>
-          <CopyButton label="번호복사" text={post?.phoneNumber} />
+          <CopyButton label={message.detail.copyPhone} text={post?.phoneNumber} />
         </S.PhoneBox>
         {messengerHref && (
           <S.MessengerLink
             href={messengerHref}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            aria-label={`${post?.storeName || "업체"} ${messengerLabel} 열기`}
+            aria-label={`${post?.storeName || message.detail.business} ${messengerLabel}`}
             $hasBackgroundImage={hasMessengerBanner}
           >
             {hasMessengerBanner && (
@@ -83,7 +88,7 @@ export const StoreInfoBox = ({ post }: any) => {
             <S.MessengerCopy>
               <small>OFFICIAL GROUP CHAT</small>
               <strong>{messengerLabel}</strong>
-              <span>앱에서 바로 열기</span>
+              <span>{message.detail.openMessenger}</span>
             </S.MessengerCopy>
             <S.MessengerArrow aria-hidden="true">↗</S.MessengerArrow>
           </S.MessengerLink>

@@ -2,6 +2,7 @@ import { AlertModal } from "@/components/molecules/AlertModal";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface CategoryLoginRequiredModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ export const CategoryLoginRequiredModal = ({
   onClose,
 }: CategoryLoginRequiredModalProps) => {
   const router = useRouter();
+  const { message: localeMessage } = usePhilipLocale();
 
   useEffect(() => {
     if (!open) return;
@@ -36,16 +38,16 @@ export const CategoryLoginRequiredModal = ({
   if (!open || typeof document === "undefined") return null;
 
   const message = categoryName
-    ? `'${categoryName}' 카테고리는 로그인 후 이용할 수 있습니다.`
-    : "이 카테고리는 로그인 후 이용할 수 있습니다.";
+    ? localeMessage.auth.requiredNamed(categoryName)
+    : localeMessage.auth.required;
 
   return createPortal(
     <div onClick={(event) => event.stopPropagation()}>
       <AlertModal
-        title="로그인이 필요한 카테고리입니다"
+        title={localeMessage.auth.requiredTitle}
         message={message}
-        confirmLabel="로그인하기"
-        cancelLabel="취소"
+        confirmLabel={localeMessage.auth.signIn}
+        cancelLabel={localeMessage.auth.cancel}
         onCancel={onClose}
         onBackdropClick={onClose}
         onConfirm={() => {

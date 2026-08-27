@@ -4,12 +4,14 @@ import * as S from "./kakaoLink.style";
 import IconPhone from "public/assets/svg/icon-phone.svg";
 import IconKakao from "public/assets/svg/icon-kakao.svg";
 import IconLinkArrow from "public/assets/svg/icon-link-arrow.svg";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface KakaoLinkProps {
   layout?: "row" | "column";
 }
 
 export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
+  const { message } = usePhilipLocale();
   const { data: phone } = useQuery(["getContactPhoneApi"], getContactPhoneApi);
   const { data: kakaoId } = useQuery(
     ["getContactKakaoApi"],
@@ -25,9 +27,9 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
     if (!kakaoId) return;
     try {
       await navigator.clipboard.writeText(kakaoId);
-      alert(`카카오톡 아이디 ${kakaoId}가 복사되었습니다.`);
+      alert(message.contact.kakaoCopied(kakaoId));
     } catch {
-      window.prompt("카카오톡 아이디를 복사해주세요.", kakaoId);
+      window.prompt(message.contact.kakaoCopyPrompt, kakaoId);
     }
   };
 
@@ -38,13 +40,13 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
         onClick={goCall}
         disabled={!phone}
         aria-disabled={!phone}
-        title="전화 문의"
+        title={message.contact.phoneTitle}
       >
         <S.KakaoLinkTitBox>
           <S.IconCircle>
             <IconPhone />
           </S.IconCircle>
-          <S.KakaoLinkTxtSpan>전화로 문의하기</S.KakaoLinkTxtSpan>
+          <S.KakaoLinkTxtSpan>{message.contact.phone}</S.KakaoLinkTxtSpan>
         </S.KakaoLinkTitBox>
         <S.ArrowIcon>
           <IconLinkArrow />
@@ -57,13 +59,13 @@ export const KakaoLink = ({ layout = "column" }: KakaoLinkProps) => {
         onClick={copyKakaoId}
         disabled={!kakaoId}
         aria-disabled={!kakaoId}
-        title={`카카오톡 문의${kakaoId ? ` (${kakaoId})` : ""}`}
+        title={message.contact.kakaoTitle(kakaoId)}
       >
         <S.KakaoLinkTitBox>
           <S.IconCircle>
             <IconKakao />
           </S.IconCircle>
-          <S.KakaoLinkTxtSpan>카카오톡으로 문의하기</S.KakaoLinkTxtSpan>
+          <S.KakaoLinkTxtSpan>{message.contact.kakao}</S.KakaoLinkTxtSpan>
         </S.KakaoLinkTitBox>
         <S.ArrowIcon>
           <IconLinkArrow />

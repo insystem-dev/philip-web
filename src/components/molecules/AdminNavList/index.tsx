@@ -33,6 +33,11 @@ export const AdminNavList = () => {
       path: "/admin/category-city",
     },
     {
+      id: 11,
+      name: "번역 관리",
+      path: "/admin/translations",
+    },
+    {
       id: 3,
       name: "회원관리",
       path: "/admin/users",

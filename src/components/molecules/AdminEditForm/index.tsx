@@ -43,6 +43,7 @@ export const AdminEditForm = ({
   newMessengerImages,
   messengerImages,
   onRemoveMessenger,
+  versionSwitch,
 }: AdminPostEditPageProps) => {
   const router = useRouter();
 
@@ -100,7 +101,10 @@ export const AdminEditForm = ({
         </S.PostFormImgInput>
       </S.PostFormImgBox>
       <S.PostFormInfoBox>
-        <S.PostFormBoxTit>업체정보 등록</S.PostFormBoxTit>
+        <S.PostFormTitleRow>
+          <S.PostFormBoxTit>업체정보 등록</S.PostFormBoxTit>
+          {versionSwitch}
+        </S.PostFormTitleRow>
         <AdminInputSelect
           label="지역선택"
           layout="column"

@@ -5,6 +5,7 @@ import { adminState } from "@/recoil/adminToken";
 import { userTokenState } from "@/recoil/userToken";
 import { AlertModal } from "@/components/molecules/AlertModal";
 import { isTokenExpired } from "@/lib/accesToken";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
   children,
@@ -13,6 +14,7 @@ const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
   const [, setUserToken] = useRecoilState(userTokenState);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const router = useRouter();
+  const { message } = usePhilipLocale();
 
   useEffect(() => {
     // ── 관리자 토큰 복원 (만료·손상된 토큰은 복원하지 않고 제거) ──
@@ -51,9 +53,9 @@ const HeadersTokenProvider: React.FC<React.PropsWithChildren> = ({
       {children}
       {isSessionExpired && (
         <AlertModal
-          title="로그인이 만료되었습니다"
-          message={`카카오 로그인은 1개월간 유지됩니다.\n다시 로그인해 주세요.`}
-          confirmLabel="로그인하기"
+          title={message.auth.expiredTitle}
+          message={message.auth.expiredDescription}
+          confirmLabel={message.auth.signIn}
           onConfirm={() => {
             setIsSessionExpired(false);
             router.push("/auth/login");

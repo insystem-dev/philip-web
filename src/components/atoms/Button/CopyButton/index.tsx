@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Button } from "..";
 import IconCopy from "public/assets/svg/icon-copy.svg";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface CopyProps {
   label: string;
@@ -8,6 +9,7 @@ interface CopyProps {
 }
 
 export const CopyButton: React.FC<CopyProps> = ({ label, text }) => {
+  const { message } = usePhilipLocale();
   const [copyMessage, setCopyMessage] = useState(label);
 
   const handleCopy = useCallback(
@@ -16,18 +18,18 @@ export const CopyButton: React.FC<CopyProps> = ({ label, text }) => {
         navigator.clipboard
           .writeText(e)
           .then(() => {
-            setCopyMessage("Copied!!");
+            setCopyMessage(message.common.copied);
             // 1.5초 후 버튼 문구를 원래대로 복원
             setTimeout(() => {
               setCopyMessage(label);
             }, 1500);
           })
           .catch(() => {
-            alert("복사를 다시 시도해주세요.");
+            alert(message.common.copyRetry);
           });
       } else {
         if (!document.queryCommandSupported("copy")) {
-          return alert("복사하기가 지원되지 않는 브라우저입니다.");
+          return alert(message.common.copyUnsupported);
         }
 
         const textarea = document.createElement("textarea");
@@ -43,14 +45,14 @@ export const CopyButton: React.FC<CopyProps> = ({ label, text }) => {
         document.execCommand("copy");
         document.body.removeChild(textarea);
 
-        setCopyMessage("Copied!!");
+        setCopyMessage(message.common.copied);
         // 1.5초 후 버튼 문구를 원래대로 복원
         setTimeout(() => {
           setCopyMessage(label);
         }, 1500);
       }
     },
-    [label]
+    [label, message.common]
   );
 
   return (

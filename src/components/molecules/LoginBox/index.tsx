@@ -4,6 +4,7 @@ import * as S from "./loginBox.style";
 import IconKakao from "public/assets/svg/icon-kakao.svg";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 /**
  * 소셜(카카오) 로그인 노출 여부.
@@ -23,12 +24,13 @@ export const LoginBox = ({
   isLoading,
 }: LoginBoxProp) => {
   const router = useRouter();
+  const { message } = usePhilipLocale();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
 
   return (
     <S.LoginBox>
-      <S.LoginTit>로그인</S.LoginTit>
+      <S.LoginTit>{message.auth.loginTitle}</S.LoginTit>
       <S.LocalForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -40,7 +42,7 @@ export const LoginBox = ({
             layout="row"
             size="lg"
             width="100%"
-            placeholder="아이디"
+            placeholder={message.auth.userId}
             value={userId}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setUserId(e.target.value)
@@ -51,7 +53,7 @@ export const LoginBox = ({
             size="lg"
             width="100%"
             type="password"
-            placeholder="비밀번호"
+            placeholder={message.auth.password}
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPassword(e.target.value)
@@ -64,14 +66,14 @@ export const LoginBox = ({
           height={48}
           color="primary"
           layout="solid"
-          label="로그인"
+          label={message.auth.loginTitle}
           disabled={isLoading || !userId.trim() || !password}
           className={`${isLoading ? "spinner spinner-white spinner-right" : ""}`}
         />
       </S.LocalForm>
 
       <S.Divider>
-        <span>또는</span>
+        <span>{message.auth.or}</span>
       </S.Divider>
 
       <Button
@@ -80,7 +82,7 @@ export const LoginBox = ({
         height={48}
         color="callBg"
         layout="solid"
-        label="일반 회원가입"
+        label={message.auth.signUp}
         onClick={() => router.push("/auth/signup")}
       />
 
@@ -91,7 +93,7 @@ export const LoginBox = ({
           height={56}
           color="kakaoBg"
           layout="solid"
-          label="카카오톡으로 로그인하기"
+          label={message.auth.kakaoSignIn}
           onClick={kakaoLogin}
         >
           <IconKakao />

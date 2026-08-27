@@ -9,9 +9,11 @@ import { useRouter } from "next/router";
 import { useQuery } from "react-query";
 import { useRecoilValue } from "recoil";
 import * as S from "./CategoryPage.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const CategoryPage = () => {
   const router = useRouter();
+  const { message } = usePhilipLocale();
   /** 선택된 지역 (배너 · 카테고리 목록 지역별 노출용) */
   const city = useRecoilValue(cityState);
 
@@ -75,7 +77,7 @@ export const CategoryPage = () => {
             <S.BrandSparkle $position="right">✦</S.BrandSparkle>
             <S.BrandSparkle $position="bottom">✦</S.BrandSparkle>
           </S.Brand>
-          <S.CategoryTxtBox>카테고리를 선택해 주세요.</S.CategoryTxtBox>
+          <S.CategoryTxtBox>{message.category.select}</S.CategoryTxtBox>
           {/* city 미선택 구간에는 cityCode 를 빼고 호출해 전역 목록으로 폴백한다 */}
           <CategoryList cityCode={city} />
         </S.CategoryArea>
@@ -83,7 +85,7 @@ export const CategoryPage = () => {
           <LinkBox inline />
         </S.ContactArea>
         {showBanners && (
-          <S.TopBanner aria-label="전체 카테고리 상단 광고">
+          <S.TopBanner aria-label={message.category.topAds}>
             <Banner order="LG" ads={categoryTopAds} onAdClick={onAdClick} />
             <Banner
               order="SM1"
@@ -104,7 +106,7 @@ export const CategoryPage = () => {
         )}
       </S.CategoryContent>
       {showBanners && (
-        <S.BottomBanners aria-label="전체 카테고리 하단 광고">
+        <S.BottomBanners aria-label={message.category.bottomAds}>
           <Banner order="LG" ads={categoryBottomAds} onAdClick={onAdClick} />
         </S.BottomBanners>
       )}

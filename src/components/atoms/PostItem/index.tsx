@@ -8,9 +8,11 @@ import { fetchCountViews } from "@/apis/postsApi";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
 import { AlertModal } from "@/components/molecules/AlertModal";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const PostItem = ({ item }: any) => {
   const router = useRouter();
+  const { message } = usePhilipLocale();
   /** 고객 토큰관리 */
   const userToken = useRecoilValue(userTokenState);
   /** 비로그인 상태로 게시물 클릭 시 로그인 안내 모달 */
@@ -46,10 +48,10 @@ export const PostItem = ({ item }: any) => {
             layout="fill"
             objectFit="cover"
             sizes="(max-width: 768px) 33vw, 220px"
-            alt="업체 이미지"
+            alt={message.detail.businessImage}
           />
         ) : (
-          <S.PostItemNoImage aria-label="등록된 이미지 없음" />
+          <S.PostItemNoImage aria-label={message.detail.noRegisteredImage} />
         )}
       </S.PostItemImage>
       <S.PostItemSpan title={item.store_name}>{item.store_name}</S.PostItemSpan>
@@ -60,9 +62,9 @@ export const PostItem = ({ item }: any) => {
           // portal이어도 React 이벤트는 li의 onClick으로 버블링되므로 차단 유지
           <div onClick={(e) => e.stopPropagation()}>
             <AlertModal
-              title="로그인이 필요합니다"
-              message={"이 카테고리는 로그인 후 이용할 수 있습니다."}
-              confirmLabel="로그인하기"
+              title={message.auth.loginRequired}
+              message={message.auth.required}
+              confirmLabel={message.auth.signIn}
               onConfirm={() => router.push("/auth/login")}
             />
           </div>,

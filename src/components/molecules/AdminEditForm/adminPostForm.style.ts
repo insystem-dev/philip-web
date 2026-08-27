@@ -51,6 +51,19 @@ export const PostFormBoxTit = styled.div`
   }
 `;
 
+export const PostFormTitleRow = styled.div`
+  display: flex;
+  min-height: 42px;
+  margin-bottom: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  ${PostFormBoxTit} {
+    margin-bottom: 0;
+  }
+`;
+
 export const PostFormImgInput = styled.div`
   display: flex;
   height: 220px;

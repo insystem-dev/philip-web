@@ -1,8 +1,11 @@
 import { Button } from "@/components/atoms/Button";
 import Logo from "@/components/atoms/Logo";
 import * as S from "./footer.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export const Footer = () => {
+  const { message } = usePhilipLocale();
+
   return (
     <S.Footer>
       <S.FooterRow>
@@ -14,14 +17,14 @@ export const Footer = () => {
               color="clear"
               layout="icon"
               size="md"
-              label="광고문의"
+              label={message.contact.ads}
             />
             <Button
               type="button"
               color="clear"
               layout="icon"
               size="md"
-              label="VIP 이용안내"
+              label={message.contact.vip}
             />
           </S.FooterBtnBox>
         </S.FooterLinkBox>

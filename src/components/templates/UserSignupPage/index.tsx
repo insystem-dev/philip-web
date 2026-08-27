@@ -2,6 +2,7 @@ import { Button } from "@/components/atoms/Button";
 import { InputText } from "@/components/atoms/Input/InputText";
 import { InputCheckbox } from "@/components/atoms/Input/InputCheckbox";
 import * as S from "./userSignupPage.style";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 export interface UserSignupValues {
   userId: string;
@@ -43,21 +44,23 @@ export const UserSignupPage = ({
   onDuplicateCheck,
   onBack,
 }: UserSignupPageProps) => {
+  const { message } = usePhilipLocale();
+
   return (
     <S.UserSignupPage>
       <S.SignupBox onSubmit={handleSubmit(Submit)}>
-        <S.SignupTit>일반 회원가입</S.SignupTit>
+        <S.SignupTit>{message.signup.title}</S.SignupTit>
 
         <S.FieldList>
           <S.IdField>
             <S.IdRow>
               <InputText
-                label="아이디"
+                label={message.signup.userId}
                 required
                 layout="row"
                 size="lg"
                 width="100%"
-                placeholder="영문, 숫자, 밑줄 4~30자"
+                placeholder={message.signup.userIdPlaceholder}
                 register={register("userId")}
                 name="userId"
               />
@@ -67,7 +70,7 @@ export const UserSignupPage = ({
                 height={40}
                 color="dark"
                 layout="solid"
-                label="중복확인"
+                label={message.signup.duplicateCheck}
                 disabled={isIdChecking || isLoading}
                 onClick={onDuplicateCheck}
               />
@@ -76,7 +79,7 @@ export const UserSignupPage = ({
               <S.IdMessage status="error">{errors.userId.message}</S.IdMessage>
             ) : isIdChecked ? (
               <S.IdMessage status="success">
-                사용 가능한 아이디입니다.
+                {message.signup.userIdAvailable}
               </S.IdMessage>
             ) : (
               ""
@@ -84,63 +87,63 @@ export const UserSignupPage = ({
           </S.IdField>
 
           <InputText
-            label="비밀번호"
+            label={message.signup.password}
             required
             layout="row"
             size="lg"
             width="100%"
             type="password"
-            placeholder="8자 이상 입력해 주세요"
+            placeholder={message.signup.passwordPlaceholder}
             register={register("password")}
             errors={errors}
             name="password"
           />
 
           <InputText
-            label="비밀번호 확인"
+            label={message.signup.passwordConfirm}
             required
             layout="row"
             size="lg"
             width="100%"
             type="password"
-            placeholder="비밀번호를 다시 입력해 주세요"
+            placeholder={message.signup.passwordConfirmPlaceholder}
             register={register("passwordCheck")}
             errors={errors}
             name="passwordCheck"
           />
 
           <InputText
-            label="이름"
+            label={message.signup.name}
             required
             layout="row"
             size="lg"
             width="100%"
-            placeholder="이름 입력"
+            placeholder={message.signup.namePlaceholder}
             register={register("name")}
             errors={errors}
             name="name"
           />
 
           <InputText
-            label="휴대폰 번호"
+            label={message.signup.phone}
             required
             layout="row"
             size="lg"
             width="100%"
             type="tel"
-            placeholder="010-0000-0000"
+            placeholder={message.signup.phonePlaceholder}
             register={register("phoneNumber")}
             errors={errors}
             name="phoneNumber"
           />
 
           <InputText
-            label="이메일 (선택)"
+            label={message.signup.emailOptional}
             layout="row"
             size="lg"
             width="100%"
             type="email"
-            placeholder="philip@example.com"
+            placeholder={message.signup.emailPlaceholder}
             register={register("email")}
             errors={errors}
             name="email"
@@ -148,14 +151,11 @@ export const UserSignupPage = ({
         </S.FieldList>
 
         <S.Terms>
-          <strong>개인정보 수집 및 이용 동의</strong>
-          <p>
-            회원가입과 서비스 제공을 위해 아이디, 이름, 휴대폰 번호, 이메일을
-            수집하며 회원 탈퇴 시까지 보관합니다.
-          </p>
+          <strong>{message.signup.termsTitle}</strong>
+          <p>{message.signup.termsDescription}</p>
           <InputCheckbox
             layout="row"
-            displayValue="개인정보 수집 및 이용에 동의합니다."
+            displayValue={message.signup.termsAgree}
             checked={termsAgreed}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               onTermsChange(event.target.checked)
@@ -177,7 +177,7 @@ export const UserSignupPage = ({
             height={48}
             color="primary"
             layout="solid"
-            label="회원가입"
+            label={message.signup.submit}
             disabled={isLoading || !termsAgreed}
             className={`${isLoading ? "spinner spinner-white spinner-right" : ""}`}
           />
@@ -187,7 +187,7 @@ export const UserSignupPage = ({
             height={32}
             color="clear"
             layout="solid"
-            label="로그인으로 돌아가기"
+            label={message.signup.backToLogin}
             onClick={onBack}
           />
         </S.ButtonArea>

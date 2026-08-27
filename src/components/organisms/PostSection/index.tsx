@@ -5,6 +5,7 @@ import { LocationBox } from "@/components/molecules/LocationBox";
 import * as S from "./postSection.style";
 import IconBack from "public/assets/svg/icon-arrow-back.svg";
 import { useRouter } from "next/router";
+import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 interface PostSectionProp {
   detailItem: [];
@@ -12,6 +13,7 @@ interface PostSectionProp {
 
 export const PostSection = ({ detailItem }: PostSectionProp) => {
   const router = useRouter();
+  const { message } = usePhilipLocale();
 
   return (
     <S.PostSection>
@@ -21,7 +23,7 @@ export const PostSection = ({ detailItem }: PostSectionProp) => {
           height={36}
           color="clear"
           layout="icon"
-          label="목록으로"
+          label={message.detail.backToList}
           onClick={() => router.back()}
         >
           <IconBack />
@@ -29,8 +31,8 @@ export const PostSection = ({ detailItem }: PostSectionProp) => {
       </div>
 
       <StoreInfoBox post={detailItem} />
-      <PriceInfoBox post={detailItem} title="요금 및 메뉴 안내" />
-      <LocationBox post={detailItem} title="오시는 길" />
+      <PriceInfoBox post={detailItem} title={message.detail.priceAndMenu} />
+      <LocationBox post={detailItem} title={message.detail.directions} />
     </S.PostSection>
   );
 };
