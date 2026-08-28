@@ -66,6 +66,11 @@ export const AdminNavList = () => {
       name: "환경설정",
       path: "/admin/settings",
     });
+    menus.push({
+      id: 12,
+      name: "번역 사용량",
+      path: "/admin/translation-usage",
+    });
   }
 
   return (

@@ -148,9 +148,7 @@ export const AdminTranslationPage = () => {
   );
 
   const summary = summaryQuery.data;
-  const usagePercent = summary
-    ? Math.min(100, (summary.usage.characters / summary.usage.limit) * 100)
-    : 0;
+  const usagePercent = summary?.usage.usagePercent ?? 0;
   const totalPages = Math.max(
     1,
     Math.ceil((listQuery.data?.total ?? 0) / PAGE_SIZE)
