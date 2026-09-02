@@ -1,57 +1,19 @@
-import { GoogleMap, LoadScriptNext, MarkerF } from "@react-google-maps/api";
-import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import GeoCode from "@/lib/Google-geocode";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
 const Wrapper = styled.div`
   .map-container {
+    display: block;
     width: 100%;
     height: 540px;
+    border: 0;
   }
 `;
 
-interface LocationProps {
-  lat: number;
-  lng: number;
-}
-
-// 기본 좌표 (서울 중심)
-const DEFAULT_CENTER: LocationProps = { lat: 37.5665, lng: 126.978 };
-
 const Map = ({ address }: { address?: string }) => {
-  const { message } = usePhilipLocale();
-  const [location, setLocation] = useState<LocationProps>(DEFAULT_CENTER);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!address) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    GeoCode(address)
-      .then((res) => {
-        // lat, lng이 유효한 숫자인지 확인
-        if (
-          res &&
-          typeof res.lat === "number" &&
-          typeof res.lng === "number" &&
-          !isNaN(res.lat) &&
-          !isNaN(res.lng)
-        ) {
-          setLocation({ lat: res.lat, lng: res.lng });
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [address]);
-
+  const { locale, message } = usePhilipLocale();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 
-  // API 키가 없으면 메시지 표시
   if (!apiKey) {
     return (
       <Wrapper>
@@ -70,18 +32,28 @@ const Map = ({ address }: { address?: string }) => {
     );
   }
 
+  if (!address?.trim()) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    key: apiKey,
+    q: address.trim(),
+    zoom: "16",
+    language: locale,
+    region: "PH",
+  });
+
   return (
     <Wrapper>
-      <LoadScriptNext googleMapsApiKey={apiKey}>
-        <GoogleMap
-          clickableIcons={true}
-          zoom={16}
-          center={location}
-          mapContainerClassName="map-container"
-        >
-          {!isLoading && <MarkerF position={location} />}
-        </GoogleMap>
-      </LoadScriptNext>
+      <iframe
+        className="map-container"
+        title={locale === "ko" ? `${address} 위치 지도` : `Map for ${address}`}
+        src={`https://www.google.com/maps/embed/v1/place?${params.toString()}`}
+        loading="lazy"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+      />
     </Wrapper>
   );
 };
