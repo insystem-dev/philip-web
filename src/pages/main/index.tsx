@@ -30,6 +30,21 @@ import {
 } from "@/apis/categoryApi";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
+const PHILIPPINES_OFFSET_MS = 8 * 60 * 60 * 1000;
+const MIDNIGHT_REFRESH_DELAY_MS = 1000;
+
+const getMillisecondsUntilPhilippineMidnight = () => {
+  const now = Date.now();
+  const philippinesNow = new Date(now + PHILIPPINES_OFFSET_MS);
+  philippinesNow.setUTCHours(24, 0, 0, 0);
+
+  return (
+    philippinesNow.getTime() -
+    (now + PHILIPPINES_OFFSET_MS) +
+    MIDNIGHT_REFRESH_DELAY_MS
+  );
+};
+
 const Main = () => {
   const { locale, message } = usePhilipLocale();
   // ─────────────────────────────────────────────────────────────
@@ -55,7 +70,7 @@ const Main = () => {
   // ─────────────────────────────────────────────────────────────
 
   // 방문자 체크 (오늘 방문 기록) - 완료 후 카운트 조회
-  const { isSuccess: visitChecked } = useQuery(
+  const { isSuccess: visitChecked, refetch: recheckTodayVisit } = useQuery(
     "checkTodayVisit",
     checkTodayVisit,
     {
@@ -65,9 +80,13 @@ const Main = () => {
   );
 
   // 방문자 수 조회 (방문 체크 완료 후 실행)
-  const { data: todayCount } = useQuery("getVisitCount", getVisitCount, {
-    enabled: visitChecked, // 방문 체크 완료 후 조회
-  });
+  const { data: todayCount, refetch: refetchVisitCount } = useQuery(
+    "getVisitCount",
+    getVisitCount,
+    {
+      enabled: visitChecked, // 방문 체크 완료 후 조회
+    }
+  );
 
   // 광고 데이터 (선택 지역 전용 배너만 조회)
   // 배너는 지역 전용이라 지역을 고르기 전에는 노출할 것이 없다 → 전체 목록을 헛되이 받지 않도록 막는다
@@ -202,6 +221,29 @@ const Main = () => {
       setCount(todayCount);
     }
   }, [todayCount]);
+
+  // 페이지를 계속 열어둔 경우에도 필리핀 00시 직후 새 날짜로 방문 기록과 카운트를 갱신한다.
+  useEffect(() => {
+    let cancelled = false;
+    let midnightTimer: ReturnType<typeof setTimeout>;
+
+    const scheduleMidnightRefresh = () => {
+      midnightTimer = setTimeout(async () => {
+        await recheckTodayVisit();
+        if (cancelled) return;
+
+        await refetchVisitCount();
+        if (!cancelled) scheduleMidnightRefresh();
+      }, getMillisecondsUntilPhilippineMidnight());
+    };
+
+    scheduleMidnightRefresh();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(midnightTimer);
+    };
+  }, [recheckTodayVisit, refetchVisitCount]);
 
   // 토큰 복원은 HeadersTokenProvider에서 전담 (만료 검증 포함)
   // ─────────────────────────────────────────────────────────────
