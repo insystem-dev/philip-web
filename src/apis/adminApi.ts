@@ -59,7 +59,7 @@ export interface VisitDisplaySetting {
   visitDate: string;
   actualCount: number;
   displayMode: VisitDisplayMode;
-  manualCount: number | null;
+  manualCount: number;
   displayCount: number;
   updatedAt: string | null;
 }

@@ -3,10 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   getVisitDisplaySetting,
   updateVisitDisplaySetting,
+  VisitDisplaySetting,
   VisitDisplayMode,
 } from "@/apis/adminApi";
 import useApiError from "@/lib/hooks/useApiError";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
+import {
+  getMillisecondsUntilPhilippineMidnight,
+  getTodayInPhilippines,
+} from "@/lib/philippinesTime";
 import * as S from "./adminVisitPage.style";
 
 const MAX_VISIT_COUNT = 2_147_483_647;
@@ -18,7 +23,7 @@ export const AdminVisitPage = () => {
   const [manualCount, setManualCount] = useState("");
   const [validationMessage, setValidationMessage] = useState("");
 
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["visitDisplaySetting"],
     getVisitDisplaySetting,
     {
@@ -30,8 +35,42 @@ export const AdminVisitPage = () => {
   useEffect(() => {
     if (!data) return;
     setMode(data.displayMode);
-    setManualCount(data.manualCount === null ? "0" : String(data.manualCount));
+    setManualCount(String(data.manualCount));
   }, [data]);
+
+  // 관리자 화면을 계속 열어둔 경우에도 필리핀 00시에 전날 캐시를 즉시 제거한다.
+  useEffect(() => {
+    let cancelled = false;
+    let midnightTimer: ReturnType<typeof setTimeout>;
+
+    const scheduleMidnightReset = () => {
+      midnightTimer = setTimeout(async () => {
+        const resetSetting: VisitDisplaySetting = {
+          visitDate: getTodayInPhilippines(),
+          actualCount: 0,
+          displayMode: "actual",
+          manualCount: 0,
+          displayCount: 0,
+          updatedAt: null,
+        };
+
+        setMode("actual");
+        setManualCount("0");
+        setValidationMessage("");
+        queryClient.setQueryData(["visitDisplaySetting"], resetSetting);
+
+        await refetch();
+        if (!cancelled) scheduleMidnightReset();
+      }, getMillisecondsUntilPhilippineMidnight());
+    };
+
+    scheduleMidnightReset();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(midnightTimer);
+    };
+  }, [queryClient, refetch]);
 
   const mutation = useMutation(updateVisitDisplaySetting, {
     onSuccess: (savedSetting) => {
@@ -125,8 +164,8 @@ export const AdminVisitPage = () => {
                   />
                   <span>
                     <strong>실제 집계 + 추가 입력</strong>
-                    실제 방문자 수에 입력한 값을 더해 노출합니다. 실제
-                    방문자가 늘어날수록 노출 수도 함께 늘어납니다.
+                    실제 방문자 수에 입력한 값을 더해 노출합니다. 실제 방문자가
+                    늘어날수록 노출 수도 함께 늘어납니다.
                   </span>
                 </S.RadioLabel>
               </S.Fieldset>

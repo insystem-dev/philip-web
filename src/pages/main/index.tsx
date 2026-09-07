@@ -29,21 +29,7 @@ import {
   getCityListApi,
 } from "@/apis/categoryApi";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
-
-const PHILIPPINES_OFFSET_MS = 8 * 60 * 60 * 1000;
-const MIDNIGHT_REFRESH_DELAY_MS = 1000;
-
-const getMillisecondsUntilPhilippineMidnight = () => {
-  const now = Date.now();
-  const philippinesNow = new Date(now + PHILIPPINES_OFFSET_MS);
-  philippinesNow.setUTCHours(24, 0, 0, 0);
-
-  return (
-    philippinesNow.getTime() -
-    (now + PHILIPPINES_OFFSET_MS) +
-    MIDNIGHT_REFRESH_DELAY_MS
-  );
-};
+import { getMillisecondsUntilPhilippineMidnight } from "@/lib/philippinesTime";
 
 const Main = () => {
   const { locale, message } = usePhilipLocale();
@@ -61,6 +47,9 @@ const Main = () => {
   const [cityOptions, setCityOptions] = useState<CitySub[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [count, setCount] = useState<number>(0);
+  const [visitCheckStaleTime] = useState(() =>
+    getMillisecondsUntilPhilippineMidnight()
+  );
   const [loginRequiredCategoryName, setLoginRequiredCategoryName] = useState<
     string | null
   >(null);
@@ -70,11 +59,13 @@ const Main = () => {
   // ─────────────────────────────────────────────────────────────
 
   // 방문자 체크 (오늘 방문 기록) - 완료 후 카운트 조회
-  const { isSuccess: visitChecked, refetch: recheckTodayVisit } = useQuery(
+  const { isSuccess: visitChecked } = useQuery(
     "checkTodayVisit",
     checkTodayVisit,
     {
-      staleTime: Infinity, // 페이지 내에서 한 번만 실행
+      // 같은 페이지를 계속 보고 있을 때는 자정에 새 방문자로 자동 등록하지 않는다.
+      // 자정 이후 다시 /main에 들어오면 쿼리가 stale 상태라 정상적으로 새 날짜 방문을 기록한다.
+      staleTime: visitCheckStaleTime,
       retry: 1,
     }
   );
@@ -222,16 +213,15 @@ const Main = () => {
     }
   }, [todayCount]);
 
-  // 페이지를 계속 열어둔 경우에도 필리핀 00시 직후 새 날짜로 방문 기록과 카운트를 갱신한다.
+  // 페이지를 계속 열어둔 경우에는 필리핀 00시에 화면을 먼저 0으로 초기화하고
+  // 현재 탭을 새 방문자로 다시 등록하지 않은 채 실제 새 날짜 카운트만 조회한다.
   useEffect(() => {
     let cancelled = false;
     let midnightTimer: ReturnType<typeof setTimeout>;
 
     const scheduleMidnightRefresh = () => {
       midnightTimer = setTimeout(async () => {
-        await recheckTodayVisit();
-        if (cancelled) return;
-
+        setCount(0);
         await refetchVisitCount();
         if (!cancelled) scheduleMidnightRefresh();
       }, getMillisecondsUntilPhilippineMidnight());
@@ -243,7 +233,7 @@ const Main = () => {
       cancelled = true;
       clearTimeout(midnightTimer);
     };
-  }, [recheckTodayVisit, refetchVisitCount]);
+  }, [refetchVisitCount]);
 
   // 토큰 복원은 HeadersTokenProvider에서 전담 (만료 검증 포함)
   // ─────────────────────────────────────────────────────────────
