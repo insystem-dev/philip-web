@@ -392,14 +392,21 @@ const AdminCode = () => {
 
     setIsSavingNames(true);
     try {
+      let hasPendingTranslation = false;
       // 순서 변경 API는 형제 전체를 다시 정렬하므로 경쟁 상태가 생기지 않게 차례로 보낸다.
       for (const item of changed as any[]) {
         const draft = nameDraft[item.oid];
         if (activeGroup === "CITY") {
+          const nameEng = draft.name_eng.trim();
+          // 영문명(번역값)은 바꿨을 때만 보낸다. 같이 보내면 한글만 바꿔도 옛 영문이 검수 번역으로 저장된다.
+          const isNameEngChanged = nameEng !== (item.name_eng ?? "");
+          if (!isNameEngChanged && draft.name.trim() !== (item.name ?? "")) {
+            hasPendingTranslation = true;
+          }
           await updateCitySubApi({
             oid: item.oid,
             name: draft.name.trim(),
-            name_eng: draft.name_eng.trim(),
+            ...(isNameEngChanged && { name_eng: nameEng }),
             sort: draft.sort,
             disabled: draft.disabled,
           });
@@ -422,6 +429,11 @@ const AdminCode = () => {
       setNameDraft({});
       setError("");
       setIsEditMode(false);
+      if (hasPendingTranslation) {
+        alert(
+          "한글 이름을 바꾼 지역의 영문명은 자동 번역 후 반영됩니다. 잠시 후 새로고침해 확인해 주세요."
+        );
+      }
     } catch (error: any) {
       // 편집모드를 유지해 입력한 값이 날아가지 않게 한다
       setError(

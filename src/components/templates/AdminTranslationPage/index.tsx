@@ -438,7 +438,17 @@ export const AdminTranslationPage = () => {
                   <S.SecondaryButton
                     type="button"
                     disabled={autoMutation.isLoading}
-                    onClick={() => autoMutation.mutate()}
+                    onClick={() => {
+                      if (
+                        detailQuery.data?.status === "REVIEWED" &&
+                        !window.confirm(
+                          "검수 완료된 번역 전체를 자동 번역으로 교체합니다. 계속할까요?"
+                        )
+                      ) {
+                        return;
+                      }
+                      autoMutation.mutate();
+                    }}
                   >
                     {autoMutation.isLoading
                       ? "등록 중..."
