@@ -166,8 +166,8 @@ export const AdminPostTranslationEditor = ({
 
       {detail.status === "STALE" && (
         <S.StaleNotice role="status">
-          한글 원문이 변경되었습니다. 변경된 내용을 확인한 뒤 영어 번역을 다시
-          저장해 주세요.
+          한글 원문이 변경되었습니다. 바뀐 항목만 자동 번역으로 다시 번역되며,
+          나머지 항목의 번역은 그대로 유지됩니다.
         </S.StaleNotice>
       )}
 
@@ -224,29 +224,26 @@ export const AdminPostTranslationEditor = ({
         <S.FooterHint>
           <strong>{isDirty ? "저장하지 않은 변경사항이 있습니다." : "저장된 번역입니다."}</strong>
           <span>
-            검수 완료로 저장하면 이후 자동 번역이 해당 내용을 덮어쓰지 않습니다.
+            검수 완료 번역은 한글 원문이 바뀐 항목만 자동 번역으로 교체됩니다.
           </span>
         </S.FooterHint>
         <S.Actions>
           <S.SecondaryButton
             type="button"
-            title={
-              detail.status === "REVIEWED"
-                ? "검수 완료 번역은 자동 번역으로 덮어쓰지 않습니다."
-                : undefined
-            }
-            disabled={
-              detail.status === "REVIEWED" ||
-              autoMutation.isLoading ||
-              saveMutation.isLoading
-            }
-            onClick={() => autoMutation.mutate()}
+            disabled={autoMutation.isLoading || saveMutation.isLoading}
+            onClick={() => {
+              if (
+                detail.status === "REVIEWED" &&
+                !window.confirm(
+                  "검수 완료된 번역 전체를 자동 번역으로 교체합니다. 계속할까요?"
+                )
+              ) {
+                return;
+              }
+              autoMutation.mutate();
+            }}
           >
-            {detail.status === "REVIEWED"
-              ? "검수 완료 번역 보호 중"
-              : autoMutation.isLoading
-                ? "등록 중..."
-                : "자동 번역 요청"}
+            {autoMutation.isLoading ? "등록 중..." : "자동 번역 요청"}
           </S.SecondaryButton>
           <S.SecondaryButton
             type="button"
