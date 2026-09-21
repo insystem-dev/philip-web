@@ -1,35 +1,34 @@
 import { ImageSlide } from "@/components/atoms/ImageSlide";
-import { CopyButton } from "@/components/atoms/Button/CopyButton";
+import { CopyTextButton } from "@/components/atoms/Button/CopyTextButton";
 import * as S from "./storeInfoBox.style";
-import IconPhone from "public/assets/svg/icon-phone.svg";
+import IconPhone from "public/assets/svg/icon-phone-line.svg";
+import IconKakao from "public/assets/svg/icon-kakao.svg";
 import IconTelegram from "public/assets/svg/icon-telegram.svg";
 import IconDiscord from "public/assets/svg/icon-discord.svg";
-import Image from "next/image";
+import IconLocation from "public/assets/svg/icon-location.svg";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
+import { parseMessengerLink } from "@/lib/messenger";
 // 조회수 임시 미노출로 아이콘도 함께 주석처리 (복구 시 아래 StoreViewBox 블록과 같이 해제)
 // import IconView from "public/assets/svg/icon-view.svg";
 
+const toText = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
+
 export const StoreInfoBox = ({ post }: any) => {
   const { message } = usePhilipLocale();
-  const messengerHref =
-    typeof post?.messengerLink === "string" &&
-    /^https:\/\/(?:t\.me|discord\.gg)\//i.test(post.messengerLink)
-      ? post.messengerLink
-      : null;
-  const messengerType =
-    post?.messengerIconKey === "discord" ||
-    /^https:\/\/discord\.gg\//i.test(messengerHref || "")
-      ? "discord"
-      : "telegram";
-  const messengerLabel =
-    messengerType === "discord"
-      ? message.detail.discord
-      : message.detail.telegram;
-  const messengerImage = Array.isArray(post?.messengerImage)
-    ? post.messengerImage[0]
-    : post?.messengerImage;
-  const hasMessengerBanner =
-    post?.messengerIconKey === "custom" && !!messengerImage?.filename;
+  const phoneNumber = toText(post?.phoneNumber);
+  const kakaoId = toText(post?.kakaoId);
+  const telegramId = toText(post?.telegramId);
+  const address = toText(post?.address);
+  const messenger = parseMessengerLink(post?.messengerLink);
+  const telegramLink = messenger?.type === "telegram" ? messenger : null;
+  const discordLink = messenger?.type === "discord" ? messenger : null;
+  // 텔레그램 아이디를 따로 입력하지 않았으면 단체방 링크의 @아이디(또는 주소)를 대신 보여준다
+  const telegramText = telegramId || telegramLink?.label || "";
+  const telegramCopyText = telegramId || telegramLink?.copyText || "";
+  const hasContact = Boolean(
+    phoneNumber || kakaoId || telegramText || discordLink || address
+  );
 
   return (
     <S.StoreInfoBox>
@@ -50,48 +49,106 @@ export const StoreInfoBox = ({ post }: any) => {
           </S.StoreViewBox>
           */}
         </S.StoreInfoTop>
-        <S.AddressBox>{post?.address}</S.AddressBox>
-        <S.PhoneBox>
-          <span>
-            <IconPhone />
-            {post?.phoneNumber}
-          </span>
-          <CopyButton label={message.detail.copyPhone} text={post?.phoneNumber} />
-        </S.PhoneBox>
-        {messengerHref && (
-          <S.MessengerLink
-            href={messengerHref}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            aria-label={`${post?.storeName || message.detail.business} ${messengerLabel}`}
-            $hasBackgroundImage={hasMessengerBanner}
-          >
-            {hasMessengerBanner && (
-              <S.MessengerBackground aria-hidden="true">
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/${messengerImage.filename}`}
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) calc(100vw - 32px), 390px"
+
+        {/* 연락처 목록 — 값이 있는 항목만 "아이콘 + 값 + (복사)" 한 줄씩 노출 */}
+        {hasContact && (
+          <S.ContactList>
+            {phoneNumber && (
+              <S.ContactItem>
+                <S.ContactIcon role="img" aria-label={message.detail.phoneNumber}>
+                  <IconPhone width={18} height={18} viewBox="0 0 16 16" />
+                </S.ContactIcon>
+                <S.ContactValue>{phoneNumber}</S.ContactValue>
+                <CopyTextButton
+                  text={phoneNumber}
+                  label={message.detail.copyPhone}
                 />
-              </S.MessengerBackground>
+              </S.ContactItem>
             )}
-            {!hasMessengerBanner && (
-              <S.MessengerIcon $variant={messengerType}>
-                {messengerType === "discord" ? (
-                  <IconDiscord width={42} height={42} viewBox="0 0 24 24" />
+            {kakaoId && (
+              <S.ContactItem>
+                <S.ContactIcon
+                  role="img"
+                  aria-label={message.detail.kakaoTalk}
+                  $variant="kakao"
+                >
+                  <IconKakao width={12} height={12} viewBox="0 0 24 24" />
+                </S.ContactIcon>
+                <S.ContactValue>{kakaoId}</S.ContactValue>
+                <CopyTextButton
+                  text={kakaoId}
+                  label={message.detail.copyKakao}
+                />
+              </S.ContactItem>
+            )}
+            {telegramText && (
+              <S.ContactItem>
+                <S.ContactIcon role="img" aria-label={message.detail.telegram}>
+                  <IconTelegram width={18} height={18} viewBox="0 0 24 24" />
+                </S.ContactIcon>
+                {/* 단체방 링크가 있으면 아이디를 눌러 텔레그램으로 바로 이동 */}
+                {telegramLink ? (
+                  <S.ContactLink
+                    href={telegramLink.href}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    {telegramText}
+                  </S.ContactLink>
                 ) : (
-                  <IconTelegram width={42} height={42} viewBox="0 0 24 24" />
+                  <S.ContactValue>{telegramText}</S.ContactValue>
                 )}
-              </S.MessengerIcon>
+                <CopyTextButton
+                  text={telegramCopyText}
+                  label={message.detail.copyTelegram}
+                />
+              </S.ContactItem>
             )}
-            <S.MessengerCopy>
-              <small>OFFICIAL GROUP CHAT</small>
-              <strong>{messengerLabel}</strong>
-              <span>{message.detail.openMessenger}</span>
-            </S.MessengerCopy>
-            <S.MessengerArrow aria-hidden="true">↗</S.MessengerArrow>
-          </S.MessengerLink>
+            {discordLink && (
+              <S.ContactItem>
+                <S.ContactIcon role="img" aria-label={message.detail.discord}>
+                  <IconDiscord width={18} height={18} viewBox="0 0 24 24" />
+                </S.ContactIcon>
+                <S.ContactLink
+                  href={discordLink.href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                >
+                  {discordLink.label}
+                </S.ContactLink>
+                <CopyTextButton
+                  text={discordLink.copyText}
+                  label={message.detail.copyDiscord}
+                />
+              </S.ContactItem>
+            )}
+            {address && (
+              <S.ContactItem>
+                <S.ContactIcon role="img" aria-label={message.detail.location}>
+                  <IconLocation width={18} height={18} viewBox="0 0 16 16" />
+                </S.ContactIcon>
+                <S.ContactLink
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    address
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={message.detail.viewLocationAria}
+                  $noShrink
+                >
+                  {message.detail.viewLocation}
+                </S.ContactLink>
+                {/* 주소는 한 줄 말줄임 — 전체 주소는 아래 '오시는 길'과 복사로 확인 */}
+                <S.ContactValue title={address} $ellipsis>
+                  {address}
+                </S.ContactValue>
+                <CopyTextButton
+                  text={address}
+                  label={message.detail.copyAddress}
+                />
+              </S.ContactItem>
+            )}
+          </S.ContactList>
         )}
       </S.StoreInfo>
     </S.StoreInfoBox>

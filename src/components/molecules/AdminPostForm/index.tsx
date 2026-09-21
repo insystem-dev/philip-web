@@ -141,6 +141,28 @@ export const AdminPostForm = ({
           errors={errors}
           name="phoneNumber"
         />
+        <InputText
+          label="카카오톡 아이디"
+          layout="column"
+          themeType="admin"
+          size="md"
+          width="100%"
+          placeholder="선택 입력 · 예: philip69"
+          register={register("kakaoId")}
+          errors={errors}
+          name="kakaoId"
+        />
+        <InputText
+          label="텔레그램 아이디"
+          layout="column"
+          themeType="admin"
+          size="md"
+          width="100%"
+          placeholder="선택 입력 · 여러 개는 쉼표로 구분 (예: @philip69, ACEKTV)"
+          register={register("telegramId")}
+          errors={errors}
+          name="telegramId"
+        />
         <MessengerLinkFields
           register={register}
           errors={errors}

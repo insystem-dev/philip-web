@@ -152,6 +152,14 @@ const AdminPost = () => {
       cityOid: yup.string().required("도시를 선택하세요"),
       ownerName: yup.string().required("대표자명을 입력해주세요"),
       remark: yup.string(),
+      kakaoId: yup
+        .string()
+        .nullable()
+        .max(100, "카카오톡 아이디는 100자 이하로 입력해주세요"),
+      telegramId: yup
+        .string()
+        .nullable()
+        .max(200, "텔레그램 아이디는 200자 이하로 입력해주세요"),
       messengerIconKey: yup
         .mixed<MessengerIconKey>()
         .oneOf(["telegram", "discord", "custom"])
@@ -324,6 +332,8 @@ const AdminPost = () => {
     if (detailItem) {
       reset({
         ...detailItem,
+        kakaoId: detailItem.kakaoId || "",
+        telegramId: detailItem.telegramId || "",
         messengerIconKey: detailItem.messengerIconKey || "telegram",
         messengerLink: detailItem.messengerLink || "",
       });
