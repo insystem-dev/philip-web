@@ -114,6 +114,9 @@ const AdminPost = () => {
       setImagePaths([]);
       // 스토어 목록 갱신 (실제 목록 쿼리키와 일치시킴)
       queryClient.invalidateQueries(["getAdminStorePosts"]);
+      // 이 업체 상세 캐시도 갱신 — 안 하면 다시 들어왔을 때 저장 전 값으로 폼이 채워진다
+      // (cacheTime 무제한 + staleTime 10초라 10초 안에 재진입하면 재조회도 하지 않음)
+      queryClient.invalidateQueries(["detailItem", router.query.id]);
       router.replace("/admin/store");
     },
   });
