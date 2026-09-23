@@ -145,6 +145,7 @@ export const messages = {
       location: "위치",
       viewLocation: "위치보기",
       viewLocationAria: "구글 지도에서 위치보기 (새 창)",
+      business: "업체",
       businessImage: "업체 이미지",
       noImage: "등록된 이미지가 없습니다.",
       noRegisteredImage: "등록된 이미지 없음",
@@ -161,6 +162,7 @@ export const messages = {
       viewerHelp: "두 손가락·마우스 휠로 확대 / 확대 후 드래그로 시점 이동",
       telegram: "텔레그램",
       discord: "디스코드",
+      openMessenger: "앱에서 바로 열기",
       networkError: "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
     },
     popup: {
@@ -333,6 +335,7 @@ export const messages = {
       location: "Location",
       viewLocation: "View map",
       viewLocationAria: "View map on Google Maps (opens in a new tab)",
+      business: "Business",
       businessImage: "Business image",
       noImage: "No images have been added.",
       noRegisteredImage: "No image available",
@@ -349,6 +352,7 @@ export const messages = {
       viewerHelp: "Pinch or scroll to zoom, then drag to move the photo",
       telegram: "Telegram",
       discord: "Discord",
+      openMessenger: "Open in the app",
       networkError: "A network error occurred. Please try again shortly.",
     },
     popup: {

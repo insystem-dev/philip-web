@@ -6,6 +6,7 @@ import IconKakao from "public/assets/svg/icon-kakao.svg";
 import IconTelegram from "public/assets/svg/icon-telegram.svg";
 import IconDiscord from "public/assets/svg/icon-discord.svg";
 import IconLocation from "public/assets/svg/icon-location.svg";
+import Image from "next/image";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 import { parseMessengerLink } from "@/lib/messenger";
 // 조회수 임시 미노출로 아이콘도 함께 주석처리 (복구 시 아래 StoreViewBox 블록과 같이 해제)
@@ -26,6 +27,15 @@ export const StoreInfoBox = ({ post }: any) => {
   // 텔레그램 아이디를 따로 입력하지 않았으면 단체방 링크의 @아이디(또는 주소)를 대신 보여준다
   const telegramText = telegramId || telegramLink?.label || "";
   const telegramCopyText = telegramId || telegramLink?.copyText || "";
+  const messengerLabel =
+    messenger?.type === "discord"
+      ? message.detail.discord
+      : message.detail.telegram;
+  const messengerImage = Array.isArray(post?.messengerImage)
+    ? post.messengerImage[0]
+    : post?.messengerImage;
+  const hasMessengerBanner =
+    post?.messengerIconKey === "custom" && !!messengerImage?.filename;
   const hasContact = Boolean(
     phoneNumber || kakaoId || telegramText || discordLink || address
   );
@@ -149,6 +159,43 @@ export const StoreInfoBox = ({ post }: any) => {
               </S.ContactItem>
             )}
           </S.ContactList>
+        )}
+
+        {/* 메신저 배너 — 업체 요청으로 연락처 목록 아래에 유지 (직접 올린 이미지는 배경으로) */}
+        {messenger && (
+          <S.MessengerLink
+            href={messenger.href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            aria-label={`${post?.storeName || message.detail.business} ${messengerLabel}`}
+            $hasBackgroundImage={hasMessengerBanner}
+          >
+            {hasMessengerBanner && (
+              <S.MessengerBackground aria-hidden="true">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/${messengerImage.filename}`}
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) calc(100vw - 32px), 390px"
+                />
+              </S.MessengerBackground>
+            )}
+            {!hasMessengerBanner && (
+              <S.MessengerIcon $variant={messenger.type}>
+                {messenger.type === "discord" ? (
+                  <IconDiscord width={42} height={42} viewBox="0 0 24 24" />
+                ) : (
+                  <IconTelegram width={42} height={42} viewBox="0 0 24 24" />
+                )}
+              </S.MessengerIcon>
+            )}
+            <S.MessengerCopy>
+              <small>OFFICIAL GROUP CHAT</small>
+              <strong>{messengerLabel}</strong>
+              <span>{message.detail.openMessenger}</span>
+            </S.MessengerCopy>
+            <S.MessengerArrow aria-hidden="true">↗</S.MessengerArrow>
+          </S.MessengerLink>
         )}
       </S.StoreInfo>
     </S.StoreInfoBox>
