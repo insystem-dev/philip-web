@@ -56,11 +56,7 @@ const emptyDraft = (): Draft => {
 
 const getStatus = (event: AdminEventItem) => {
   if (event.useYn === "N") return { label: "사용 안 함", tone: "off" as const };
-  const today = getPhilippineDate();
-  if (event.startDate > today)
-    return { label: "노출 예정", tone: "scheduled" as const };
-  if (event.endDate < today) return { label: "종료", tone: "ended" as const };
-  return { label: "노출 중", tone: "active" as const };
+  return { label: "사용", tone: "active" as const };
 };
 
 export const AdminEventPage = () => {
