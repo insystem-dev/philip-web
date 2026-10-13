@@ -75,6 +75,11 @@ export const CategoryScopeLabel = styled.div`
 `;
 
 export const CategoryScopeControl = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+
   button[aria-haspopup="listbox"] {
     height: 38px;
     border-color: rgba(68, 98, 255, 0.45);
@@ -84,6 +89,43 @@ export const CategoryScopeControl = styled.div`
       border-color: ${(props) => props.theme.colors.primary};
     }
   }
+`;
+
+export const CategoryExposureToggle = styled.button<{ $exposed: boolean }>`
+  display: inline-flex;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid
+    ${(props) =>
+      props.$exposed ? props.theme.colors.primary : props.theme.colors.func};
+  border-radius: 6px;
+  color: ${(props) => props.theme.colors.white};
+  background: ${(props) =>
+    props.$exposed ? props.theme.colors.primary : props.theme.colors.func};
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+
+  > span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: ${(props) => props.theme.colors.white};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+export const CategoryExposureError = styled.span`
+  color: ${(props) => props.theme.colors.red};
+  font-size: 1.1rem;
+  white-space: nowrap;
 `;
 
 export const CategoryScopeHint = styled.p`

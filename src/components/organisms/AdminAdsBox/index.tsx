@@ -40,6 +40,11 @@ interface AmdinAdsBoxProps {
   getLink: (label: string) => AdsLink;
   /** label별 연결 대상 변경 */
   onChangeLink: (label: string, next: AdsLink) => void;
+  /** 현재 선택한 카테고리의 메인 배너 노출 상태 */
+  isCategoryExposed: boolean;
+  isCategorySettingLoading: boolean;
+  isCategorySettingError: boolean;
+  onToggleCategoryExposure: () => void;
 }
 
 export const AmdinAdsBox = ({
@@ -60,6 +65,10 @@ export const AmdinAdsBox = ({
   stores,
   getLink,
   onChangeLink,
+  isCategoryExposed,
+  isCategorySettingLoading,
+  isCategorySettingError,
+  onToggleCategoryExposure,
 }: AmdinAdsBoxProps) => {
   /**
    * 저장된 광고 이미지 (DB에서 불러온 데이터).
@@ -181,11 +190,32 @@ export const AmdinAdsBox = ({
                   onChange={onChangeCategory}
                   allowAll
                 />
+                {isCategorySettingError ? (
+                  <S.CategoryExposureError>
+                    노출 상태를 불러오지 못했습니다.
+                  </S.CategoryExposureError>
+                ) : (
+                  <S.CategoryExposureToggle
+                    type="button"
+                    role="switch"
+                    aria-checked={isCategoryExposed}
+                    $exposed={isCategoryExposed}
+                    disabled={isCategorySettingLoading}
+                    onClick={onToggleCategoryExposure}
+                  >
+                    <span aria-hidden />
+                    {isCategorySettingLoading
+                      ? "확인 중"
+                      : isCategoryExposed
+                      ? "배너 노출"
+                      : "배너 숨김"}
+                  </S.CategoryExposureToggle>
+                )}
               </S.CategoryScopeControl>
               <S.CategoryScopeHint>
                 아래 배너들은 여기서 선택한 카테고리의 메인 페이지에
-                노출됩니다. 카테고리를 바꾸면 해당 카테고리의 배너 목록으로
-                전환됩니다.
+                노출됩니다. 카테고리를 바꾸면 해당 카테고리의 배너와 노출
+                설정이 함께 전환됩니다.
               </S.CategoryScopeHint>
             </S.CategoryScopeBox>
             <InputAdsFile
