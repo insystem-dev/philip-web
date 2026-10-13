@@ -8,10 +8,7 @@ import {
 } from "@/apis/adminApi";
 import useApiError from "@/lib/hooks/useApiError";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
-import {
-  getMillisecondsUntilPhilippineMidnight,
-  getTodayInPhilippines,
-} from "@/lib/philippinesTime";
+import { getMillisecondsUntilPhilippineMidnight } from "@/lib/philippinesTime";
 import * as S from "./adminVisitPage.style";
 
 const MAX_VISIT_COUNT = 2_147_483_647;
@@ -21,6 +18,8 @@ export const AdminVisitPage = () => {
   const { handleError } = useApiError();
   const [mode, setMode] = useState<VisitDisplayMode>("actual");
   const [manualCount, setManualCount] = useState("");
+  const [autoIntervalMinutes, setAutoIntervalMinutes] = useState("1");
+  const [autoIncrementCount, setAutoIncrementCount] = useState("1");
   const [validationMessage, setValidationMessage] = useState("");
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -31,12 +30,31 @@ export const AdminVisitPage = () => {
       onError: (error: any) => handleError(error),
     }
   );
+  const savedMode = data?.displayMode;
+  const savedManualCount = data?.manualCount;
+  const savedAutoInterval = data?.autoIntervalMinutes;
+  const savedAutoIncrement = data?.autoIncrementCount;
+
+  // 서버가 계산한 다음 증가 시각 직후 조회해 1분 설정이 2분처럼 보이지 않게 한다.
+  useEffect(() => {
+    if (!data?.nextAutoIncrementAt) return;
+
+    const delay = Math.max(
+      0,
+      new Date(data.nextAutoIncrementAt).getTime() - Date.now()
+    );
+    const timer = setTimeout(() => void refetch(), delay + 250);
+
+    return () => clearTimeout(timer);
+  }, [data?.nextAutoIncrementAt, refetch]);
 
   useEffect(() => {
-    if (!data) return;
-    setMode(data.displayMode);
-    setManualCount(String(data.manualCount));
-  }, [data]);
+    if (!savedMode) return;
+    setMode(savedMode);
+    setManualCount(String(savedManualCount ?? 0));
+    setAutoIntervalMinutes(String(savedAutoInterval ?? 1));
+    setAutoIncrementCount(String(savedAutoIncrement ?? 1));
+  }, [savedMode, savedManualCount, savedAutoInterval, savedAutoIncrement]);
 
   // 관리자 화면을 계속 열어둔 경우에도 필리핀 00시에 전날 캐시를 즉시 제거한다.
   useEffect(() => {
@@ -45,20 +63,7 @@ export const AdminVisitPage = () => {
 
     const scheduleMidnightReset = () => {
       midnightTimer = setTimeout(async () => {
-        const resetSetting: VisitDisplaySetting = {
-          visitDate: getTodayInPhilippines(),
-          actualCount: 0,
-          displayMode: "actual",
-          manualCount: 0,
-          displayCount: 0,
-          updatedAt: null,
-        };
-
-        setMode("actual");
-        setManualCount("0");
         setValidationMessage("");
-        queryClient.setQueryData(["visitDisplaySetting"], resetSetting);
-
         await refetch();
         if (!cancelled) scheduleMidnightReset();
       }, getMillisecondsUntilPhilippineMidnight());
@@ -70,7 +75,7 @@ export const AdminVisitPage = () => {
       cancelled = true;
       clearTimeout(midnightTimer);
     };
-  }, [queryClient, refetch]);
+  }, [refetch]);
 
   const mutation = useMutation(updateVisitDisplaySetting, {
     onSuccess: (savedSetting) => {
@@ -105,6 +110,33 @@ export const AdminVisitPage = () => {
       return;
     }
 
+    if (mode === "auto") {
+      const intervalMinutes = Number(autoIntervalMinutes);
+      const incrementCount = Number(autoIncrementCount);
+      if (
+        !Number.isSafeInteger(intervalMinutes) ||
+        intervalMinutes < 1 ||
+        intervalMinutes > 1440
+      ) {
+        setValidationMessage(
+          "자동 증가 간격은 1분 이상 1440분 이하의 정수로 입력해주세요."
+        );
+        return;
+      }
+      if (
+        !Number.isSafeInteger(incrementCount) ||
+        incrementCount < 1 ||
+        incrementCount > MAX_VISIT_COUNT
+      ) {
+        setValidationMessage(
+          `회당 증가 인원은 1 이상 ${MAX_VISIT_COUNT.toLocaleString()} 이하의 정수로 입력해주세요.`
+        );
+        return;
+      }
+      mutation.mutate({ mode, intervalMinutes, incrementCount });
+      return;
+    }
+
     mutation.mutate({ mode });
   };
 
@@ -115,7 +147,7 @@ export const AdminVisitPage = () => {
           <S.CardTitle>오늘의 방문자 수</S.CardTitle>
           <S.Description>
             실제 집계값을 그대로 노출하거나, 실제 집계값에 추가로 더할 방문자
-            수를 지정할 수 있습니다.
+            수를 직접 입력하거나 일정한 분 간격으로 자동 증가시킬 수 있습니다.
           </S.Description>
 
           {isLoading ? (
@@ -168,6 +200,20 @@ export const AdminVisitPage = () => {
                     늘어날수록 노출 수도 함께 늘어납니다.
                   </span>
                 </S.RadioLabel>
+                <S.RadioLabel>
+                  <input
+                    type="radio"
+                    name="displayMode"
+                    value="auto"
+                    checked={mode === "auto"}
+                    onChange={() => setMode("auto")}
+                  />
+                  <span>
+                    <strong>자동 증가</strong>
+                    설정한 분 간격마다 지정한 인원만큼 자동으로 더합니다. 퇴근
+                    후나 쉬는 날에도 서버 재시작과 관계없이 계속 계산됩니다.
+                  </span>
+                </S.RadioLabel>
               </S.Fieldset>
 
               <S.InputGroup>
@@ -209,9 +255,66 @@ export const AdminVisitPage = () => {
                 )}
               </S.InputGroup>
 
+              <S.AutoInputGroup $disabled={mode !== "auto"}>
+                <div>
+                  <label htmlFor="autoIntervalMinutes">증가 간격</label>
+                  <S.CountInput>
+                    <input
+                      id="autoIntervalMinutes"
+                      type="number"
+                      min="1"
+                      max="1440"
+                      step="1"
+                      inputMode="numeric"
+                      value={autoIntervalMinutes}
+                      disabled={mode !== "auto"}
+                      onChange={(event) => {
+                        setAutoIntervalMinutes(event.target.value);
+                        setValidationMessage("");
+                      }}
+                    />
+                    <span>분마다</span>
+                  </S.CountInput>
+                </div>
+                <div>
+                  <label htmlFor="autoIncrementCount">회당 증가</label>
+                  <S.CountInput>
+                    <input
+                      id="autoIncrementCount"
+                      type="number"
+                      min="1"
+                      max={MAX_VISIT_COUNT}
+                      step="1"
+                      inputMode="numeric"
+                      value={autoIncrementCount}
+                      disabled={mode !== "auto"}
+                      onChange={(event) => {
+                        setAutoIncrementCount(event.target.value);
+                        setValidationMessage("");
+                      }}
+                    />
+                    <span>명 증가</span>
+                  </S.CountInput>
+                </div>
+              </S.AutoInputGroup>
+              {mode === "auto" && !validationMessage && (
+                <S.AutoStatus>
+                  현재 자동 추가{" "}
+                  <strong>{data.autoAddedCount.toLocaleString()}명</strong>
+                  {data.autoStartedAt && (
+                    <>
+                      {" "}
+                      · {data.autoIntervalMinutes}분마다{" "}
+                      {data.autoIncrementCount}명씩 증가 중
+                    </>
+                  )}
+                </S.AutoStatus>
+              )}
+
               <S.Notice>
-                이 설정은 오늘 날짜에만 적용됩니다. 날짜가 바뀌면 실제 집계값이
-                자동으로 노출됩니다.
+                직접 추가 입력은 오늘 날짜에만 적용됩니다. 자동 증가는 다른
+                모드로 변경할 때까지 계속 유지되며, 필리핀 자정마다 자동 추가
+                인원은 0명부터 다시 계산됩니다.
               </S.Notice>
 
               <S.SaveButton type="submit" disabled={mutation.isLoading}>

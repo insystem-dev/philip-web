@@ -1,4 +1,4 @@
-import { atom } from "recoil";
+import { atom } from "./atom";
 
 type Ads = {
   topAds: string;

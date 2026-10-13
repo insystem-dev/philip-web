@@ -16,7 +16,11 @@ import { cityState } from "@/recoil/city";
 import { useQuery } from "react-query";
 import { getPostsListApi, getPromtionListApi } from "@/apis/postsApi";
 import { getAdsData } from "@/apis/adsApi";
-import { checkTodayVisit, getVisitCount } from "@/apis/visitApi";
+import {
+  checkTodayVisit,
+  getNextVisitUpdateAt,
+  getVisitCount,
+} from "@/apis/visitApi";
 import { searchState } from "@/recoil/search";
 import { userTokenState } from "@/recoil/userToken";
 import { CategoryLoginRequiredModal } from "@/components/molecules/CategoryLoginRequiredModal";
@@ -208,10 +212,25 @@ const Main = () => {
 
   // 방문자 수 처리
   useEffect(() => {
-    if (todayCount !== undefined) {
+    if (typeof todayCount === "number") {
       setCount(todayCount);
     }
   }, [todayCount]);
+
+  // 고정 60초 폴링은 저장 시각과 어긋나 최대 2분 뒤 반영될 수 있으므로,
+  // 서버가 알려준 다음 증가 시각 직후에 정확히 다시 조회한다.
+  useEffect(() => {
+    const nextAutoIncrementAt = getNextVisitUpdateAt();
+    if (!nextAutoIncrementAt) return;
+
+    const delay = Math.max(
+      0,
+      new Date(nextAutoIncrementAt).getTime() - Date.now()
+    );
+    const timer = setTimeout(() => void refetchVisitCount(), delay + 250);
+
+    return () => clearTimeout(timer);
+  }, [todayCount, refetchVisitCount]);
 
   // 페이지를 계속 열어둔 경우에는 필리핀 00시에 화면을 먼저 0으로 초기화하고
   // 현재 탭을 새 방문자로 다시 등록하지 않은 채 실제 새 날짜 카운트만 조회한다.

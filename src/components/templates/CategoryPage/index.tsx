@@ -24,9 +24,12 @@ export const CategoryPage = () => {
     { enabled: !!city }
   );
 
-  /** 관리자가 켜고 끄는 범위별 배너 노출 설정 (비로그인도 조회 가능) */
+  /** 전체 카테고리 페이지의 공통 배너 노출 설정 (비로그인도 조회 가능) */
   const { data: adsSettings, isLoading: isSettingsLoading } =
-    useQuery<AdsSettings>(["getAdsSettings"], getAdsSettingsApi);
+    useQuery<AdsSettings>(
+      ["getAdsSettings", "CATEGORY-ALL"],
+      getAdsSettingsApi
+    );
 
   /** 전체 카테고리 배너는 카테고리 축이 없고 지역은 정확 일치라 폴백이 없다 */
   const findAd = (label: string) => findCategoryAd(adsData, label, city).ads;

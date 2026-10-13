@@ -1,7 +1,10 @@
 import styled from "styled-components";
 
 export const Page = styled.div`
+  display: flex;
   max-width: 760px;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 export const Card = styled.section`
@@ -203,5 +206,31 @@ export const SaveButton = styled.button`
   &:disabled {
     background: ${(props) => props.theme.colors.disabledBtn};
     cursor: default;
+  }
+`;
+
+export const AutoInputGroup = styled.div<{ $disabled: boolean }>`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 280px));
+  margin-bottom: 10px;
+  gap: 16px;
+  opacity: ${(props) => (props.$disabled ? 0.55 : 1)};
+
+  label {
+    display: block;
+    margin-bottom: 10px;
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+`;
+
+export const AutoStatus = styled.p`
+  margin-bottom: 20px;
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.2rem;
+
+  strong {
+    color: ${(props) => props.theme.colors.primary};
   }
 `;

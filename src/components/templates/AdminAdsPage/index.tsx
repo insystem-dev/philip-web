@@ -11,6 +11,7 @@ import {
   updateAdsSettingApi,
 } from "@/apis/adsApi";
 import useApiError from "@/lib/hooks/useApiError";
+import { CATEGORY_ALL } from "@/lib/adsMatch";
 
 import * as S from "./adminAdsPage.style";
 
@@ -71,26 +72,38 @@ export const AdminAdsPage = ({
   const queryClient = useQueryClient();
   const { handleError } = useApiError();
 
-  /**
-   * 범위별 배너 노출 설정.
-   * 이미지 등록과 무관한 전역 설정이라 등록 폼의 드래프트 규약을 타지 않고 즉시 저장한다
-   * (점검 모드 화면 AdminSettingsPage 와 같은 흐름).
-   */
+  /** 메인 배너는 선택 카테고리별, 전체 카테고리 페이지 배너는 전역으로 즉시 저장한다. */
+  const settingsCategoryCode =
+    activeTab === "main" ? selectedCategory : CATEGORY_ALL;
   const {
     data: adsSettings,
     isLoading: isSettingsLoading,
     isError: isSettingsError,
-  } = useQuery<AdsSettings>(["getAdsSettings"], getAdsSettingsApi, {
-    retry: 1,
-    onError: (error: any) => handleError(error),
-  });
+  } = useQuery<AdsSettings>(
+    ["getAdsSettings", settingsCategoryCode],
+    getAdsSettingsApi,
+    {
+      retry: 1,
+      onError: (error: any) => handleError(error),
+    }
+  );
 
   const settingMutation = useMutation(
-    ({ scope, useYn }: { scope: AdsScope; useYn: "Y" | "N" }) =>
-      updateAdsSettingApi(scope, useYn),
+    ({
+      scope,
+      useYn,
+      categoryCode,
+    }: {
+      scope: AdsScope;
+      useYn: "Y" | "N";
+      categoryCode?: string;
+    }) => updateAdsSettingApi(scope, useYn, categoryCode),
     {
-      onSuccess: (saved, { scope, useYn }) => {
-        queryClient.setQueryData(["getAdsSettings"], saved);
+      onSuccess: (saved, { scope, useYn, categoryCode }) => {
+        queryClient.setQueryData(
+          ["getAdsSettings", categoryCode || CATEGORY_ALL],
+          saved
+        );
         alert(
           useYn === "Y"
             ? `${SCOPE_LABELS[scope]} 노출을 켰습니다.`
@@ -104,7 +117,15 @@ export const AdminAdsPage = ({
     }
   );
 
-  const scopeLabel = SCOPE_LABELS[activeTab];
+  const selectedCategoryName =
+    selectedCategory === CATEGORY_ALL
+      ? "전체"
+      : categories.find((item) => item.oid === selectedCategory)?.name ||
+        selectedCategory;
+  const scopeLabel =
+    activeTab === "main"
+      ? `${selectedCategoryName} 메인 페이지 배너`
+      : SCOPE_LABELS.category;
   const isExposed = adsSettings?.[activeTab] === "Y";
   /** 설정을 못 읽은 동안은 '숨김'으로 단정하지 않는다 (미리보기 안내 문구 오탐 방지) */
   const isHidden = !!adsSettings && !isExposed;
@@ -116,7 +137,12 @@ export const AdminAdsPage = ({
         ? `${scopeLabel}를 노출하시겠습니까?`
         : `${scopeLabel}를 숨기시겠습니까?\n유저 화면에서 배너 영역이 통째로 보이지 않게 됩니다.`;
     if (!window.confirm(confirmMessage)) return;
-    settingMutation.mutate({ scope: activeTab, useYn: next });
+    settingMutation.mutate({
+      scope: activeTab,
+      useYn: next,
+      categoryCode:
+        activeTab === "main" ? selectedCategory : undefined,
+    });
   };
 
   return (
@@ -155,9 +181,11 @@ export const AdminAdsPage = ({
           <S.ExposureCard>
             <S.ExposureTit>{scopeLabel} 노출</S.ExposureTit>
             <S.ExposureDesc>
-              노출을 끄면 유저 화면에서 {scopeLabel} 영역이 통째로 보이지
-              않습니다. 등록된 이미지는 지워지지 않으며, 위 미리보기와
-              등록·삭제는 그대로 사용할 수 있습니다.
+              {activeTab === "main"
+                ? `${selectedCategoryName} 카테고리에서만 배너 노출을 켜거나 끕니다. 다른 카테고리 설정에는 영향을 주지 않습니다.`
+                : `노출을 끄면 유저 화면에서 ${scopeLabel} 영역이 통째로 보이지 않습니다.`}{" "}
+              등록된 이미지는 지워지지 않으며, 위 미리보기와 등록·삭제는
+              그대로 사용할 수 있습니다.
             </S.ExposureDesc>
             {isSettingsLoading ? (
               <S.ExposureStatus>불러오는 중입니다.</S.ExposureStatus>

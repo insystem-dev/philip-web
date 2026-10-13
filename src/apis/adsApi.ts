@@ -1,10 +1,10 @@
 import axiosInstance from "./index";
 
-/** 배너 노출 범위 — 메인 페이지 배너 / 전체 카테고리 배너 */
+/** 배너 노출 범위 — 카테고리별 메인 페이지 배너 / 전체 카테고리 페이지 배너 */
 export type AdsScope = "main" | "category";
 
 /**
- * 범위별 배너 노출 설정.
+ * 현재 요청 카테고리의 배너 노출 설정.
  * 값이 없거나 미설정이면 서버가 'N'(숨김)을 내려준다 — 켜는 것은 관리자의 명시적 행동이어야 한다.
  */
 export interface AdsSettings {
@@ -70,25 +70,37 @@ export function updateAdsLinkApi(
 }
 
 /**
- * GET 범위별 배너 노출 설정
- * queryKey: ["getAdsSettings"]
+ * GET 배너 노출 설정
+ * queryKey: ["getAdsSettings", categoryCode]
  *
- * 유저 화면(비로그인 포함)도 호출하는 공개 조회다 — 배너를 그리기 전에 이 값으로 노출 여부를 판단한다.
+ * main 값은 categoryCode별 독립 설정이고, category 값은 전체 카테고리 페이지 공통 설정이다.
+ * 유저 화면(비로그인 포함)도 호출하는 공개 조회다.
  */
-export function getAdsSettingsApi() {
+export function getAdsSettingsApi({ queryKey }: any = {}) {
+  const categoryCode = queryKey?.[1];
   return axiosInstance
-    .get<AdsSettings>("/admin/ads/settings")
+    .get<AdsSettings>("/admin/ads/settings", {
+      params: categoryCode ? { categoryCode } : undefined,
+    })
     .then((response) => response.data);
 }
 
 /**
- * PUT 범위별 배너 노출 on/off (관리자)
+ * PUT 배너 노출 on/off (관리자). main은 categoryCode별로 독립 저장한다.
  * 이미지를 지우지 않고 그 범위의 배너 영역 자체를 유저 화면에서 감춘다.
  * (완전히 지우는 것은 deleteAllAdsApi / deleteOneAdsApi)
  */
-export function updateAdsSettingApi(scope: AdsScope, useYn: "Y" | "N") {
+export function updateAdsSettingApi(
+  scope: AdsScope,
+  useYn: "Y" | "N",
+  categoryCode?: string
+) {
   return axiosInstance
-    .put<AdsSettings>("/admin/ads/settings", { scope, useYn })
+    .put<AdsSettings>("/admin/ads/settings", {
+      scope,
+      useYn,
+      ...(scope === "main" && categoryCode ? { categoryCode } : {}),
+    })
     .then((response) => response.data);
 }
 

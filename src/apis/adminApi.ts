@@ -53,13 +53,18 @@ export function todayVisitAPI() {
   return axiosInstance.get("/admin/visit").then((response) => response.data);
 }
 
-export type VisitDisplayMode = "actual" | "manual";
+export type VisitDisplayMode = "actual" | "manual" | "auto";
 
 export interface VisitDisplaySetting {
   visitDate: string;
   actualCount: number;
   displayMode: VisitDisplayMode;
   manualCount: number;
+  autoIntervalMinutes: number;
+  autoIncrementCount: number;
+  autoStartedAt: string | null;
+  autoAddedCount: number;
+  nextAutoIncrementAt: string | null;
   displayCount: number;
   updatedAt: string | null;
 }
@@ -75,6 +80,8 @@ export function getVisitDisplaySetting() {
 export function updateVisitDisplaySetting(data: {
   mode: VisitDisplayMode;
   count?: number;
+  intervalMinutes?: number;
+  incrementCount?: number;
 }) {
   return axiosInstance
     .put<VisitDisplaySetting>("/admin/visit-setting", data)

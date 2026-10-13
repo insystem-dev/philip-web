@@ -18,9 +18,12 @@ export const BannerSection = ({
   cityCode = null,
 }: BannerSectionProp) => {
   const router = useRouter();
-  /** 관리자가 켜고 끄는 범위별 배너 노출 설정 (비로그인도 조회 가능) */
+  /** 현재 카테고리에 대해 관리자가 켜고 끄는 배너 노출 설정 (비로그인도 조회 가능) */
   const { data: adsSettings, isLoading: isSettingsLoading } =
-    useQuery<AdsSettings>(["getAdsSettings"], getAdsSettingsApi);
+    useQuery<AdsSettings>(
+      ["getAdsSettings", categoryCode || CATEGORY_ALL],
+      getAdsSettingsApi
+    );
 
   /** 지역은 정확 일치, 카테고리만 2단 폴백 (philip_api/docs/ads-banners.md 의 노출 폴백 순서) */
   const findAd = (label: string) =>
@@ -43,7 +46,7 @@ export const BannerSection = ({
   };
 
   /**
-   * 메인 배너 노출이 꺼져 있으면 섹션 자체를 그리지 않는다.
+   * 현재 카테고리의 메인 배너 노출이 꺼져 있으면 섹션 자체를 그리지 않는다.
    * Banner atom 은 이미지가 없어도 회색 플레이스홀더를 그리므로 여기서 통째로 빼야 자리까지 사라진다.
    * 설정을 읽는 동안에도 그리지 않는다 — 잠깐 떴다 사라지는 깜빡임을 막기 위해서다.
    */
