@@ -17,11 +17,14 @@ interface LoginBoxProp {
   kakaoLogin: () => void;
   localLogin: (userId: string, password: string) => void;
   isLoading: boolean;
+  /** 이벤트 페이지처럼 공용 인증 라우트와 분리된 화면에서 회원가입 전환을 처리한다. */
+  onSignup?: () => void;
 }
 export const LoginBox = ({
   kakaoLogin,
   localLogin,
   isLoading,
+  onSignup,
 }: LoginBoxProp) => {
   const router = useRouter();
   const { message } = usePhilipLocale();
@@ -83,7 +86,7 @@ export const LoginBox = ({
         color="callBg"
         layout="solid"
         label={message.auth.signUp}
-        onClick={() => router.push("/auth/signup")}
+        onClick={() => (onSignup ? onSignup() : router.push("/auth/signup"))}
       />
 
       {ENABLE_SOCIAL_LOGIN && (

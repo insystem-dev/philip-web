@@ -69,8 +69,14 @@ export default function App({ Component, pageProps }: AppProps) {
           {/* HeadersTokenProvider가 만료 시 렌더하는 AlertModal도 테마를 쓸 수 있도록 ThemeProvider 안쪽에 위치 */}
           <ThemeProvider theme={theme}>
             <HeadersTokenProvider>
-              {router.pathname.includes("main") ||
-              router.pathname.includes("auth") ? (
+              {router.pathname === "/event" ? (
+                <>
+                  {isWindowWidth < 769 ? <MobileHeader /> : <Header />}
+                  <Component {...pageProps} />
+                  <Footer />
+                </>
+              ) : router.pathname.includes("main") ||
+                router.pathname.includes("auth") ? (
                 <>
                   {isWindowWidth < 769 ? <MobileHeader /> : <Header />}
                   <Nav />

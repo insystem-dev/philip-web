@@ -25,35 +25,34 @@ interface SignupValidationMessages {
   termsRequired: string;
 }
 
-const createSignupSchema = (validation: SignupValidationMessages) => yup
-  .object({
-    userId: yup
-      .string()
-      .required(validation.userIdRequired)
-      .matches(/^[a-zA-Z0-9_]+$/, validation.userIdFormat)
-      .min(4, validation.userIdLength)
-      .max(30, validation.userIdLength),
-    password: yup
-      .string()
-      .required(validation.passwordRequired)
-      .min(8, validation.passwordLength)
-      .max(50, validation.passwordLength),
-    passwordCheck: yup
-      .string()
-      .required(validation.passwordConfirmRequired)
-      .oneOf([yup.ref("password")], validation.passwordMismatch),
-    name: yup.string().required(validation.nameRequired),
-    phoneNumber: yup
-      .string()
-      .required(validation.phoneRequired)
-      .matches(/^01\d-\d{3,4}-\d{4}$/, validation.phoneInvalid),
-    // 이메일은 선택 입력 — 비워두면 검증하지 않고 서버로도 보내지 않는다
-    email: yup.string().email(validation.emailInvalid),
-    termsAgreed: yup
-      .boolean()
-      .oneOf([true], validation.termsRequired),
-  })
-  .required();
+const createSignupSchema = (validation: SignupValidationMessages) =>
+  yup
+    .object({
+      userId: yup
+        .string()
+        .required(validation.userIdRequired)
+        .matches(/^[a-zA-Z0-9_]+$/, validation.userIdFormat)
+        .min(4, validation.userIdLength)
+        .max(30, validation.userIdLength),
+      password: yup
+        .string()
+        .required(validation.passwordRequired)
+        .min(8, validation.passwordLength)
+        .max(50, validation.passwordLength),
+      passwordCheck: yup
+        .string()
+        .required(validation.passwordConfirmRequired)
+        .oneOf([yup.ref("password")], validation.passwordMismatch),
+      name: yup.string().required(validation.nameRequired),
+      phoneNumber: yup
+        .string()
+        .required(validation.phoneRequired)
+        .matches(/^01\d-\d{3,4}-\d{4}$/, validation.phoneInvalid),
+      // 이메일은 선택 입력 — 비워두면 검증하지 않고 서버로도 보내지 않는다
+      email: yup.string().email(validation.emailInvalid),
+      termsAgreed: yup.boolean().oneOf([true], validation.termsRequired),
+    })
+    .required();
 
 /** 숫자만 남겨 010-0000-0000 형태로 자동 포맷 */
 const formatPhoneNumber = (value: string) => {
@@ -66,7 +65,12 @@ const formatPhoneNumber = (value: string) => {
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 };
 
-const UserSignup = () => {
+interface UserSignupProps {
+  onSignupComplete?: () => void;
+  onBack?: () => void;
+}
+
+const UserSignup = ({ onSignupComplete, onBack }: UserSignupProps = {}) => {
   const router = useRouter();
   const { locale, message } = usePhilipLocale();
   const schema = useMemo(
@@ -153,7 +157,8 @@ const UserSignup = () => {
         title: message.signup.successTitle,
         message: message.signup.successMessage,
         confirmLabel: message.auth.signIn,
-        onConfirm: () => router.replace("/auth/login"),
+        onConfirm: () =>
+          onSignupComplete ? onSignupComplete() : router.replace("/auth/login"),
       });
     },
     onError: (error: any) => {
@@ -253,7 +258,7 @@ const UserSignup = () => {
           setValue("termsAgreed", checked, { shouldValidate: true })
         }
         onDuplicateCheck={onDuplicateCheck}
-        onBack={() => router.push("/auth/login")}
+        onBack={() => (onBack ? onBack() : router.push("/auth/login"))}
       />
       {alertModal && (
         <AlertModal

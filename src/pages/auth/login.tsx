@@ -6,7 +6,12 @@ import { useSetRecoilState } from "recoil";
 import { userTokenState } from "@/recoil/userToken";
 import { usePhilipLocale } from "@/i18n/usePhilipLocale";
 
-export const Login = () => {
+interface LoginProps {
+  onLoginSuccess?: (accessToken: string) => void;
+  onSignup?: () => void;
+}
+
+export const Login = ({ onLoginSuccess, onSignup }: LoginProps = {}) => {
   const router = useRouter();
   const { locale, message } = usePhilipLocale();
   const setUserToken = useSetRecoilState(userTokenState);
@@ -28,17 +33,27 @@ export const Login = () => {
       const data = await localSigninAPI({ userId, password });
       localStorage.setItem("kakaoSignKey", data.accessToken);
       setUserToken(data.accessToken);
-      router.replace("/main");
+      if (onLoginSuccess) onLoginSuccess(data.accessToken);
+      else router.replace("/main");
     } catch (error: any) {
       alert(
         locale === "ko"
           ? error?.response?.data?.message || message.auth.loginFailed
           : message.auth.loginFailed
       );
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return <LoginPage kakaoLogin={kakaoLogin} localLogin={localLogin} isLoading={isLoading} />;
+  return (
+    <LoginPage
+      kakaoLogin={kakaoLogin}
+      localLogin={localLogin}
+      isLoading={isLoading}
+      onSignup={onSignup}
+    />
+  );
 };
 
 export default Login;
