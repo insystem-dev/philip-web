@@ -135,6 +135,11 @@ export const LevelItem = styled.button`
   small {
     color: ${(props) => props.theme.colors.adminLabelTxt};
     font-size: 1.1rem;
+
+    &[data-inactive="true"] {
+      color: ${(props) => props.theme.colors.red};
+      font-weight: 700;
+    }
   }
 `;
 

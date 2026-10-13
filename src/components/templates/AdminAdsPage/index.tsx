@@ -129,10 +129,14 @@ export const AdminAdsPage = ({
   const isExposed = adsSettings?.[activeTab] === "Y";
   /** 설정을 못 읽은 동안은 '숨김'으로 단정하지 않는다 (미리보기 안내 문구 오탐 방지) */
   const isHidden = !!adsSettings && !isExposed;
-  /** 배너 노출 단위는 사용자 메인 선택지와 동일하게 활성 최상위 카테고리만 사용한다. */
+  /** 배너 노출 단위는 최상위 카테고리다. 비활성이어도 향후 설정을 위해 관리자 목록에는 남긴다. */
   const bannerCategories = categories.filter(
-    (item) => item.parentOid === null && item.useYn === "Y"
+    (item) => item.parentOid === null
   );
+  const selectedCategoryActive =
+    selectedCategory === CATEGORY_ALL ||
+    bannerCategories.find((item) => item.oid === selectedCategory)?.useYn !==
+      "N";
 
   const onToggleExposure = () => {
     const next: "Y" | "N" = isExposed ? "N" : "Y";
@@ -245,6 +249,7 @@ export const AdminAdsPage = ({
           }
           isCategorySettingError={isSettingsError}
           onToggleCategoryExposure={onToggleExposure}
+          isSelectedCategoryActive={selectedCategoryActive}
         />
       </S.AdminAdsPage>
     </AdminLayout>

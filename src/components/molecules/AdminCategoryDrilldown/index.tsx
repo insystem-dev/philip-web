@@ -9,6 +9,8 @@ interface Props {
   allowAll?: boolean;
   label?: string;
   error?: string;
+  /** 비활성 카테고리도 선택지에 유지하면서 상태를 표시한다. */
+  showInactiveStatus?: boolean;
 }
 
 export const AdminCategoryDrilldown = ({
@@ -18,6 +20,7 @@ export const AdminCategoryDrilldown = ({
   allowAll = false,
   label,
   error,
+  showInactiveStatus = false,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [parentCode, setParentCode] = useState<string | null>(null);
@@ -44,12 +47,16 @@ export const AdminCategoryDrilldown = ({
   };
 
   const currentPath = pathOf(currentParent);
-  const selectedLabel =
+  const selectedPathLabel =
     value === "CATEGORY-ALL"
       ? "전체"
       : pathOf(selected)
           .map((item) => item.name)
           .join(" > ") || "카테고리를 선택하세요";
+  const selectedLabel =
+    showInactiveStatus && selected?.useYn === "N"
+      ? `${selectedPathLabel} (비활성)`
+      : selectedPathLabel;
 
   const searchResults = keyword.trim()
     ? categories.filter(
@@ -104,6 +111,9 @@ export const AdminCategoryDrilldown = ({
                       {pathOf(item)
                         .map((node) => node.name)
                         .join(" > ")}
+                      {showInactiveStatus && item.useYn === "N"
+                        ? " (비활성)"
+                        : ""}
                     </S.SearchResult>
                   ))
                 ) : (
@@ -175,7 +185,17 @@ export const AdminCategoryDrilldown = ({
                         }
                       >
                         <span>{item.name}</span>
-                        <small>{hasChildren ? "다음 단계 ›" : "선택"}</small>
+                        <small
+                          data-inactive={
+                            showInactiveStatus && item.useYn === "N"
+                          }
+                        >
+                          {showInactiveStatus && item.useYn === "N"
+                            ? "비활성 · 선택"
+                            : hasChildren
+                            ? "다음 단계 ›"
+                            : "선택"}
+                        </small>
                       </S.LevelItem>
                     );
                   })}

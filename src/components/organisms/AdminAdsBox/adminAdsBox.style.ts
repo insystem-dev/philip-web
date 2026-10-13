@@ -128,6 +128,16 @@ export const CategoryExposureError = styled.span`
   white-space: nowrap;
 `;
 
+export const InactiveCategoryNotice = styled.p`
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 95, 95, 0.3);
+  border-radius: 5px;
+  color: ${(props) => props.theme.colors.red};
+  background: rgba(255, 95, 95, 0.06);
+  font-size: 1.1rem;
+  line-height: 1.5;
+`;
+
 export const CategoryScopeHint = styled.p`
   color: ${(props) => props.theme.colors.adminLabelTxt};
   font-size: 1.15rem;

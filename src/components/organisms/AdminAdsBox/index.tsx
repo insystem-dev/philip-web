@@ -45,6 +45,8 @@ interface AmdinAdsBoxProps {
   isCategorySettingLoading: boolean;
   isCategorySettingError: boolean;
   onToggleCategoryExposure: () => void;
+  /** 카테고리 자체의 사용 여부. 비활성이어도 배너 설정은 미리 저장할 수 있다. */
+  isSelectedCategoryActive: boolean;
 }
 
 export const AmdinAdsBox = ({
@@ -69,6 +71,7 @@ export const AmdinAdsBox = ({
   isCategorySettingLoading,
   isCategorySettingError,
   onToggleCategoryExposure,
+  isSelectedCategoryActive,
 }: AmdinAdsBoxProps) => {
   /**
    * 저장된 광고 이미지 (DB에서 불러온 데이터).
@@ -189,6 +192,7 @@ export const AmdinAdsBox = ({
                   value={adCategoryCode}
                   onChange={onChangeCategory}
                   allowAll
+                  showInactiveStatus
                 />
                 {isCategorySettingError ? (
                   <S.CategoryExposureError>
@@ -212,6 +216,12 @@ export const AmdinAdsBox = ({
                   </S.CategoryExposureToggle>
                 )}
               </S.CategoryScopeControl>
+              {!isSelectedCategoryActive && (
+                <S.InactiveCategoryNotice>
+                  현재 비활성 카테고리입니다. 배너 설정은 저장되지만 카테고리를
+                  다시 활성화하기 전까지 사용자 화면에는 노출되지 않습니다.
+                </S.InactiveCategoryNotice>
+              )}
               <S.CategoryScopeHint>
                 아래 배너들은 여기서 선택한 카테고리의 메인 페이지에
                 노출됩니다. 카테고리를 바꾸면 해당 카테고리의 배너와 노출
