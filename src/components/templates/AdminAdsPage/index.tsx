@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMemo } from "react";
+import { useMutation, useQueries, useQuery, useQueryClient } from "react-query";
 import { AmdinAdsBox } from "@/components/organisms/AdminAdsBox";
 import { AdminAdsPreview } from "@/components/organisms/AdminAdsPreview";
 import { AdminLayout } from "@/components/organisms/AdminLayout";
@@ -72,6 +73,60 @@ export const AdminAdsPage = ({
   const queryClient = useQueryClient();
   const { handleError } = useApiError();
 
+  /**
+   * 배너 등록용 카테고리 선택과 별개로, 노출 여부는 모든 카테고리를 한 화면에서
+   * 각각 조정한다. CATEGORY-ALL은 메인에서 "전체"를 선택했을 때의 범위다.
+   */
+  const categoryExposureItems = useMemo(() => {
+    const byCode = new Map(categories.map((item) => [item.oid, item]));
+    const depthOf = (item: Category) => {
+      let depth = 0;
+      let parent = item.parentOid ? byCode.get(item.parentOid) : undefined;
+      while (parent) {
+        depth += 1;
+        parent = parent.parentOid ? byCode.get(parent.parentOid) : undefined;
+      }
+      return depth;
+    };
+    const pathOf = (item: Category) => {
+      const path = [item.name];
+      let parent = item.parentOid ? byCode.get(item.parentOid) : undefined;
+      while (parent) {
+        path.unshift(parent.name);
+        parent = parent.parentOid ? byCode.get(parent.parentOid) : undefined;
+      }
+      return path.join(" > ");
+    };
+
+    return [
+      {
+        oid: CATEGORY_ALL,
+        name: "전체",
+        path: "전체 카테고리 선택 시",
+        depth: 0,
+        useYn: "Y" as const,
+      },
+      ...categories
+        .filter((item) => item.oid !== CATEGORY_ALL)
+        .map((item) => ({
+          oid: item.oid,
+          name: item.name,
+          path: pathOf(item),
+          depth: depthOf(item),
+          useYn: item.useYn,
+        })),
+    ];
+  }, [categories]);
+
+  const categorySettingQueries = useQueries(
+    categoryExposureItems.map((item) => ({
+      queryKey: ["getAdsSettings", item.oid],
+      queryFn: getAdsSettingsApi,
+      retry: 1,
+      enabled: activeTab === "main",
+    }))
+  );
+
   /** 메인 배너는 선택 카테고리별, 전체 카테고리 페이지 배너는 전역으로 즉시 저장한다. */
   const settingsCategoryCode =
     activeTab === "main" ? selectedCategory : CATEGORY_ALL;
@@ -93,26 +148,60 @@ export const AdminAdsPage = ({
       scope,
       useYn,
       categoryCode,
+      displayLabel,
     }: {
       scope: AdsScope;
       useYn: "Y" | "N";
       categoryCode?: string;
+      displayLabel?: string;
     }) => updateAdsSettingApi(scope, useYn, categoryCode),
     {
-      onSuccess: (saved, { scope, useYn, categoryCode }) => {
+      onSuccess: (saved, { scope, useYn, categoryCode, displayLabel }) => {
         queryClient.setQueryData(
           ["getAdsSettings", categoryCode || CATEGORY_ALL],
           saved
         );
         alert(
           useYn === "Y"
-            ? `${SCOPE_LABELS[scope]} 노출을 켰습니다.`
-            : `${SCOPE_LABELS[scope]} 노출을 껐습니다.`
+            ? `${displayLabel || SCOPE_LABELS[scope]} 노출을 켰습니다.`
+            : `${displayLabel || SCOPE_LABELS[scope]} 노출을 껐습니다.`
         );
       },
       onError: (error: any) => {
         handleError(error);
         alert(error?.response?.data?.message ?? "변경 중 오류가 발생했습니다.");
+      },
+    }
+  );
+
+  const bulkSettingMutation = useMutation(
+    async (useYn: "Y" | "N") =>
+      Promise.all(
+        categoryExposureItems.map(async (item) => ({
+          categoryCode: item.oid,
+          settings: await updateAdsSettingApi("main", useYn, item.oid),
+        }))
+      ),
+    {
+      onSuccess: (rows, useYn) => {
+        rows.forEach(({ categoryCode, settings }) => {
+          queryClient.setQueryData(
+            ["getAdsSettings", categoryCode],
+            settings
+          );
+        });
+        alert(
+          useYn === "Y"
+            ? "모든 카테고리의 배너 노출을 켰습니다."
+            : "모든 카테고리의 배너 노출을 껐습니다."
+        );
+      },
+      onError: (error: any) => {
+        handleError(error);
+        alert(
+          error?.response?.data?.message ??
+            "카테고리 노출 설정을 일괄 변경하지 못했습니다."
+        );
       },
     }
   );
@@ -178,44 +267,131 @@ export const AdminAdsPage = ({
             adCityCode={selectedCity}
             isHidden={isHidden}
           />
-          <S.ExposureCard>
-            <S.ExposureTit>{scopeLabel} 노출</S.ExposureTit>
-            <S.ExposureDesc>
-              {activeTab === "main"
-                ? `${selectedCategoryName} 카테고리에서만 배너 노출을 켜거나 끕니다. 다른 카테고리 설정에는 영향을 주지 않습니다.`
-                : `노출을 끄면 유저 화면에서 ${scopeLabel} 영역이 통째로 보이지 않습니다.`}{" "}
-              등록된 이미지는 지워지지 않으며, 위 미리보기와 등록·삭제는
-              그대로 사용할 수 있습니다.
-            </S.ExposureDesc>
-            {isSettingsLoading ? (
-              <S.ExposureStatus>불러오는 중입니다.</S.ExposureStatus>
-            ) : isSettingsError || !adsSettings ? (
-              <S.ExposureErrorStatus>
-                배너 노출 설정을 불러오지 못했습니다.
-              </S.ExposureErrorStatus>
-            ) : (
-              <>
-                <S.StateRow>
-                  <span>현재 상태</span>
-                  <S.StateBadge $exposed={isExposed}>
-                    {isExposed ? "노출 중" : "숨김"}
-                  </S.StateBadge>
-                </S.StateRow>
-                <S.ToggleButton
-                  type="button"
-                  $exposed={isExposed}
-                  disabled={settingMutation.isLoading}
-                  onClick={onToggleExposure}
-                >
-                  {settingMutation.isLoading
-                    ? "변경 중..."
-                    : isExposed
-                    ? `${scopeLabel} 숨기기`
-                    : `${scopeLabel} 노출하기`}
-                </S.ToggleButton>
-              </>
-            )}
-          </S.ExposureCard>
+          {activeTab === "main" ? (
+            <S.ExposureCard>
+              <S.ExposureHeader>
+                <div>
+                  <S.ExposureTit>카테고리별 배너 노출 설정</S.ExposureTit>
+                  <S.ExposureDesc>
+                    각 카테고리의 배너 영역을 개별로 켜거나 끕니다. 이미지는
+                    삭제되지 않으며 설정은 즉시 저장됩니다.
+                  </S.ExposureDesc>
+                </div>
+                <S.BulkActions>
+                  <button
+                    type="button"
+                    disabled={bulkSettingMutation.isLoading}
+                    onClick={() => bulkSettingMutation.mutate("Y")}
+                  >
+                    전체 노출
+                  </button>
+                  <button
+                    type="button"
+                    disabled={bulkSettingMutation.isLoading}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "모든 카테고리에서 메인 배너를 숨기시겠습니까?"
+                        )
+                      ) {
+                        bulkSettingMutation.mutate("N");
+                      }
+                    }}
+                  >
+                    전체 숨김
+                  </button>
+                </S.BulkActions>
+              </S.ExposureHeader>
+              <S.CategoryExposureList>
+                {categoryExposureItems.map((item, index) => {
+                  const query = categorySettingQueries[index];
+                  const exposed = query?.data?.main === "Y";
+                  const changing =
+                    settingMutation.isLoading &&
+                    settingMutation.variables?.categoryCode === item.oid;
+                  return (
+                    <S.CategoryExposureRow
+                      key={item.oid}
+                      $depth={item.depth}
+                    >
+                      <S.CategoryExposureName>
+                        <strong>{item.name}</strong>
+                        <span>{item.path}</span>
+                        {item.useYn === "N" && <em>카테고리 비활성</em>}
+                      </S.CategoryExposureName>
+                      {query?.isLoading ? (
+                        <S.InlineStatus>불러오는 중</S.InlineStatus>
+                      ) : query?.isError || !query?.data ? (
+                        <S.InlineError>조회 실패</S.InlineError>
+                      ) : (
+                        <S.CategoryToggle
+                          type="button"
+                          role="switch"
+                          aria-checked={exposed}
+                          $exposed={exposed}
+                          disabled={
+                            settingMutation.isLoading ||
+                            bulkSettingMutation.isLoading
+                          }
+                          onClick={() =>
+                            settingMutation.mutate({
+                              scope: "main",
+                              useYn: exposed ? "N" : "Y",
+                              categoryCode: item.oid,
+                              displayLabel: `${item.name} 카테고리 배너`,
+                            })
+                          }
+                        >
+                          <span aria-hidden />
+                          {changing
+                            ? "저장 중"
+                            : exposed
+                            ? "노출"
+                            : "숨김"}
+                        </S.CategoryToggle>
+                      )}
+                    </S.CategoryExposureRow>
+                  );
+                })}
+              </S.CategoryExposureList>
+            </S.ExposureCard>
+          ) : (
+            <S.ExposureCard>
+              <S.ExposureTit>{scopeLabel} 노출</S.ExposureTit>
+              <S.ExposureDesc>
+                노출을 끄면 유저 화면에서 {scopeLabel} 영역이 통째로 보이지
+                않습니다. 등록된 이미지는 지워지지 않습니다.
+              </S.ExposureDesc>
+              {isSettingsLoading ? (
+                <S.ExposureStatus>불러오는 중입니다.</S.ExposureStatus>
+              ) : isSettingsError || !adsSettings ? (
+                <S.ExposureErrorStatus>
+                  배너 노출 설정을 불러오지 못했습니다.
+                </S.ExposureErrorStatus>
+              ) : (
+                <>
+                  <S.StateRow>
+                    <span>현재 상태</span>
+                    <S.StateBadge $exposed={isExposed}>
+                      {isExposed ? "노출 중" : "숨김"}
+                    </S.StateBadge>
+                  </S.StateRow>
+                  <S.ToggleButton
+                    type="button"
+                    $exposed={isExposed}
+                    disabled={settingMutation.isLoading}
+                    onClick={onToggleExposure}
+                  >
+                    {settingMutation.isLoading
+                      ? "변경 중..."
+                      : isExposed
+                      ? `${scopeLabel} 숨기기`
+                      : `${scopeLabel} 노출하기`}
+                  </S.ToggleButton>
+                </>
+              )}
+            </S.ExposureCard>
+          )}
         </S.LeftColumn>
         <AmdinAdsBox
           scope={activeTab}

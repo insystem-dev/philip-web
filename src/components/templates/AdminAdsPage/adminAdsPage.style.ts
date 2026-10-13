@@ -57,6 +57,18 @@ export const ExposureTit = styled.h2`
   font-size: 1.6rem;
 `;
 
+export const ExposureHeader = styled.div`
+  display: flex;
+  margin-bottom: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  p {
+    margin-bottom: 0;
+  }
+`;
+
 export const ExposureDesc = styled.p`
   margin-bottom: 16px;
   color: ${(props) => props.theme.colors.adminLabelTxt};
@@ -117,4 +129,118 @@ export const ToggleButton = styled.button<{ $exposed: boolean }>`
     opacity: 0.6;
     cursor: not-allowed;
   }
+`;
+
+export const BulkActions = styled.div`
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+
+  button {
+    height: 34px;
+    padding: 0 11px;
+    border: 1px solid ${(props) => props.theme.colors.adminInputBorder};
+    border-radius: 5px;
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    background: ${(props) => props.theme.colors.white};
+    font-size: 1.2rem;
+    cursor: pointer;
+
+    &:last-child {
+      color: ${(props) => props.theme.colors.red};
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+export const CategoryExposureList = styled.div`
+  overflow-y: auto;
+  max-height: 430px;
+  border: 1px solid ${(props) => props.theme.colors.adminDivider};
+  border-radius: 6px;
+`;
+
+export const CategoryExposureRow = styled.div<{ $depth: number }>`
+  display: flex;
+  min-height: 58px;
+  padding: 10px 12px 10px ${(props) => 12 + Math.min(props.$depth, 3) * 16}px;
+  border-bottom: 1px solid ${(props) => props.theme.colors.adminDivider};
+  background: ${(props) =>
+    props.$depth ? props.theme.colors.adminInputBg : props.theme.colors.white};
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+`;
+
+export const CategoryExposureName = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    color: ${(props) => props.theme.colors.adminMainTxt};
+    font-size: 1.3rem;
+  }
+
+  span {
+    overflow: hidden;
+    color: ${(props) => props.theme.colors.adminLabelTxt};
+    font-size: 1.1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  em {
+    color: ${(props) => props.theme.colors.red};
+    font-size: 1rem;
+    font-style: normal;
+  }
+`;
+
+export const CategoryToggle = styled.button<{ $exposed: boolean }>`
+  display: inline-flex;
+  width: 78px;
+  height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  color: ${(props) => props.theme.colors.white};
+  background: ${(props) =>
+    props.$exposed ? props.theme.colors.primary : props.theme.colors.func};
+  font-size: 1.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+
+  > span {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: ${(props) => props.theme.colors.white};
+    order: ${(props) => (props.$exposed ? 2 : 0)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+export const InlineStatus = styled.span`
+  color: ${(props) => props.theme.colors.adminLabelTxt};
+  font-size: 1.1rem;
+`;
+
+export const InlineError = styled(InlineStatus)`
+  color: ${(props) => props.theme.colors.red};
 `;

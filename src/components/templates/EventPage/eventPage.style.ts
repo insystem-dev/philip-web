@@ -4,14 +4,7 @@ export const Page = styled.main`
   min-height: calc(100vh - 180px);
   padding: 64px 24px 100px;
   color: white;
-  background:
-    radial-gradient(circle at 12% 6%, rgba(68, 98, 255, 0.3), transparent 32%),
-    radial-gradient(
-      circle at 88% 18%,
-      rgba(124, 179, 66, 0.18),
-      transparent 28%
-    ),
-    #171717;
+  background: ${(props) => props.theme.colors.mainBg};
 
   @media screen and (max-width: 768px) {
     padding: 38px 18px 72px;
@@ -146,7 +139,8 @@ export const EventCard = styled.li`
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
-  background: #242424;
+  background: ${(props) => props.theme.colors.darkHover};
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
   transition:
     transform 0.2s ease,
     border-color 0.2s ease;
@@ -157,8 +151,15 @@ export const EventCard = styled.li`
   }
 
   button {
+    display: block;
+    overflow: hidden;
     width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
     color: inherit;
+    background: ${(props) => props.theme.colors.darkHover};
+    cursor: pointer;
     text-align: left;
   }
 `;
@@ -167,7 +168,7 @@ export const Thumbnail = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background: linear-gradient(135deg, #323232, #1b1b1b);
+  background: ${(props) => props.theme.colors.dark};
 
   span {
     position: absolute;
@@ -185,6 +186,7 @@ export const Thumbnail = styled.div`
 
 export const CardBody = styled.div`
   padding: 20px;
+  background: ${(props) => props.theme.colors.darkHover};
 
   small {
     display: block;

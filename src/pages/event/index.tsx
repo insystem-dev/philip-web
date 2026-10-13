@@ -146,7 +146,11 @@ const EventPage = () => {
                     <S.EventCard key={event.oid}>
                       <button
                         type="button"
-                        onClick={() => router.push(`/main/post/${event.oid}`)}
+                        onClick={() =>
+                          router.push(
+                            `/main/post/${encodeURIComponent(event.postOid)}`
+                          )
+                        }
                       >
                         <S.Thumbnail>
                           <span>{copy.benefit}</span>
