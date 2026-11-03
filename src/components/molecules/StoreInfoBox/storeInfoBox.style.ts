@@ -253,7 +253,7 @@ export const MessengerBackground = styled.span`
 `;
 
 export const MessengerIcon = styled.span<{
-  $variant: "telegram" | "discord";
+  $variant: "telegram" | "discord" | "kakao";
 }>`
   position: relative;
   z-index: 3;
@@ -262,7 +262,11 @@ export const MessengerIcon = styled.span<{
   width: 42px;
   height: 42px;
   background: ${(props) =>
-    props.$variant === "discord" ? "#5865f2" : "#2aabee"};
+    props.$variant === "discord"
+      ? "#5865f2"
+      : props.$variant === "kakao"
+        ? "#fee500"
+        : "#2aabee"};
   border-radius: 50%;
   align-items: center;
   justify-content: center;
