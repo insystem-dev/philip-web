@@ -28,7 +28,9 @@ export const StoreInfoBox = ({ post }: any) => {
   const telegramText = telegramId || telegramLink?.label || "";
   const telegramCopyText = telegramId || telegramLink?.copyText || "";
   const messengerLabel =
-    messenger?.type === "discord"
+    messenger?.type === "kakao"
+      ? "KakaoTalk 오픈채팅"
+      : messenger?.type === "discord"
       ? message.detail.discord
       : message.detail.telegram;
   const messengerImage = Array.isArray(post?.messengerImage)
@@ -182,7 +184,9 @@ export const StoreInfoBox = ({ post }: any) => {
             )}
             {!hasMessengerBanner && (
               <S.MessengerIcon $variant={messenger.type}>
-                {messenger.type === "discord" ? (
+                {messenger.type === "kakao" ? (
+                  <IconKakao width={42} height={42} viewBox="0 0 24 24" />
+                ) : messenger.type === "discord" ? (
                   <IconDiscord width={42} height={42} viewBox="0 0 24 24" />
                 ) : (
                   <IconTelegram width={42} height={42} viewBox="0 0 24 24" />

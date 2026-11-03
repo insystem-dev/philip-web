@@ -1,4 +1,4 @@
-export type MessengerIconKey = "telegram" | "discord" | "custom";
+export type MessengerIconKey = "telegram" | "discord" | "kakao" | "custom";
 
 /** 서버가 허용하는 입력 형식과 같은 범위로 관리자 폼에서 먼저 안내한다. */
 export const isTelegramLinkInput = (value?: string | null) => {
@@ -23,8 +23,15 @@ export const isDiscordLinkInput = (value?: string | null) => {
   );
 };
 
+export const isKakaoLinkInput = (value?: string | null) => {
+  const input = value?.trim();
+  if (!input) return true;
+  if (input.length > 500) return false;
+  return /^(?:https?:\/\/)?open\.kakao\.com\/o\/[A-Za-z0-9_-]+(?:[/?#].*)?$/i.test(input);
+};
+
 export interface MessengerLinkInfo {
-  type: "telegram" | "discord";
+  type: "telegram" | "discord" | "kakao";
   href: string;
   /** 화면 표시 문구 — 공개 텔레그램 아이디 링크는 @아이디, 초대 링크 등은 주소 */
   label: string;
@@ -40,12 +47,13 @@ export const parseMessengerLink = (
   link?: string | null
 ): MessengerLinkInfo | null => {
   if (typeof link !== "string") return null;
-  const match = link.match(/^https:\/\/(t\.me|discord\.gg)\/([^?#]+)/i);
+  const match = link.match(/^https:\/\/(t\.me|discord\.gg|open\.kakao\.com)\/([^?#]+)/i);
   if (!match) return null;
 
   const host = match[1].toLowerCase();
   const path = match[2].replace(/\/+$/, "");
-  const type = host === "discord.gg" ? "discord" : "telegram";
+  const type = host === "discord.gg" ? "discord" : host === "open.kakao.com" ? "kakao" : "telegram";
+  if (type === "kakao") return { type, href: link, label: "KakaoTalk", copyText: link };
   if (type === "telegram" && /^[A-Za-z0-9_]{5,32}$/.test(path)) {
     return { type, href: link, label: `@${path}`, copyText: `@${path}` };
   }
@@ -58,8 +66,9 @@ export const isMessengerLinkInput = (
   iconKey: MessengerIconKey = "telegram"
 ) => {
   if (iconKey === "discord") return isDiscordLinkInput(value);
+  if (iconKey === "kakao") return isKakaoLinkInput(value);
   if (iconKey === "custom") {
-    return isTelegramLinkInput(value) || isDiscordLinkInput(value);
+    return isTelegramLinkInput(value) || isDiscordLinkInput(value) || isKakaoLinkInput(value);
   }
   return isTelegramLinkInput(value);
 };

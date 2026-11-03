@@ -3,6 +3,7 @@ import { InputText } from "@/components/atoms/Input/InputText";
 import { MessengerIconKey } from "@/lib/messenger";
 import IconTelegram from "public/assets/svg/icon-telegram.svg";
 import IconDiscord from "public/assets/svg/icon-discord.svg";
+import IconKakao from "public/assets/svg/icon-kakao.svg";
 import * as S from "./messengerLinkFields.style";
 
 interface MessengerLinkFieldsProps {
@@ -29,13 +30,17 @@ export const MessengerLinkFields = ({
   messengerImages = [],
 }: MessengerLinkFieldsProps) => {
   const linkLabel =
-    iconKey === "discord"
+    iconKey === "kakao"
+      ? "카카오톡 오픈채팅 주소"
+      : iconKey === "discord"
       ? "디스코드 초대 주소"
       : iconKey === "custom"
         ? "메신저 연결 주소"
         : "텔레그램 주소";
   const linkPlaceholder =
-    iconKey === "discord"
+    iconKey === "kakao"
+      ? "예: https://open.kakao.com/o/g7MeJjBb"
+      : iconKey === "discord"
       ? "예: https://discord.gg/philip69"
       : iconKey === "custom"
         ? "텔레그램 또는 디스코드 연결 주소"
@@ -54,6 +59,17 @@ export const MessengerLinkFields = ({
     <input type="hidden" {...register("messengerIconKey")} />
     <S.Label>사용자 화면에 표시할 아이콘</S.Label>
     <S.IconOptions role="radiogroup" aria-label="메신저 아이콘 선택">
+      <S.IconOption
+        type="button"
+        role="radio"
+        aria-checked={iconKey === "kakao"}
+        $active={iconKey === "kakao"}
+        onClick={() => onIconChange("kakao")}
+      >
+        <IconKakao width={34} height={34} viewBox="0 0 24 24" />
+        <span><strong>KakaoTalk</strong><small>오픈채팅</small></span>
+        <i>{iconKey === "kakao" ? "✓" : ""}</i>
+      </S.IconOption>
       <S.IconOption
         type="button"
         role="radio"
@@ -125,13 +141,17 @@ export const MessengerLinkFields = ({
       name="messengerLink"
     />
     <S.Guide>
-      {iconKey === "discord" ? (
+      {iconKey === "kakao" ? (
+        <IconKakao width={18} height={18} viewBox="0 0 24 24" />
+      ) : iconKey === "discord" ? (
         <IconDiscord width={18} height={18} viewBox="0 0 24 24" />
       ) : (
         <IconTelegram width={18} height={18} viewBox="0 0 24 24" />
       )}
       <span>
-        {iconKey === "discord"
+        {iconKey === "kakao"
+          ? "open.kakao.com/o/초대코드 형식의 오픈채팅 주소를 입력해 주세요."
+          : iconKey === "discord"
           ? "discord.gg 또는 discord.com/invite 초대 주소를 입력해 주세요."
           : iconKey === "custom"
             ? "텔레그램 또는 디스코드 주소를 지원하며 저장 시 안전한 HTTPS 링크로 변환됩니다."
