@@ -185,7 +185,10 @@ export const StoreInfoBox = ({ post }: any) => {
             {!hasMessengerBanner && (
               <S.MessengerIcon $variant={messenger.type}>
                 {messenger.type === "kakao" ? (
-                  <IconKakao width={42} height={42} viewBox="0 0 24 24" />
+                  <>
+                    <IconKakao width={36} height={36} viewBox="0 0 24 24" />
+                    <S.KakaoTalkLabel aria-hidden="true">TALK</S.KakaoTalkLabel>
+                  </>
                 ) : messenger.type === "discord" ? (
                   <IconDiscord width={42} height={42} viewBox="0 0 24 24" />
                 ) : (

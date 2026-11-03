@@ -267,7 +267,7 @@ export const MessengerIcon = styled.span<{
       : props.$variant === "kakao"
         ? "#fee500"
         : "#2aabee"};
-  border-radius: 50%;
+  border-radius: ${(props) => (props.$variant === "kakao" ? "12px" : "50%")};
   align-items: center;
   justify-content: center;
 
@@ -276,6 +276,17 @@ export const MessengerIcon = styled.span<{
     height: 100%;
     object-fit: cover;
   }
+`;
+
+export const KakaoTalkLabel = styled.span`
+  position: absolute;
+  z-index: 1;
+  color: #fee500;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  transform: translateY(-1px);
 `;
 
 export const MessengerCopy = styled.span`
