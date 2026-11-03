@@ -165,7 +165,7 @@ const AdminPost = () => {
         .max(200, "텔레그램 아이디는 200자 이하로 입력해주세요"),
       messengerIconKey: yup
         .mixed<MessengerIconKey>()
-        .oneOf(["telegram", "discord", "custom"])
+        .oneOf(["telegram", "discord", "kakao", "custom"])
         .default("telegram"),
       messengerLink: yup
         .string()
